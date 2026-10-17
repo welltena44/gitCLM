@@ -1,0 +1,78 @@
+.admin-layout{ display: flex; min-height: 100vh; background: #f5f6fa; }
+.admin-main{ flex: 1; display: flex; flex-direction: column; transition: all 0.3s ease; }
+
+/* TOPBAR */
+.admin-topbar{
+  height: 64px;
+  background: white;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.menu-toggle-btn{
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  font-size: 18px;
+  color: #002395;
+  display: grid; place-items: center;
+}
+.menu-toggle-btn:hover{ background: #002395; color: white; }
+
+.topbar-right{ display: flex; align-items: center; gap: 16px; }
+.user-top{ display: flex; align-items: center; gap: 8px; color: #334155; font-size: 13px; font-weight: 600; }
+.user-top i{ font-size: 22px; color: #002395; }
+
+.logout-top-btn{
+  background: #002395;
+  color: white;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; gap: 8px; align-items: center;
+  transition: 0.2s;
+}
+.logout-top-btn:hover{ background: #ED2939; }
+
+.admin-content{ padding: 24px; flex: 1; }
+
+/* SIDEBAR COMPLET - COULEUR SPAT */
+.modernSidebar-nav{
+  width: 280px; background: white; min-height: 100vh;
+  border-right: 1px solid #eef2f7;
+  display: flex; flex-direction: column;
+  transition: all 0.3s ease; position: sticky; top: 0;
+}
+.modernSidebar-nav.closed{ margin-left: -280px; }
+.sidebar-brand{ display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid #f1f5f9; }
+.brand-mark{ width: 42px; height: 42px; background: #002395; color: white; border-radius: 10px; display: grid; place-items: center; font-size: 18px; box-shadow: 0 0 0 2px white, 0 0 0 4px #002395; margin: 2px; }
+.brand-text small{ display: block; font-size: 10px; color: #002395; letter-spacing: 2px; font-weight: 900; }
+.brand-text strong{ display: block; font-size: 14px; color: #0f172a; }
+.menu-categories{ list-style: none; padding: 16px 12px; margin: 0; flex: 1; }
+.menu{ margin: 3px 0; }
+.menu-categories a{ display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px; color: #475569; text-decoration: none; font-size: 14px; font-weight: 500; }
+.menu-categories a i{ width: 20px; text-align: center; color: #94a3b8; }
+.menu-categories a:hover{ background: #f1f5f9; color: #002395; }
+.menu-categories a.active{ background: #002395; color: white!important; font-weight: 700; box-shadow: 0 6px 14px rgba(0,35,149,0.3); }
+.menu-categories a.active i{ color: white!important; }
+.label{ flex: 1; }
+.crud-badge{ font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px; }
+.crud-badge.crud{ background: #dbeafe; color: #002395; }
+.crud-badge.r{ background: #f1f5f9; color: #94a3b8; width: 20px; height: 20px; display: grid; place-items: center; padding: 0; }
+a.active .crud-badge.crud{ background: rgba(255,255,255,0.25); color: white; }
+a.active .crud-badge.r{ background: rgba(255,255,255,0.25); color: white; }
+.separator{ padding: 18px 14px 6px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+.sidebar-footer-admin{ margin: 12px; padding: 12px; background: #f8fafc; border-radius: 12px; display: flex; gap: 10px; align-items: center; border-left: 3px solid #ED2939; }
+.admin-avatar i{ font-size: 28px; color: #002395; }
+.admin-info small{ display: block; font-size: 11px; color: #94a3b8; }
+.admin-info strong{ display: block; font-size: 12px; color: #002395; }

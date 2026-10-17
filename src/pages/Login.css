@@ -1,0 +1,709 @@
+
+/* ==================================================
+   THEME SPAT — BLEU, BLANC, ROUGE
+   CLM — PAGE DE CONNEXION
+================================================== */
+
+:root {
+  --spat-bleu: #002395;
+  --spat-rouge: #ed2939;
+
+  --clm-bleu: #002395;
+  --clm-bleu-clair: #1e40af;
+  --clm-bleu-fonce: #001a70;
+
+  --clm-noir: #0f172a;
+  --clm-gris: #f8fafc;
+  --clm-blanc: #ffffff;
+  --clm-bordure: #e2e8f0;
+  --clm-texte-secondaire: #64748b;
+}
+
+/* ==================================================
+   PAGE PRINCIPALE
+================================================== */
+
+.auth-light-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  padding: 28px;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(0, 35, 149, 0.08),
+      transparent 35%
+    ),
+    linear-gradient(
+      180deg,
+      #f1f5f9 0%,
+      #e2e8f0 100%
+    );
+
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+/* ==================================================
+   CONTENEUR GLOBAL
+================================================== */
+
+.auth-light-shell {
+  width: min(920px, 100%);
+
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+
+  background: var(--clm-blanc);
+
+  border: 1px solid var(--clm-bordure);
+  border-radius: 28px;
+
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
+
+  overflow: hidden;
+}
+
+/* ==================================================
+   PARTIE GAUCHE — IDENTITÉ SPAT
+================================================== */
+
+.auth-light-left {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  padding: 40px 26px;
+
+  text-align: center;
+  color: var(--clm-blanc);
+
+  background: linear-gradient(
+    145deg,
+    var(--spat-bleu) 0%,
+    #001a70 100%
+  );
+}
+
+/* Bande rouge supérieure */
+
+.auth-light-left::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 6px;
+
+  background: var(--spat-rouge);
+}
+
+/* Bande rouge verticale */
+
+.auth-light-left::after {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 6px;
+
+  background: var(--spat-rouge);
+}
+
+/* ==================================================
+   LOGO ET IDENTITÉ SPAT
+================================================== */
+
+.auth-brand-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 20px;
+  max-width: 100%;
+}
+
+/* Cadre du logo */
+
+.brand-mark-spat {
+  width: 112px;
+  height: 112px;
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  box-sizing: border-box;
+  padding: 8px;
+
+  background: var(--clm-blanc);
+
+  border: 3px solid var(--clm-blanc);
+  border-radius: 22px;
+
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.18),
+    0 12px 30px rgba(0, 0, 0, 0.22);
+
+  overflow: hidden;
+}
+
+/* Image du logo */
+
+.brand-mark-spat img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+/* Texte SPAT */
+
+.auth-brand-mini small {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--clm-blanc);
+
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+/* Nom de la société */
+
+.auth-brand-mini strong {
+  display: block;
+
+  color: var(--clm-blanc);
+
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+/* Sous-titre CLM */
+
+.spat-subtitle {
+  margin: 12px 0 0;
+
+  color: rgba(255, 255, 255, 0.78);
+
+  font-size: 0.78rem;
+  line-height: 1.5;
+  letter-spacing: 0.07em;
+}
+
+/* ==================================================
+   PARTIE DROITE — ZONE DE CONNEXION
+================================================== */
+
+.auth-light-right {
+  width: 100%;
+  min-width: 0;
+  min-height: 540px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  padding: 34px 28px;
+
+  background: var(--clm-blanc);
+}
+
+/* ==================================================
+   CARTE DU FORMULAIRE
+================================================== */
+
+.auth-card-light {
+  width: 100%;
+  max-width: 430px;
+  min-width: 0;
+
+  box-sizing: border-box;
+  padding: 26px 24px;
+
+  background: var(--clm-gris);
+
+  border: 1px solid var(--clm-bordure);
+  border-radius: 22px;
+
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+/* ==================================================
+   BADGE ACCÈS SÉCURISÉ
+================================================== */
+
+.auth-topbar-light {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-bottom: 22px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 7px 12px;
+
+  color: var(--spat-bleu);
+  background: #dbeafe;
+
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-pill i {
+  font-size: 0.9rem;
+}
+
+/* ==================================================
+   EN-TÊTE DU FORMULAIRE
+================================================== */
+
+.auth-header-light {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 9px;
+  margin-bottom: 28px;
+
+  text-align: center;
+}
+
+.auth-header-light h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  margin: 0;
+
+  color: var(--clm-noir);
+
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.auth-header-light h2 i {
+  color: var(--spat-bleu);
+}
+
+.auth-header-light p {
+  margin: 0;
+
+  color: var(--clm-texte-secondaire);
+
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* ==================================================
+   FORMULAIRE
+================================================== */
+
+.auth-form-light {
+  display: flex;
+  flex-direction: column;
+
+  gap: 20px;
+}
+
+/* Conteneur de chaque champ */
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Libellés Matricule et Mot de passe */
+
+.auth-field > span {
+  color: #334155;
+
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+/* ==================================================
+   CHAMPS DE SAISIE
+================================================== */
+
+.auth-input-box {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+
+  box-sizing: border-box;
+  padding: 0 14px;
+
+  background: var(--clm-blanc);
+
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* Mise en évidence du champ actif */
+
+.auth-input-box:focus-within {
+  border-color: var(--spat-bleu);
+
+  box-shadow: 0 0 0 4px rgba(0, 35, 149, 0.10);
+}
+
+/* Icônes des champs */
+
+.auth-input-box > i {
+  flex-shrink: 0;
+
+  color: #64748b;
+  font-size: 1rem;
+
+  transition: color 0.2s ease;
+}
+
+.auth-input-box:focus-within > i {
+  color: var(--spat-bleu);
+}
+
+/* Texte saisi */
+
+.auth-input-box input {
+  flex: 1;
+
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+
+  box-sizing: border-box;
+  padding: 0;
+
+  border: none;
+  outline: none;
+
+  color: var(--clm-noir);
+  background: transparent;
+
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+/* Texte indicatif */
+
+.auth-input-box input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+/* ==================================================
+   MESSAGE D'ERREUR
+================================================== */
+
+.error-msg {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+  padding: 12px 14px;
+
+  color: #991b1b;
+  background: #fee2e2;
+
+  border: 1px solid #fecaca;
+  border-left: 4px solid var(--spat-rouge);
+  border-radius: 10px;
+
+  font-size: 0.86rem;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+.error-msg i {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ==================================================
+   BOUTON SE CONNECTER
+================================================== */
+
+.auth-submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+
+  box-sizing: border-box;
+  padding: 14px 18px;
+
+  color: var(--clm-blanc);
+  background: var(--spat-bleu);
+
+  border: 1px solid var(--spat-bleu);
+  border-radius: 12px;
+
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* Survol du bouton */
+
+.auth-submit-button:hover:not(:disabled) {
+  background: var(--clm-bleu-fonce);
+  border-color: var(--clm-bleu-fonce);
+
+  box-shadow: 0 8px 20px rgba(0, 35, 149, 0.22);
+
+  transform: translateY(-1px);
+}
+
+/* Clic sur le bouton */
+
+.auth-submit-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Navigation au clavier */
+
+.auth-submit-button:focus-visible {
+  outline: 3px solid rgba(0, 35, 149, 0.3);
+  outline-offset: 3px;
+}
+
+/* Pendant la connexion */
+
+.auth-submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==================================================
+   RESPONSIVE — TABLETTES
+================================================== */
+
+@media (max-width: 900px) {
+  .auth-light-shell {
+    grid-template-columns: 290px minmax(0, 1fr);
+  }
+
+  .auth-light-left {
+    padding: 34px 22px;
+  }
+
+  .auth-light-right {
+    padding: 28px 20px;
+  }
+
+  .auth-card-light {
+    padding: 24px 20px;
+  }
+
+  .auth-brand-mini strong {
+    font-size: 1rem;
+  }
+}
+
+/* ==================================================
+   RESPONSIVE — MOBILES
+================================================== */
+
+@media (max-width: 760px) {
+  .auth-light-page {
+    align-items: flex-start;
+    padding: 18px;
+  }
+
+  .auth-light-shell {
+    width: min(480px, 100%);
+
+    grid-template-columns: minmax(0, 1fr);
+
+    border-radius: 22px;
+  }
+
+  .auth-light-left {
+    padding: 28px 20px 30px;
+  }
+
+  /* Bande rouge horizontale sur mobile */
+
+  .auth-light-left::after {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 6px;
+  }
+
+  .auth-brand-mini {
+    gap: 14px;
+  }
+
+  .brand-mark-spat {
+    width: 82px;
+    height: 82px;
+
+    border-radius: 17px;
+  }
+
+  .auth-brand-mini strong {
+    font-size: 1rem;
+  }
+
+  .spat-subtitle {
+    margin-top: 8px;
+    font-size: 0.72rem;
+  }
+
+  .auth-light-right {
+    min-height: auto;
+    padding: 24px 18px;
+  }
+
+  .auth-card-light {
+    width: 100%;
+    max-width: 100%;
+
+    padding: 24px 20px;
+    border-radius: 18px;
+  }
+
+  .auth-header-light {
+    margin-bottom: 22px;
+  }
+
+  .auth-header-light h2 {
+    font-size: 1.45rem;
+  }
+
+  .auth-form-light {
+    gap: 18px;
+  }
+}
+
+/* ==================================================
+   RESPONSIVE — TRÈS PETITS ÉCRANS
+================================================== */
+
+@media (max-width: 380px) {
+  .auth-light-page {
+    padding: 10px;
+  }
+
+  .auth-light-shell {
+    border-radius: 16px;
+  }
+
+  .auth-light-left {
+    padding: 24px 16px;
+  }
+
+  .auth-light-right {
+    padding: 16px 10px;
+  }
+
+  .auth-card-light {
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+
+  .auth-topbar-light {
+    margin-bottom: 16px;
+  }
+
+  .auth-header-light h2 {
+    font-size: 1.3rem;
+  }
+
+  .auth-form-light {
+    gap: 16px;
+  }
+
+  .auth-input-box {
+    gap: 9px;
+    padding: 0 11px;
+  }
+
+  .auth-submit-button {
+    font-size: 0.92rem;
+  }
+}
+
+/* ==================================================
+   ACCESSIBILITÉ — LIMITER LES ANIMATIONS
+================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-input-box,
+  .auth-input-box > i,
+  .auth-submit-button {
+    transition: none;
+  }
+
+  .auth-submit-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
