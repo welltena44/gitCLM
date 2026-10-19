@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/authService.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useFeedback } from '../composants/FeedbackContext.jsx';
 import './Login.css';
 
 export default function Login() {
@@ -13,6 +14,7 @@ export default function Login() {
 
   const { loginUser } = useAuth();
   const navigate = useNavigate();
+  const { confirm, toast } = useFeedback();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +37,9 @@ export default function Login() {
       return;
     }
 
+    const proceed = await confirm({ title: 'Confirmer la connexion', message: `Vous allez ouvrir une session CLM avec le matricule ${matriculeNettoye}. Assurez-vous d’utiliser votre propre compte et de ne pas partager vos identifiants.`, confirmLabel: 'Confirmer et se connecter' });
+    if (!proceed) return;
+
     setLoading(true);
 
     try {
@@ -50,6 +55,7 @@ export default function Login() {
 
       loginUser(data);
       localStorage.setItem('user', JSON.stringify(data));
+      toast(`Bienvenue ${data.prenom || ''} ${data.nom || ''}.`.trim(), 'success', 'Connexion réussie');
 
       switch (data.role) {
         case 'ADMIN':
@@ -80,6 +86,7 @@ export default function Login() {
         'Échec de la connexion. Vérifiez votre matricule et votre mot de passe.';
 
       setError(message);
+      toast(message, 'error', 'Connexion refusée');
     } finally {
       setLoading(false);
     }

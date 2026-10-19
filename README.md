@@ -68,3 +68,17 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+## Navigation par rôle (version harmonisée)
+
+Le composant `src/layouts/Sidebar.jsx` affiche une navigation distincte selon le rôle enregistré (`ADMIN`, `GESTIONNAIRE`, `VALIDEUR`, `JURIDIQUE`). Les quatre layouts partagent la structure visuelle mais le contenu du menu est spécifique à chaque rôle. Les routes doivent exister dans `src/App.jsx` pour être accessibles.
+
+Important : masquer un lien dans le frontend ne sécurise pas une ressource. Les autorisations et le périmètre de chaque utilisateur doivent également être vérifiés côté backend Spring Security / contrôleurs / services.
+
+
+## Navigation par rôle
+
+Le composant `src/layouts/Sidebar.jsx` choisit les liens selon le rôle retourné à la connexion : `ADMIN`, `GESTIONNAIRE`, `VALIDEUR` ou `JURIDIQUE`. Chaque rôle possède son tableau de bord et ses propres routes dans `src/App.jsx`.
+
+Les pages de contrats, documents, avenants, notifications et certaines pages d'administration doivent encore être reliées aux endpoints réels du backend. Les liens masqués dans l'interface ne remplacent pas les contrôles d'autorisation Spring Boot.
