@@ -50,6 +50,7 @@ export default function App() {
               <Route path="validations" element={<ValidationsPage />} />
               <Route path="versions" element={<VersionsPage />} />
               <Route path="journaux" element={<JournauxPage />} />
+              <Route path="profil" element={<WorkspacePage />} />
             </Route>
           </Route>
           <Route element={<ProtectedRoute roles={["GESTIONNAIRE"]} />}>

@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./Sidebar.css";
@@ -80,25 +79,16 @@ const menus = {
   },
 };
 
-const roleLabels = { ADMIN: "Administrateur", GESTIONNAIRE: "Gestionnaire", VALIDEUR: "Valideur", JURIDIQUE: "Juridique / Achats" };
-
 export default function Sidebar({ isClosed = false, onNavigate }) {
   const { user } = useAuth();
-  const storedUser = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("utilisateur") || "{}"); }
-    catch { return {}; }
-  }, []);
-  const activeUser = user || storedUser;
-  const role = String(activeUser?.role || "ADMIN").toUpperCase();
+  const storedRole = (() => { try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("utilisateur") || "{}").role; } catch { return "ADMIN"; } })();
+  const role = String(user?.role || storedRole || "ADMIN").toUpperCase();
   const config = menus[role] || menus.ADMIN;
-  const fullName = [activeUser?.prenom, activeUser?.nom].filter(Boolean).join(" ") || roleLabels[role] || "Utilisateur";
-  const matricule = activeUser?.matricule || activeUser?.id || "";
-  const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join("") || "U";
 
   return (
     <aside className={`modernSidebar-nav ${isClosed ? "closed" : ""}`} aria-label={`Navigation ${config.title}`}>
       <NavLink to={config.home} className="sidebar-brand" onClick={onNavigate}>
-        <span className="brand-mark"><i className="fa-solid fa-anchor" aria-hidden="true" /></span>
+        <span className="brand-mark"><img src="/LogoSPAT.jpeg" alt="" /></span>
         <span className="brand-text"><small>SPAT</small><strong>CLM · {config.title}</strong><span className="brand-subtitle">{config.subtitle}</span></span>
       </NavLink>
       <nav aria-label="Menu principal">
@@ -119,13 +109,6 @@ export default function Sidebar({ isClosed = false, onNavigate }) {
           ))}
         </ul>
       </nav>
-      <div className="sidebar-user">
-        <div className="sidebar-user-heading"><span className="status-indicator" /> SESSION ACTIVE</div>
-        <div className="sidebar-user-profile">
-          <div className="admin-avatar" aria-hidden="true">{initials}</div>
-          <div className="admin-info"><span className="admin-name" title={fullName}>{fullName}</span><span className="admin-label">{roleLabels[role] || role}</span>{matricule && <span className="admin-matricule">Matricule : {matricule}</span>}</div>
-        </div>
-      </div>
       <div className="sidebar-bottom"><span className="sidebar-bottom-line" /><small>SPAT · CLM sécurisé</small></div>
     </aside>
   );

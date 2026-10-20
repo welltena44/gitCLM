@@ -16,18 +16,6 @@ const date = (value) =>
         "fr-FR",
       )
     : "—";
-const statuses = [
-  "BROUILLON",
-  "EN_ATTENTE",
-  "EN_VALIDATION",
-  "VALIDE",
-  "APPROUVE",
-  "ACTIF",
-  "REJETE",
-  "EXPIRE",
-  "RESILIE",
-  "ARCHIVE",
-];
 const statusLabel = (s) =>
   ({
     BROUILLON: "Brouillon",
@@ -98,14 +86,21 @@ export function ContractsPage() {
     [status, setStatus] = useState(""),
     [typeId, setTypeId] = useState(""),
     [service, setService] = useState(""),
+    [responsableId, setResponsableId] = useState(""),
     [start, setStart] = useState(""),
     [end, setEnd] = useState(""),
+    [signatureStart, setSignatureStart] = useState(""),
+    [signatureEnd, setSignatureEnd] = useState(""),
     [sort, setSort] = useState("dateModification"),
+    [sortDirection, setSortDirection] = useState("desc"),
     [page, setPage] = useState(1),
     [pageSize, setPageSize] = useState(10);
+  const [applied, setApplied] = useState({ q: "", status: "", typeId: "", service: "", responsableId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+  const [parties, setParties] = useState([]),
+    [users, setUsers] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const { id } = useParams();
   const nav = useNavigate();
-  const { user } = useAuth();
   const { toast, confirm } = useFeedback();
   const reload = useCallback(async () => {
     setLoading(true);
@@ -115,8 +110,14 @@ export function ContractsPage() {
         svc.getContracts(),
         svc.getContractTypes(),
       ]);
+      const [partiesResult, usersResult] = await Promise.allSettled([
+        api.get("/parties-contrat").then((r) => r.data),
+        api.get("/utilisateurs").then((r) => r.data),
+      ]);
       setContracts(Array.isArray(cs) ? cs : []);
       setTypes(Array.isArray(ts) ? ts : []);
+      setParties(partiesResult.status === "fulfilled" && Array.isArray(partiesResult.value) ? partiesResult.value : []);
+      setUsers(usersResult.status === "fulfilled" && Array.isArray(usersResult.value) ? usersResult.value : []);
     } catch (e) {
       setError(errMessage(e));
     } finally {
@@ -135,39 +136,43 @@ export function ContractsPage() {
     [contracts],
   );
   const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase();
+    const term = applied.q.trim().toLowerCase();
     return contracts
       .filter((c) => {
         const text = [
           c.reference,
           c.objet,
+          types.find((t) => String(t.id) === String(c.typeId))?.nom,
           c.description,
           c.service,
           c.responsableNom,
-          c.partenaire,
+          users.find((u) => String(u.id) === String(c.responsableId))?.nom,
+          ...parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom),
         ]
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
         return (
           (!term || text.includes(term)) &&
-          (!status || c.statut === status) &&
-          (!typeId || String(c.typeId) === typeId) &&
-          (!service || c.service === service) &&
-          (!start || String(c.dateFin || "") >= start) &&
-          (!end || String(c.dateFin || "") <= end)
+          (!applied.status || c.statut === applied.status) &&
+          (!applied.typeId || String(c.typeId) === applied.typeId) &&
+          (!applied.service || c.service === applied.service) &&
+          (!applied.responsableId || String(c.responsableId) === applied.responsableId) &&
+          (!applied.start || String(c.dateFin || "") >= applied.start) &&
+          (!applied.end || String(c.dateFin || "") <= applied.end) &&
+          (!applied.signatureStart || String(c.dateSignature || "") >= applied.signatureStart) &&
+          (!applied.signatureEnd || String(c.dateSignature || "") <= applied.signatureEnd)
         );
       })
       .sort((a, b) => {
-        const x = a[sort] ?? "",
-          y = b[sort] ?? "";
-        return String(y).localeCompare(String(x), undefined, { numeric: true });
+        const x = a[applied.sort] ?? "",
+          y = b[applied.sort] ?? "";
+        const order = applied.sort === "montant"
+          ? Number(x) - Number(y)
+          : String(x).localeCompare(String(y), undefined, { numeric: true });
+        return applied.sortDirection === "asc" ? order : -order;
       });
-  }, [contracts, q, status, typeId, service, start, end, sort]);
-  useEffect(
-    () => setPage(1),
-    [q, status, typeId, service, start, end, pageSize],
-  );
+  }, [contracts, parties, users, types, applied]);
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
   const remove = async (c) => {
@@ -195,9 +200,19 @@ export function ContractsPage() {
     setStatus("");
     setTypeId("");
     setService("");
+    setResponsableId("");
     setStart("");
     setEnd("");
+    setSignatureStart("");
+    setSignatureEnd("");
     setSort("dateModification");
+    setSortDirection("desc");
+    setApplied({ q: "", status: "", typeId: "", service: "", responsableId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+    setPage(1);
+  };
+  const applyFilters = () => {
+    setApplied({ q, status, typeId, service, responsableId, start, end, signatureStart, signatureEnd, sort, sortDirection });
+    setPage(1);
   };
   const exportCsv = () => {
     const cols = [
@@ -211,7 +226,7 @@ export function ContractsPage() {
       "dateDebut",
       "dateFin",
     ];
-    const esc = (v) => `\"${String(v ?? "").replaceAll('\"', '\"\"')}\"`;
+    const esc = (v) => `"${String(v ?? "").replaceAll('"', '""')}"`;
     const csv = [
       cols.join(";"),
       ...filtered.map((c) => cols.map((k) => esc(c[k])).join(";")),
@@ -226,13 +241,11 @@ export function ContractsPage() {
     URL.revokeObjectURL(url);
     toast("Export CSV généré à partir des résultats filtrés.");
   };
-  if (id && selected)
-    return <ContractDetails contract={selected} onRefresh={reload} />;
   return (
     <div className="mgr-page">
       <div className="mgr-page-head">
         <div>
-          <h2>Portefeuille des contrats</h2>
+          <h2>Mes contrats</h2>
           <p>Recherchez, filtrez et suivez les contrats de votre périmètre.</p>
         </div>
         <PageActions>
@@ -319,7 +332,7 @@ export function ContractsPage() {
             <span>Statut</span>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="">Tous les statuts</option>
-              {statuses.map((s) => (
+              {[...new Set(contracts.map((c) => c.statut).filter(Boolean))].sort().map((s) => (
                 <option key={s} value={s}>
                   {statusLabel(s)}
                 </option>
@@ -350,7 +363,22 @@ export function ContractsPage() {
             </select>
           </label>
           <label className="mgr-field">
-            <span>Échéance à partir du</span>
+            <span>Responsable</span>
+            <select value={responsableId} onChange={(e) => setResponsableId(e.target.value)}>
+              <option value="">Tous les responsables</option>
+              {[...new Map(users.filter((u) => contracts.some((c) => String(c.responsableId) === String(u.id))).map((u) => [u.id, u])).values()].map((u) => <option key={u.id} value={u.id}>{[u.prenom, u.nom].filter(Boolean).join(" ") || `Responsable #${u.id}`}</option>)}
+            </select>
+          </label>
+          <label className="mgr-field">
+            <span>Signature à partir du</span>
+            <input type="date" value={signatureStart} onChange={(e) => setSignatureStart(e.target.value)} />
+          </label>
+          <label className="mgr-field">
+            <span>Signature jusqu’au</span>
+            <input type="date" value={signatureEnd} onChange={(e) => setSignatureEnd(e.target.value)} />
+          </label>
+          <label className="mgr-field">
+            <span>Fin à partir du</span>
             <input
               type="date"
               value={start}
@@ -358,7 +386,7 @@ export function ContractsPage() {
             />
           </label>
           <label className="mgr-field">
-            <span>Échéance jusqu’au</span>
+            <span>Fin jusqu’au</span>
             <input
               type="date"
               value={end}
@@ -370,18 +398,28 @@ export function ContractsPage() {
             <select value={sort} onChange={(e) => setSort(e.target.value)}>
               <option value="dateModification">Dernière modification</option>
               <option value="dateCreation">Date de création</option>
-              <option value="dateFin">Date d’échéance</option>
+              <option value="dateFin">Date de fin</option>
               <option value="reference">Référence</option>
               <option value="montant">Montant</option>
             </select>
           </label>
+          <label className="mgr-field">
+            <span>Ordre</span>
+            <select value={sortDirection} onChange={(e) => setSortDirection(e.target.value)}>
+              <option value="desc">Décroissant</option>
+              <option value="asc">Croissant</option>
+            </select>
+          </label>
+          <div className="mgr-filter-actions">
+            <Button onClick={applyFilters}><i className="fa-solid fa-filter" /> Appliquer</Button>
+          </div>
         </div>
       </section>
       <section className="mgr-panel">
         <div className="mgr-panel-title">
           <div>
             <h3>Résultats</h3>
-            <p>{filtered.length} contrat(s) correspondant à votre recherche</p>
+              <p>{filtered.length} contrat(s) correspondant à votre recherche{selectedIds.length ? ` · ${selectedIds.length} sélectionné(s)` : ""}</p>
           </div>
           <label className="mgr-page-size">
             Lignes{" "}
@@ -406,17 +444,21 @@ export function ContractsPage() {
               <table className="mgr-table">
                 <thead>
                   <tr>
-                    <th>Contrat</th>
-                    <th>Type / service</th>
+                    <th><input aria-label="Sélectionner les contrats de cette page" type="checkbox" checked={visible.length > 0 && visible.every((c) => selectedIds.includes(c.id))} onChange={(e) => setSelectedIds((ids) => e.target.checked ? [...new Set([...ids, ...visible.map((c) => c.id)])] : ids.filter((id) => !visible.some((c) => c.id === id)))} /></th>
+                    <th>Référence / objet</th>
+                    <th>Type</th>
+                    <th>Partenaire</th>
                     <th>Montant</th>
-                    <th>Dates</th>
+                    <th>Signature / fin</th>
                     <th>Statut</th>
+                    <th>Service / responsable</th>
                     <th className="actions-col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visible.map((c) => (
                     <tr key={c.id}>
+                      <td><input aria-label={`Sélectionner ${c.reference || c.objet}`} type="checkbox" checked={selectedIds.includes(c.id)} onChange={(e) => setSelectedIds((ids) => e.target.checked ? [...ids, c.id] : ids.filter((selectedId) => selectedId !== c.id))} /></td>
                       <td>
                         <button
                           className="mgr-contract-link"
@@ -428,24 +470,24 @@ export function ContractsPage() {
                         <small>Créé le {date(c.dateCreation)}</small>
                       </td>
                       <td>
-                        <span>
-                          {types.find((t) => String(t.id) === String(c.typeId))
-                            ?.nom ||
-                            types.find((t) => String(t.id) === String(c.typeId))
-                              ?.libelle ||
-                            `Type #${c.typeId || "—"}`}
-                        </span>
-                        <small>{c.service || "Service non renseigné"}</small>
+                        <span>{types.find((t) => String(t.id) === String(c.typeId))?.nom || `Type #${c.typeId || "—"}`}</span>
+                      </td>
+                      <td>
+                        {(parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom).join(", ")) || "—"}
                       </td>
                       <td>{money(c.montant, c.devise)}</td>
                       <td>
-                        <small>Début : {date(c.dateDebut)}</small>
+                        <small>Signature : {date(c.dateSignature)}</small>
                         <small>Fin : {date(c.dateFin)}</small>
                       </td>
                       <td>
                         <span className={`mgr-status ${statusClass(c.statut)}`}>
                           {statusLabel(c.statut)}
                         </span>
+                      </td>
+                      <td>
+                        <span>{c.service || "—"}</span>
+                        <small>{[users.find((u) => String(u.id) === String(c.responsableId))?.prenom, users.find((u) => String(u.id) === String(c.responsableId))?.nom].filter(Boolean).join(" ") || c.responsableNom || (c.responsableId ? `Responsable #${c.responsableId}` : "—")}</small>
                       </td>
                       <td>
                         <div className="mgr-row-actions">
@@ -508,11 +550,16 @@ export function ContractsPage() {
           </>
         )}
       </section>
+      {id && selected && <div className="mgr-detail-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) nav("/gestionnaire/contrats"); }}>
+        <aside className="mgr-detail-drawer" role="dialog" aria-modal="true" aria-label={`Détail du contrat ${selected.reference || selected.id}`}>
+          <ContractDetails contract={selected} onRefresh={reload} types={types} users={users} />
+        </aside>
+      </div>}
     </div>
   );
 }
 
-function ContractDetails({ contract: c, onRefresh }) {
+function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
   const nav = useNavigate();
   const { user } = useAuth();
   const { toast, confirm } = useFeedback();
@@ -521,7 +568,10 @@ function ContractDetails({ contract: c, onRefresh }) {
     [parties, setParties] = useState([]),
     [amendments, setAmendments] = useState([]),
     [validations, setValidations] = useState([]),
+    [docsLoading, setDocsLoading] = useState(true),
+    [docsError, setDocsError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState(null);
   const [partyForm, setPartyForm] = useState({
     nom: "",
     type: "COCONTRACTANT",
@@ -539,6 +589,8 @@ function ContractDetails({ contract: c, onRefresh }) {
     dateFinApres: "",
   });
   const load = useCallback(async () => {
+    setDocsLoading(true);
+    setDocsError("");
     try {
       const [d, p, a, v] = await Promise.all([
         svc.getDocuments(c.id),
@@ -551,7 +603,10 @@ function ContractDetails({ contract: c, onRefresh }) {
       setAmendments(a || []);
       setValidations(v || []);
     } catch (e) {
+      setDocsError(errMessage(e));
       toast(errMessage(e), "error");
+    } finally {
+      setDocsLoading(false);
     }
   }, [c.id, toast]);
   useEffect(() => {
@@ -586,6 +641,23 @@ function ContractDetails({ contract: c, onRefresh }) {
       a.download = d.nomFichier || `document-${d.id}`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch (e) {
+      toast(errMessage(e), "error");
+    }
+  };
+  const openDocument = async (d) => {
+    try {
+      const blob = await svc.downloadDocument(d.id);
+      const extension = (d.type || d.nomFichier || "").toLowerCase();
+      const imageType = extension.match(/(?:image\/)?(png|jpe?g|gif|webp)|\.(png|jpe?g|gif|webp)$/)?.[1];
+      const mime = extension.includes("pdf") ? "application/pdf"
+        : imageType ? `image/${imageType.replace("jpg", "jpeg")}`
+          : "application/octet-stream";
+      const url = URL.createObjectURL(new Blob([blob], { type: mime }));
+      setPreview((previous) => {
+        if (previous?.url) URL.revokeObjectURL(previous.url);
+        return { url, mime, name: d.nomFichier || "Document" };
+      });
     } catch (e) {
       toast(errMessage(e), "error");
     }
@@ -761,8 +833,8 @@ function ContractDetails({ contract: c, onRefresh }) {
               ["Référence", c.reference],
               ["Objet", c.objet],
               ["Description", c.description],
-              ["Type", c.typeId],
-              ["Responsable (ID)", c.responsableId],
+              ["Type", types.find((t) => String(t.id) === String(c.typeId))?.nom || (c.typeId ? `Type #${c.typeId}` : "—")],
+              ["Responsable", (() => { const person = users.find((u) => String(u.id) === String(c.responsableId)); return [person?.prenom, person?.nom].filter(Boolean).join(" ") || c.responsableNom || (c.responsableId ? `Responsable #${c.responsableId}` : "—"); })()],
               ["Service", c.service],
               ["Date de signature", date(c.dateSignature)],
               ["Date de début", date(c.dateDebut)],
@@ -799,7 +871,11 @@ function ContractDetails({ contract: c, onRefresh }) {
               <input type="file" onChange={upload} disabled={busy} />
             </label>
           </div>
-          {docs.length === 0 ? (
+          {docsLoading ? (
+            <LoadingOrEmpty loading />
+          ) : docsError ? (
+            <div className="mgr-inline-error">{docsError}</div>
+          ) : docs.length === 0 ? (
             <LoadingOrEmpty empty />
           ) : (
             <div className="mgr-list">
@@ -816,6 +892,9 @@ function ContractDetails({ contract: c, onRefresh }) {
                     </small>
                   </div>
                   <PageActions>
+                    <Button variant="secondary" onClick={() => openDocument(d)}>
+                      <i className="fa-regular fa-eye" /> Ouvrir
+                    </Button>
                     <Button variant="secondary" onClick={() => download(d)}>
                       <i className="fa-solid fa-download" /> Télécharger
                     </Button>
@@ -1057,6 +1136,16 @@ function ContractDetails({ contract: c, onRefresh }) {
           )}
         </section>
       )}
+      {preview && <div className="mgr-preview-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) { URL.revokeObjectURL(preview.url); setPreview(null); } }}>
+        <section className="mgr-preview-dialog" role="dialog" aria-modal="true" aria-label={`Aperçu : ${preview.name}`}>
+          <header><strong>{preview.name}</strong><div className="mgr-actions">
+            <a className="mgr-btn secondary" href={preview.url} target="_blank" rel="noreferrer"><i className="fa-solid fa-arrow-up-right-from-square" /> Ouvrir dans un nouvel onglet</a>
+            <a className="mgr-btn secondary" href={preview.url} download={preview.name}><i className="fa-solid fa-download" /> Télécharger</a>
+            <button className="mgr-preview-close" onClick={() => { URL.revokeObjectURL(preview.url); setPreview(null); }} aria-label="Fermer l’aperçu">×</button>
+          </div></header>
+          {preview.mime === "application/pdf" ? <iframe title={`Aperçu ${preview.name}`} src={preview.url} /> : preview.mime.startsWith("image/") ? <img src={preview.url} alt={preview.name} /> : <div className="mgr-state">L’aperçu intégré est disponible pour les PDF et les images.</div>}
+        </section>
+      </div>}
     </div>
   );
 }
@@ -1396,7 +1485,6 @@ export function ManagerValidationsPage() {
     [filter, setFilter] = useState(""),
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
-  const { toast } = useFeedback();
   const load = useCallback(async () => {
     setLoading(true);
     try {

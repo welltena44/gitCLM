@@ -218,7 +218,7 @@ export default function Login() {
                 {loading ? 'Connexion en cours...' : 'Se connecter'}
               </button>
               <p style={{ textAlign: 'right', margin: 0 }}>
-                <Link to="/forgot-password" style={{ color: '#002395', fontSize: 13 }}>Mot de passe oublié ?</Link>
+                <Link to="/forgot-password" style={{ color: '#168bd2', fontSize: 13 }}>Mot de passe oublié ?</Link>
               </p>
             </form>
           </div>

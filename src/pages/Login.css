@@ -5,12 +5,12 @@
 ================================================== */
 
 :root {
-  --spat-bleu: #002395;
+  --spat-bleu: #168bd2;
   --spat-rouge: #ed2939;
 
-  --clm-bleu: #002395;
+  --clm-bleu: #168bd2;
   --clm-bleu-clair: #1e40af;
-  --clm-bleu-fonce: #001a70;
+  --clm-bleu-fonce: #0b6aa8;
 
   --clm-noir: #0f172a;
   --clm-gris: #f8fafc;
@@ -38,7 +38,7 @@
   background:
     radial-gradient(
       circle at top left,
-      rgba(0, 35, 149, 0.08),
+      rgba(22, 139, 210, 0.08),
       transparent 35%
     ),
     linear-gradient(
@@ -90,7 +90,7 @@
   background: linear-gradient(
     145deg,
     var(--spat-bleu) 0%,
-    #001a70 100%
+    #0b6aa8 100%
   );
 }
 
@@ -391,7 +391,7 @@
 .auth-input-box:focus-within {
   border-color: var(--spat-bleu);
 
-  box-shadow: 0 0 0 4px rgba(0, 35, 149, 0.10);
+  box-shadow: 0 0 0 4px rgba(22, 139, 210, 0.10);
 }
 
 /* Icônes des champs */
@@ -509,7 +509,7 @@
   background: var(--clm-bleu-fonce);
   border-color: var(--clm-bleu-fonce);
 
-  box-shadow: 0 8px 20px rgba(0, 35, 149, 0.22);
+  box-shadow: 0 8px 20px rgba(22, 139, 210, 0.22);
 
   transform: translateY(-1px);
 }
@@ -524,7 +524,7 @@
 /* Navigation au clavier */
 
 .auth-submit-button:focus-visible {
-  outline: 3px solid rgba(0, 35, 149, 0.3);
+  outline: 3px solid rgba(22, 139, 210, 0.3);
   outline-offset: 3px;
 }
 

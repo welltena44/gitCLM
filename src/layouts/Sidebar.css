@@ -1,8 +1,8 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');
 
 :root {
-  --spat-blue: #002395;
-  --spat-blue-dark: #001a70;
+  --spat-blue: #168bd2;
+  --spat-blue-dark: #0b6aa8;
   --spat-red: #ed2939;
   --clm-bg: #f4f6fb;
   --clm-text: #172033;
@@ -64,7 +64,7 @@
   background: var(--spat-blue);
   outline: 2px solid var(--spat-blue);
   outline-offset: 2px;
-  box-shadow: 0 5px 14px rgba(0, 35, 149, .18);
+  box-shadow: 0 5px 14px rgba(22, 139, 210, .18);
 }
 .brand-mark::after {
   content: "";
@@ -77,6 +77,8 @@
   background: var(--spat-red);
 }
 .brand-mark i { font-size: 19px; }
+.brand-mark { overflow: hidden; padding: 3px; background: #fff; outline-color: var(--spat-blue); }
+.brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 9px; }
 .brand-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .brand-text small { color: var(--spat-blue); font-size: 11px; font-weight: 900; letter-spacing: 2.5px; }
 .brand-text strong { color: #111c35; font-size: 15px; font-weight: 850; line-height: 1.25; }
@@ -106,7 +108,7 @@
 .menu-categories a > i { width: 20px; min-width: 20px; text-align: center; color: #91a0b7; font-size: 15px; }
 .menu-categories a:hover { color: var(--spat-blue); background: #f0f4ff; }
 .menu-categories a:hover > i { color: var(--spat-blue); }
-.menu-categories a.active { color: #fff; background: var(--spat-blue); box-shadow: 0 5px 13px rgba(0, 35, 149, .18); font-weight: 750; }
+.menu-categories a.active { color: #fff; background: var(--spat-blue); box-shadow: 0 5px 13px rgba(22, 139, 210, .18); font-weight: 750; }
 .menu-categories a.active > i { color: #fff; }
 .label { flex: 1; min-width: 0; }
 
@@ -145,7 +147,7 @@
 .sidebar-mobile-backdrop { display: none; }
 
 .menu-categories a:focus-visible, .sidebar-brand:focus-visible {
-  outline: 3px solid rgba(0, 35, 149, .25);
+  outline: 3px solid rgba(22, 139, 210, .25);
   outline-offset: 2px;
 }
 
@@ -173,4 +175,4 @@
 .sidebar-bottom { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding: 0 18px 14px; }
 .sidebar-bottom-line { width: 20px; height: 3px; border-radius: 3px; background: linear-gradient(to right, var(--spat-blue) 0 50%, var(--spat-red) 50% 100%); }
 .sidebar-bottom small { color: #9aa5b5; font-size: 9px; font-weight: 650; }
-.sidebar-brand:focus-visible { outline: 3px solid rgba(0, 35, 149, .25); outline-offset: 2px; }
+.sidebar-brand:focus-visible { outline: 3px solid rgba(22, 139, 210, .25); outline-offset: 2px; }
