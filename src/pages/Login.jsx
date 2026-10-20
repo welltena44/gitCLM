@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../services/authService.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useFeedback } from '../composants/FeedbackContext.jsx';
+import { Link } from 'react-router-dom';
 import './Login.css';
 
 export default function Login() {
@@ -56,6 +57,11 @@ export default function Login() {
       loginUser(data);
       localStorage.setItem('user', JSON.stringify(data));
       toast(`Bienvenue ${data.prenom || ''} ${data.nom || ''}.`.trim(), 'success', 'Connexion réussie');
+
+      if (data.changementMotDePasseRequis) {
+        navigate('/change-password', { replace: true });
+        return;
+      }
 
       switch (data.role) {
         case 'ADMIN':
@@ -211,6 +217,9 @@ export default function Login() {
                 />{' '}
                 {loading ? 'Connexion en cours...' : 'Se connecter'}
               </button>
+              <p style={{ textAlign: 'right', margin: 0 }}>
+                <Link to="/forgot-password" style={{ color: '#002395', fontSize: 13 }}>Mot de passe oublié ?</Link>
+              </p>
             </form>
           </div>
         </main>

@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import "./DashboardAdmin.css";
+import "./Users.css";
 
 const API_URL = "http://localhost:8080/api/utilisateurs";
 
@@ -51,7 +52,7 @@ async function readError(response) {
 
   try {
     const data = JSON.parse(text);
-    return data.message || data.error || text;
+    return data.message || data.detail || data.error || text;
   } catch {
     return text;
   }
@@ -107,7 +108,7 @@ export default function Users() {
     setForm({ ...initialFormState });
     setEditingId(null);
     setIsEditing(false);
-    setFeedback({ type: "", message: "" });
+    showNotification("info", "Création utilisateur : renseignez les informations du compte.");
     setShowModal(true);
   };
 
@@ -126,7 +127,7 @@ export default function Users() {
     });
 
     setIsEditing(true);
-    setFeedback({ type: "", message: "" });
+    showNotification("info", "Modification utilisateur : vérifiez les informations avant d’enregistrer.");
     setShowModal(true);
   };
 
@@ -136,7 +137,12 @@ export default function Users() {
     if (saving) return;
 
     setSaving(true);
-    setFeedback({ type: "", message: "" });
+    setFeedback({
+      type: "info",
+      message: isEditing
+        ? "Modification en cours, notification e-mail en préparation…"
+        : "Création en cours, e-mail de bienvenue en préparation…",
+    });
 
     try {
       const matriculeText = String(form.matricule).trim();
@@ -167,12 +173,6 @@ export default function Users() {
       ) {
         throw new Error(
           "Le matricule doit être un entier positif valide."
-        );
-      }
-
-      if (!isEditing && !motDePasse.trim()) {
-        throw new Error(
-          "Le mot de passe est obligatoire pour créer un compte."
         );
       }
 
@@ -215,8 +215,8 @@ export default function Users() {
       showNotification(
         "success",
         isEditing
-          ? "Utilisateur modifié avec succès."
-          : "Utilisateur créé avec succès."
+          ? "Utilisateur modifié. La notification e-mail est envoyée si le serveur mail est disponible."
+          : "Utilisateur créé. L’e-mail de bienvenue est envoyé si le serveur mail est disponible."
       );
 
       try {
@@ -244,7 +244,10 @@ export default function Users() {
     if (!confirmation) return;
 
     setDeletingId(id);
-    setFeedback({ type: "", message: "" });
+    setFeedback({
+      type: "info",
+      message: "Suppression en cours, e-mail de notification en préparation…",
+    });
 
     try {
       const response = await fetch(
@@ -267,7 +270,7 @@ export default function Users() {
 
       showNotification(
         "success",
-        "Utilisateur supprimé avec succès."
+        "Utilisateur supprimé et e-mail de notification envoyé."
       );
 
       try {
@@ -301,7 +304,7 @@ export default function Users() {
   );
 
   return (
-    <div className="admin-home">
+    <div className="admin-home users-page">
       <div
         style={{
           display: "flex",
@@ -335,26 +338,15 @@ export default function Users() {
       {feedback.message && (
         <div
           role="status"
-          style={{
-            marginTop: "15px",
-            padding: "12px 16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-            fontWeight: "500",
-            background:
-              feedback.type === "success" ? "#dcfce7" : "#fee2e2",
-            color:
-              feedback.type === "success" ? "#166534" : "#991b1b",
-            border: `1px solid ${
-              feedback.type === "success" ? "#bbf7d0" : "#fecaca"
-            }`,
-          }}
+          className={`users-feedback ${feedback.type}`}
         >
           <i
             className={`fa-solid ${
               feedback.type === "success"
                 ? "fa-circle-check"
-                : "fa-triangle-exclamation"
+                : feedback.type === "info"
+                  ? "fa-circle-info"
+                  : "fa-triangle-exclamation"
             }`}
             style={{ marginRight: "8px" }}
           />
@@ -362,18 +354,7 @@ export default function Users() {
         </div>
       )}
 
-      <div
-        style={{
-          marginTop: "20px",
-          display: "flex",
-          alignItems: "center",
-          background: "white",
-          padding: "10px 16px",
-          borderRadius: "10px",
-          border: "1px solid #e2e8f0",
-          gap: "10px",
-        }}
-      >
+        <div className="users-search">
         <i
           className="fa-solid fa-magnifying-glass"
           style={{ color: "#94a3b8" }}
@@ -411,19 +392,10 @@ export default function Users() {
       </div>
 
       <div
-        className="stat-card"
-        style={{
-          marginTop: "20px",
-          padding: "0",
-          overflowX: "auto",
-        }}
+          className="stat-card users-table-card"
       >
         <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            minWidth: "800px",
-          }}
+          className="users-table"
         >
           <thead>
             <tr style={{ background: "#f8fafc", textAlign: "left" }}>
@@ -583,28 +555,11 @@ export default function Users() {
 
       {showModal && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: "16px",
-          }}
+          className="users-modal-backdrop"
         >
           <form
             onSubmit={handleSubmit}
-            style={{
-              background: "white",
-              padding: "24px",
-              borderRadius: "16px",
-              width: "450px",
-              maxWidth: "100%",
-              maxHeight: "90vh",
-              overflowY: "auto",
-            }}
+            className="users-modal"
           >
             <h3 style={{ marginBottom: "16px" }}>
               {isEditing
@@ -664,27 +619,19 @@ export default function Users() {
               style={inputStyle}
             />
 
-            <label style={labelStyle}>
-              Mot de passe *
-              {isEditing &&
-                " (laisser vide pour conserver le mot de passe actuel)"}
-            </label>
-            <input
-              type="password"
-              placeholder={
-                isEditing
-                  ? "Nouveau mot de passe (facultatif)"
-                  : "Mot de passe provisoire"
-              }
-              value={form.motDePasse}
-              onChange={(event) =>
-                setForm({ ...form, motDePasse: event.target.value })
-              }
-              required={!isEditing}
-              disabled={saving}
-              autoComplete="new-password"
-              style={inputStyle}
-            />
+            {isEditing ? (
+              <>
+                <label style={labelStyle}>Réinitialiser le mot de passe</label>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.motDePasse)}
+                  onChange={(event) => setForm({ ...form, motDePasse: event.target.checked ? "reset" : "" })}
+                  disabled={saving}
+                  style={{ ...inputStyle, width: "18px" }}
+                />
+                <small style={{ display: "block", marginBottom: 12 }}>Un mot de passe provisoire de 8 caractères sera envoyé par e-mail.</small>
+              </>
+            ) : <p>Un mot de passe provisoire de 8 caractères sera généré et envoyé par e-mail.</p>}
 
             <label style={labelStyle}>Rôle *</label>
             <select

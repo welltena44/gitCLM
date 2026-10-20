@@ -27,6 +27,8 @@ import ManagerDocumentsPage from "./pages/gestionnaire/Documents.jsx";
 import ManagerNotificationsPage from "./pages/gestionnaire/Notifications.jsx";
 import ManagerProfilePage from "./pages/gestionnaire/Profile.jsx";
 import ManagerDeadlinesPage from "./pages/gestionnaire/Deadlines.jsx";
+import ChangePassword from "./pages/ChangePassword.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 
 export default function App() {
   return (
@@ -35,6 +37,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<DashboardAdmin />} />

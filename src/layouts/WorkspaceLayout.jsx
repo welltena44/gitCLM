@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import "./WorkspaceLayout.css";
 import { useFeedback } from "../composants/FeedbackContext.jsx";
 import api from "../services/api.js";
+import PasswordResetRequestsPopup from "../composants/PasswordResetRequestsPopup.jsx";
 
 const pageTitles = {
   "/admin": ["Tableau de bord", "Vue d’ensemble de l’activité CLM"],
@@ -51,6 +52,8 @@ export default function WorkspaceLayout() {
   const navigate = useNavigate();
   const { confirm, toast } = useFeedback();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [passwordResetCount, setPasswordResetCount] = useState(0);
+  const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [latestNotifications, setLatestNotifications] = useState([]);
   const location = useLocation();
@@ -77,6 +80,7 @@ export default function WorkspaceLayout() {
     if (!activeUser?.id) return;
     try { const { data } = await api.get(`/notifications/user/${activeUser.id}`); const list = Array.isArray(data) ? data : []; setLatestNotifications(list.filter(n => !n.lu).slice(0, 5)); setUnreadCount(list.filter(n => !n.lu).length); } catch { /* Le bandeau ne doit pas bloquer l’espace de travail si l’API de notifications est indisponible. */ }
   }, [activeUser?.id]);
+  const updatePasswordResetCount = useCallback((count) => setPasswordResetCount(count), []);
   useEffect(() => { loadNotifications(); const timer = window.setInterval(loadNotifications, 60000); return () => window.clearInterval(timer); }, [loadNotifications]);
   const openNotifications = async () => { setNotificationOpen(v => !v); await loadNotifications(); };
 
@@ -84,6 +88,7 @@ export default function WorkspaceLayout() {
     <div className="clm-layout">
       <Sidebar isClosed={menuClosed} onNavigate={() => { if (window.innerWidth <= 800) setMenuClosed(true); }} />
       <main className="clm-main">
+        {role === "ADMIN" && <PasswordResetRequestsPopup adminId={activeUser?.id} open={passwordResetOpen} onClose={() => setPasswordResetOpen(false)} onCountChange={updatePasswordResetCount} />}
         <header className="clm-topbar">
           <button type="button" className="clm-menu-toggle" onClick={() => setMenuClosed(v => !v)} aria-label={menuClosed ? "Ouvrir le menu" : "Fermer le menu"}>
             <i className={`fa-solid ${menuClosed ? "fa-bars" : "fa-bars-staggered"}`} aria-hidden="true" />
@@ -93,7 +98,7 @@ export default function WorkspaceLayout() {
             <strong>{page[0]}</strong>
           </div>
           <div className="clm-topbar-actions">
-            <div className="clm-notification-wrap"><button type="button" className="clm-notification-bell" onClick={openNotifications} aria-label="Afficher les notifications"><i className="fa-regular fa-bell" />{unreadCount > 0 && <span>{unreadCount > 99 ? "99+" : unreadCount}</span>}</button>{notificationOpen && <div className="clm-notification-popover"><div className="clm-notification-popover-head"><strong>Notifications non lues</strong><button onClick={() => setNotificationOpen(false)} aria-label="Fermer">×</button></div>{latestNotifications.length ? latestNotifications.map(n => <button className="clm-notification-item" key={n.id} onClick={() => { setNotificationOpen(false); navigate(role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/alertes" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications"); }}><i className="fa-solid fa-bell"/><span><strong>{n.titre || "Notification CLM"}</strong><small>{n.message || "Une nouvelle notification est disponible."}</small></span></button>) : <p className="clm-notification-empty">Aucune notification non lue.</p>}<button className="clm-notification-all" onClick={() => { setNotificationOpen(false); navigate(role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/alertes" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications"); }}>Voir le centre de notifications <i className="fa-solid fa-arrow-right"/></button></div>}</div>
+            <div className="clm-notification-wrap"><button type="button" className="clm-notification-bell" onClick={openNotifications} aria-label="Afficher les notifications"><i className="fa-regular fa-bell" />{(unreadCount + (role === "ADMIN" ? passwordResetCount : 0)) > 0 && <span>{(unreadCount + (role === "ADMIN" ? passwordResetCount : 0)) > 99 ? "99+" : unreadCount + (role === "ADMIN" ? passwordResetCount : 0)}</span>}</button>{notificationOpen && <div className="clm-notification-popover"><div className="clm-notification-popover-head"><strong>Notifications non lues</strong><button onClick={() => setNotificationOpen(false)} aria-label="Fermer">×</button></div>{role === "ADMIN" && passwordResetCount > 0 && <button className="clm-notification-item" onClick={() => { setNotificationOpen(false); setPasswordResetOpen(true); }}><i className="fa-solid fa-key"/><span><strong>Demandes de réinitialisation</strong><small>{passwordResetCount} demande(s) de mot de passe oublié en attente. Cliquez pour examiner.</small></span></button>}{latestNotifications.length ? latestNotifications.map(n => <button className="clm-notification-item" key={n.id} onClick={() => { setNotificationOpen(false); navigate(role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/alertes" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications"); }}><i className="fa-solid fa-bell"/><span><strong>{n.titre || "Notification CLM"}</strong><small>{n.message || "Une nouvelle notification est disponible."}</small></span></button>) : passwordResetCount === 0 && <p className="clm-notification-empty">Aucune notification non lue.</p>}<button className="clm-notification-all" onClick={() => { setNotificationOpen(false); navigate(role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/alertes" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications"); }}>Voir le centre de notifications <i className="fa-solid fa-arrow-right"/></button></div>}</div>
             <div className="clm-session">
               <i className="fa-solid fa-circle-user" aria-hidden="true" />
               <span><strong>{matricule === "Indisponible" ? roleNames[role] : `Matricule : ${matricule}`}</strong><small>{roleNames[role] || role}</small></span>
