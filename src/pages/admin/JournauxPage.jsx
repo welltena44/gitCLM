@@ -1,8 +1,11 @@
+import { useEffect, useMemo, useState } from "react";
+import api from "../../services/api.js";
+import "./DashboardAdmin.css";
+
+const date = value => value ? new Date(value).toLocaleString("fr-FR") : "—";
 export default function JournauxPage() {
-  return (
-    <div>
-      <h2><i className="fa-solid fa-shield-halved"></i> Journaux d'audit - R seulement</h2><p className="subtitle">Traces non effaçables, non modifiables</p>
-      <div className="card" style={{marginTop:20}}><table className="admin-table"><thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Ressource</th></tr></thead><tbody><tr><td>12/10 14:31</td><td>admin@clm.mg</td><td>CREATE utilisateur</td><td>ID 32</td></tr><tr><td>12/10 14:30</td><td>gestionnaire@boa.mg</td><td>UPDATE contrat</td><td>CTR-001</td></tr></tbody></table></div>
-    </div>
-  );
+  const [rows, setRows] = useState([]), [contracts, setContracts] = useState([]), [users, setUsers] = useState([]), [query, setQuery] = useState(""), [error, setError] = useState("");
+  useEffect(() => { Promise.all([api.get("/journaux-audit"), api.get("/contrats"), api.get("/utilisateurs")]).then(([j,c,u]) => { setRows(j.data || []); setContracts(c.data || []); setUsers(u.data || []); }).catch(() => setError("Impossible de charger les journaux d’audit.")); }, []);
+  const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return rows.filter(r => !q || [r.action,r.referenceContrat,r.ancienneValeur,r.nouvelleValeur,users.find(u=>String(u.id)===String(r.utilisateurId))?.email].filter(Boolean).join(" ").toLowerCase().includes(q)); }, [rows, users, query]);
+  return <div className="admin-data-page"><div className="admin-data-toolbar"><div><h2>Journaux d’audit</h2><p>Historique des actions enregistrées sur la plateforme.</p></div><span>{filtered.length} entrée(s)</span></div><label className="audit-search">Rechercher<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Action, contrat, utilisateur…" /></label>{error && <p role="alert">{error}</p>}<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Contrat</th><th>Changement</th></tr></thead><tbody>{filtered.map(r => { const c = contracts.find(x => String(x.id) === String(r.contratId)); const u = users.find(x => String(x.id) === String(r.utilisateurId)); return <tr key={r.id}><td>{date(r.dateAction)}</td><td>{u?.email || (r.utilisateurId ? `Utilisateur #${r.utilisateurId}` : "Système")}</td><td>{r.action}</td><td>{r.referenceContrat || c?.reference || (r.contratId ? `#${r.contratId}` : "—")}</td><td>{r.ancienneValeur || r.nouvelleValeur ? <details><summary>Voir</summary><div><strong>Avant</strong><pre>{r.ancienneValeur || "—"}</pre><strong>Après</strong><pre>{r.nouvelleValeur || "—"}</pre></div></details> : "—"}</td></tr>; })}{!filtered.length && !error && <tr><td colSpan="5" className="admin-empty">Aucune trace ne correspond à la recherche.</td></tr>}</tbody></table></div></div>;
 }

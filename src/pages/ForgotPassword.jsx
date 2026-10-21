@@ -31,13 +31,13 @@ export default function ForgotPassword() {
   return <div className="auth-light-page"><div className="auth-light-shell">
     <aside className="auth-light-left"><div className="auth-brand-mini"><span className="brand-mark-spat"><img src="/LogoSPAT.jpeg" alt="Logo SPAT" /></span><div><small>SPAT</small><strong>Société du Port Autonome de Toamasina</strong><p className="spat-subtitle">Contract Lifecycle Management</p></div></div></aside>
     <main className="auth-light-right"><div className="auth-card-light">
-      <div className="auth-header-light"><h2>Mot de passe oublié</h2><p>Envoyez une demande à l’administrateur de la plateforme.</p></div>
-      {message ? <div role="status" className="error-msg" style={{ color: "#166534", background: "#f0fdf4" }}>{message}</div> : <form className="auth-form-light" onSubmit={submit}>
+      <div className="auth-header-light"><h2><i className="fa-solid fa-key" aria-hidden="true" /> Mot de passe oublié</h2><p>Envoyez une demande à l’administrateur de la plateforme.</p></div>
+      {message ? <div role="status" className="auth-success-msg"><i className="fa-solid fa-circle-check" aria-hidden="true" />{message}</div> : <form className="auth-form-light" onSubmit={submit}>
         <label className="auth-field"><span>Matricule</span><div className="auth-input-box"><i className="fa-solid fa-id-card" aria-hidden="true" /><input type="text" value={matricule} onChange={e => setMatricule(e.target.value)} inputMode="numeric" pattern="[0-9]+" required disabled={loading} placeholder="Entrez votre matricule" /></div></label>
         {error && <div className="error-msg" role="alert">{error}</div>}
         <button type="submit" className="auth-submit-button" disabled={loading}>{loading ? "Envoi en cours…" : "Envoyer la demande"}</button>
       </form>}
-      <p style={{ marginTop: 18 }}><Link to="/login">Retour à la connexion</Link></p>
+      <p className="auth-return-link"><Link to="/login"><i className="fa-solid fa-arrow-left" aria-hidden="true" /> Retour à la connexion</Link></p>
     </div></main>
   </div></div>;
 }

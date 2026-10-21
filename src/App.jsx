@@ -16,6 +16,7 @@ import VersionsPage from "./pages/admin/VersionsPage.jsx";
 import JournauxPage from "./pages/admin/JournauxPage.jsx";
 import DashboardGestionnaire from "./pages/gestionnaire/DashboardGestionnaire.jsx";
 import DashboardValideur from "./pages/valideur/DashboardValideur.jsx";
+import ValideurValidationPage from "./pages/valideur/Validation.jsx";
 import DashboardJuridique from "./pages/juridique/DashboardJuridique.jsx";
 import WorkspacePage from "./pages/WorkspacePage.jsx";
 import { FeedbackProvider } from "./composants/FeedbackContext.jsx";
@@ -29,6 +30,7 @@ import ManagerProfilePage from "./pages/gestionnaire/Profile.jsx";
 import ManagerDeadlinesPage from "./pages/gestionnaire/Deadlines.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ContractsReadOnly from "./pages/admin/ContractsReadOnly.jsx";
 
 export default function App() {
   return (
@@ -46,11 +48,11 @@ export default function App() {
               <Route path="types-contrat" element={<TypesContratPage />} />
               <Route path="regles" element={<ReglesValidationPage />} />
               <Route path="alertes" element={<ParametresAlertesPage />} />
-              <Route path="contrats" element={<WorkspacePage />} />
+              <Route path="contrats" element={<ContractsReadOnly />} />
               <Route path="validations" element={<ValidationsPage />} />
               <Route path="versions" element={<VersionsPage />} />
               <Route path="journaux" element={<JournauxPage />} />
-              <Route path="profil" element={<WorkspacePage />} />
+              <Route path="profil" element={<ManagerProfilePage />} />
             </Route>
           </Route>
           <Route element={<ProtectedRoute roles={["GESTIONNAIRE"]} />}>
@@ -71,10 +73,10 @@ export default function App() {
           <Route element={<ProtectedRoute roles={["VALIDEUR"]} />}>
             <Route path="/valideur" element={<ValideurLayout />}>
               <Route index element={<DashboardValideur />} />
-              <Route path="validations" element={<WorkspacePage />} />
-              <Route path="contrats" element={<WorkspacePage />} />
-              <Route path="notifications" element={<WorkspacePage />} />
-              <Route path="profil" element={<WorkspacePage />} />
+              <Route path="validations" element={<ValideurValidationPage />} />
+              <Route path="contrats" element={<ValideurValidationPage />} />
+              <Route path="notifications" element={<ManagerNotificationsPage />} />
+              <Route path="profil" element={<ManagerProfilePage />} />
             </Route>
           </Route>
           <Route element={<ProtectedRoute roles={["JURIDIQUE"]} />}>

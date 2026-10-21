@@ -1,13 +1,13 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');
 
 :root {
-  --spat-blue: #168bd2;
-  --spat-blue-dark: #0b6aa8;
-  --spat-red: #ed2939;
-  --clm-bg: #f4f6fb;
-  --clm-text: #172033;
-  --clm-muted: #64748b;
-  --clm-border: #e5eaf2;
+  --spat-blue: #53677e;
+  --spat-blue-dark: #3d5067;
+  --spat-red: #a45c5c;
+  --clm-bg: #f5f6f8;
+  --clm-text: #202a36;
+  --clm-muted: #697586;
+  --clm-border: #e5e8ed;
   --clm-card: #ffffff;
   --clm-radius: 14px;
   --clm-shadow: 0 4px 18px rgba(15, 23, 42, .045);
@@ -106,10 +106,10 @@
   transition: background .18s ease, color .18s ease, box-shadow .18s ease;
 }
 .menu-categories a > i { width: 20px; min-width: 20px; text-align: center; color: #91a0b7; font-size: 15px; }
-.menu-categories a:hover { color: var(--spat-blue); background: #f0f4ff; }
+.menu-categories a:hover { color: var(--spat-blue); background: #f6f7f9; }
 .menu-categories a:hover > i { color: var(--spat-blue); }
-.menu-categories a.active { color: #fff; background: var(--spat-blue); box-shadow: 0 5px 13px rgba(22, 139, 210, .18); font-weight: 750; }
-.menu-categories a.active > i { color: #fff; }
+.menu-categories a.active { color: #293747; background: #f0f2f5; box-shadow: inset 3px 0 #65788e; font-weight: 750; }
+.menu-categories a.active > i { color: #53677e; }
 .label { flex: 1; min-width: 0; }
 
 .separator {

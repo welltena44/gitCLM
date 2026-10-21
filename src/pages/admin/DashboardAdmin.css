@@ -1,6 +1,6 @@
 /* Styles communs aux pages de l’espace d’administration CLM */
 .admin-dashboard-page { display: flex; flex-direction: column; gap: 24px; }
-.admin-welcome-banner { display: flex; align-items: center; gap: 18px; padding: 25px; border: 1px solid #e3e9f4; border-radius: 16px; background: linear-gradient(110deg, #fff 0%, #f5f8ff 100%); box-shadow: 0 4px 15px rgba(15,23,42,.035); }
+.admin-welcome-banner { display: flex; align-items: center; gap: 18px; padding: 25px; border: 1px solid #e5e8ed; border-radius: 16px; background: #fff; box-shadow: 0 4px 15px rgba(27,39,54,.045); }
 .admin-welcome-icon { display: grid; place-items: center; width: 58px; height: 58px; flex-shrink: 0; border-radius: 15px; color: #fff; background: #168bd2; font-size: 24px; box-shadow: 0 8px 20px rgba(22,139,210,.2); }
 .admin-welcome-banner > div:last-child > span { color: #168bd2; font-size: 10px; font-weight: 850; letter-spacing: 1.2px; }
 .admin-welcome-banner h2 { margin: 7px 0 0; color: #111c35; font-size: 22px; font-weight: 850; }
@@ -9,9 +9,9 @@
 .admin-section-heading h2 { margin: 0; color: #182238; font-size: 17px; font-weight: 850; }
 .admin-section-heading p { margin: 5px 0 0; color: #8490a3; font-size: 12px; }
 .admin-quick-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.admin-quick-card { display: flex; align-items: flex-start; gap: 15px; min-width: 0; padding: 20px; border: 1px solid #e5eaf2; border-radius: 14px; background: #fff; box-shadow: 0 3px 12px rgba(15,23,42,.025); text-decoration: none; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.admin-quick-card { display: flex; align-items: flex-start; gap: 15px; min-width: 0; padding: 20px; border: 1px solid #e5e8ed; border-radius: 14px; background: #fff; box-shadow: 0 3px 12px rgba(27,39,54,.035); text-decoration: none; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
 .admin-quick-card:hover { transform: translateY(-2px); border-color: #c6d4ff; box-shadow: 0 9px 22px rgba(15,23,42,.07); }
-.admin-quick-icon { display: grid; place-items: center; width: 45px; height: 45px; flex-shrink: 0; border-radius: 12px; color: #168bd2; background: #eaf0ff; font-size: 18px; }
+.admin-quick-icon { display: grid; place-items: center; width: 45px; height: 45px; flex-shrink: 0; border-radius: 12px; color: #53677e; background: #edf1f5; font-size: 18px; }
 .admin-quick-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
 .admin-quick-copy strong { color: #172033; font-size: 14px; font-weight: 800; }
 .admin-quick-copy small { color: #718096; font-size: 12px; line-height: 1.6; }
@@ -27,12 +27,12 @@
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 20px; }
 .page-header h2, .admin-page h2, .clm-content > h2 { margin: 0; color: #111c35; font-size: 22px; font-weight: 850; }
 .subtitle { margin: 7px 0 18px; color: #77849a; font-size: 12px; line-height: 1.6; }
-.card { overflow: hidden; margin-bottom: 18px; border: 1px solid #e5eaf2; border-radius: 14px; background: #fff; box-shadow: 0 3px 12px rgba(15,23,42,.03); }
+.card { overflow: hidden; margin-bottom: 18px; border: 1px solid #e5e8ed; border-radius: 14px; background: #fff; box-shadow: 0 3px 12px rgba(27,39,54,.035); }
 .card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid #edf0f6; }
 .card-header h4 { margin: 0; color: #172033; font-size: 14px; }
 .card-body { padding: 18px; }
 .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; font-size: 12px; }
-.admin-table th { padding: 13px 14px; color: #334155; background: #f8faff; text-align: left; white-space: nowrap; font-size: 11px; font-weight: 850; border-bottom: 1px solid #e8edf5; }
+.admin-table th { padding: 13px 14px; color: #334155; background: #f7f8fa; text-align: left; white-space: nowrap; font-size: 11px; font-weight: 850; border-bottom: 1px solid #e8edf5; }
 .admin-table td { padding: 13px 14px; color: #344158; border-bottom: 1px solid #edf0f5; vertical-align: middle; }
 .admin-table tr:last-child td { border-bottom: 0; }
 .admin-table tbody tr:hover td { background: #fafbff; }
@@ -48,3 +48,12 @@ button.btn-primary:hover, .btn-primary:hover { background: #0b6aa8; }
 .badge.red { color: #b91c1c; background: #fee2e2; }
 .badge.orange { color: #92400e; background: #fef3c7; }
 @media (max-width: 700px) { .admin-quick-grid { grid-template-columns: 1fr; } .admin-welcome-banner { align-items: flex-start; padding: 18px; } .admin-welcome-icon { width: 46px; height: 46px; } .admin-welcome-banner h2 { font-size: 18px; } .page-header { align-items: flex-start; flex-direction: column; } .card { overflow-x: auto; } .admin-table { min-width: 620px; } }
+ .admin-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:20px 0}.admin-kpis article{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:17px;min-width:0}.admin-kpis span{display:block;color:#64748b;font-size:13px}.admin-kpis strong{display:block;color:#142b4a;font-size:22px;margin-top:8px;overflow-wrap:anywhere}.admin-panel{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;margin:18px 0}.admin-panel-heading h3{margin:0 0 4px}.admin-panel-heading p{color:#64748b;margin:0 0 16px}.admin-table-wrap{overflow:auto}.admin-table small{display:block;color:#64748b;margin-top:4px}.admin-empty{padding:22px;text-align:center;color:#64748b}.admin-error{color:#b42318;background:#fff1f0;padding:12px;border-radius:8px}.admin-decision{display:inline-flex;border-radius:20px;padding:5px 9px;font-size:12px;font-weight:700;background:#f1f5f9;color:#334155}.admin-decision.pending{background:#fff7db;color:#875b00}.admin-decision.approved{background:#e7f7ed;color:#14733b}.admin-decision.rejected{background:#fff1f0;color:#b42318}.admin-data-page{min-width:0}.admin-data-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.admin-data-toolbar h2{margin:0 0 5px}.admin-data-toolbar p{margin:0;color:#64748b}.admin-data-toolbar>span{white-space:nowrap;border-radius:18px;background:#eff6ff;color:#1459a8;padding:7px 11px;font-weight:700;font-size:13px}@media(max-width:950px){.admin-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.admin-kpis{grid-template-columns:1fr}.admin-data-toolbar{align-items:flex-start;flex-direction:column}}
+ .alert-setting-form{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:16px 0 22px;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px}.alert-setting-form label{display:grid;gap:6px;font-size:13px;font-weight:700;color:#334155}.alert-setting-form input[type=number],.audit-search input{padding:9px 11px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}.alert-setting-form .alert-checkbox{display:flex;align-items:center;gap:7px;padding:9px}.alert-setting-form button,.admin-table button{border:0;border-radius:7px;padding:9px 12px;background:#1459a8;color:white;font-weight:700;cursor:pointer}.alert-setting-form button.secondary,.admin-table button+button{background:#64748b}.audit-search{display:flex;align-items:center;gap:10px;margin:14px 0;color:#334155;font-size:13px;font-weight:700}.audit-search input{min-width:min(420px,70vw);font-weight:400}.admin-table details pre{max-width:420px;max-height:220px;overflow:auto;white-space:pre-wrap;background:#f8fafc;padding:10px;border-radius:6px;font-size:12px}
+.admin-dashboard-page .admin-kpis article{border-top:3px solid var(--kpi-accent);background:linear-gradient(150deg,var(--kpi-tint),#fff 62%)}
+.admin-dashboard-page .admin-kpis article:nth-child(1){--kpi-accent:#4b6b93;--kpi-tint:#f1f6fc}
+.admin-dashboard-page .admin-kpis article:nth-child(2){--kpi-accent:#21845a;--kpi-tint:#eff9f3}
+.admin-dashboard-page .admin-kpis article:nth-child(3){--kpi-accent:#6755a5;--kpi-tint:#f5f2fc}
+.admin-dashboard-page .admin-kpis article:nth-child(4){--kpi-accent:#b7791f;--kpi-tint:#fff8e9}
+.admin-dashboard-page .admin-kpis article:nth-child(5){--kpi-accent:#1681a8;--kpi-tint:#eff8fb}
+.admin-dashboard-page .admin-kpis article strong{color:var(--kpi-accent)}

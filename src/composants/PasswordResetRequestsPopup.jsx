@@ -13,7 +13,7 @@ export default function PasswordResetRequestsPopup({ adminId, open, onClose, onC
   const load = useCallback(async () => {
     if (!adminId) return;
     try {
-      const { data } = await api.get("/admin/password-reset-requests", { headers: { "X-Admin-Id": adminId } });
+      const { data } = await api.get("/admin/password-reset-requests");
       const list = Array.isArray(data) ? data : [];
       setRequests(list);
       onCountChange?.(list.length);
@@ -33,7 +33,7 @@ export default function PasswordResetRequestsPopup({ adminId, open, onClose, onC
     setBusy(true);
     setError("");
     try {
-      const { data } = await api.post(`/admin/password-reset-requests/${activeId}/${action}`, {}, { headers: { "X-Admin-Id": adminId } });
+      const { data } = await api.post(`/admin/password-reset-requests/${activeId}/${action}`, {});
       toast(data.message, "success", "Demande traitée");
       setActiveId(null);
       const remaining = await load();

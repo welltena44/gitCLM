@@ -20,7 +20,7 @@ export default function ChangePassword() {
     setSaving(true);
     try {
       const response = await fetch("http://localhost:8080/api/auth/change-password", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
         body: JSON.stringify({ userId: String(user.id), motDePasseActuel: current, nouveauMotDePasse: next }),
       });
       const data = await response.json();

@@ -46,7 +46,7 @@ export default function Login() {
     try {
       const data = await login(matriculeNettoye, password);
 
-      if (!data || !data.role || data.actif !== true) {
+      if (!data || !data.role || !data.token || data.actif !== true) {
         throw new Error(
           data?.actif === false
             ? 'Votre compte est désactivé.'
@@ -55,7 +55,6 @@ export default function Login() {
       }
 
       loginUser(data);
-      localStorage.setItem('user', JSON.stringify(data));
       toast(`Bienvenue ${data.prenom || ''} ${data.nom || ''}.`.trim(), 'success', 'Connexion réussie');
 
       if (data.changementMotDePasseRequis) {
