@@ -741,8 +741,8 @@
   border-right: 1px solid #e8ebef;
 }
 
-.auth-light-left::before { background: #168bd2; }
-.auth-light-left::after { background: #ed2939; }
+.auth-light-left::before,
+.auth-light-left::after { display: none; }
 .auth-brand-mini small,
 .auth-brand-mini strong { color: #202a36; }
 .spat-subtitle { color: #697586; }

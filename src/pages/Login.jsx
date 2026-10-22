@@ -80,7 +80,7 @@ export default function Login() {
           break;
 
         default:
-          localStorage.removeItem('user');
+          sessionStorage.removeItem('user');
           setError('Votre rôle ne permet pas d’accéder à un espace.');
           break;
       }

@@ -81,4 +81,8 @@ Important : masquer un lien dans le frontend ne sécurise pas une ressource. Les
 
 Le composant `src/layouts/Sidebar.jsx` choisit les liens selon le rôle retourné à la connexion : `ADMIN`, `GESTIONNAIRE`, `VALIDEUR` ou `JURIDIQUE`. Chaque rôle possède son tableau de bord et ses propres routes dans `src/App.jsx`.
 
-Les pages de contrats, documents, avenants, notifications et certaines pages d'administration doivent encore être reliées aux endpoints réels du backend. Les liens masqués dans l'interface ne remplacent pas les contrôles d'autorisation Spring Boot.
+Les pages de contrats, documents, avenants, notifications et d'administration utilisent les endpoints du backend. Les liens masqués dans l'interface ne remplacent pas les contrôles d'autorisation Spring Boot.
+
+### URL du backend
+
+En développement, l'interface appelle `http://localhost:8080/api`. Pour une compilation de production, elle utilise par défaut `/api` sur le même domaine que le frontend (à publier derrière un reverse proxy vers Spring Boot). Si l'API est hébergée sur un domaine distinct, définir `REACT_APP_API_URL` avant `npm run build`, avec son chemin `/api` complet, par exemple `https://api.exemple.mg/api`.

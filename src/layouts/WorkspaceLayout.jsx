@@ -60,7 +60,7 @@ export default function WorkspaceLayout() {
   const location = useLocation();
   const page = useMemo(() => pageTitles[location.pathname] || ["Espace CLM", "Gestion du cycle de vie des contrats"], [location.pathname]);
   const storedUser = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("utilisateur") || "{}"); }
+    try { return JSON.parse(sessionStorage.getItem("user") || sessionStorage.getItem("utilisateur") || "{}"); }
     catch { return {}; }
   }, []);
   const activeUser = user || storedUser;
@@ -71,10 +71,43 @@ export default function WorkspaceLayout() {
     const ok = await confirm({ title: "Confirmer la déconnexion", message: "Voulez-vous vraiment fermer votre session CLM ? Les modifications non enregistrées pourraient être perdues.", confirmLabel: "Se déconnecter", danger: true });
     if (!ok) return;
     if (typeof logout === "function") logout();
-    localStorage.removeItem("user");
-    localStorage.removeItem("utilisateur");
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("utilisateur");
+    sessionStorage.removeItem("token");
     navigate("/login", { replace: true });
+  };
+
+  const notificationPath = (notification) => {
+    const type = String(notification?.type || "").toUpperCase();
+    const contractId = notification?.contratId;
+    if (type.includes("VALID")) {
+      if (role === "ADMIN") return "/admin/validations";
+      if (role === "VALIDEUR") return contractId ? `/valideur/validations?contratId=${contractId}` : "/valideur/validations";
+      if (role === "JURIDIQUE") return "/juridique/validations";
+      return contractId ? `/gestionnaire/validations?contratId=${contractId}` : "/gestionnaire/validations";
+    }
+    if (type.includes("AVENANT") && role === "GESTIONNAIRE") return "/gestionnaire/avenants";
+    if (type.includes("ECHEANCE") || type.includes("RENOUVELLEMENT") || type.includes("RESILIATION")) {
+      if (role === "GESTIONNAIRE") return contractId ? `/gestionnaire/contrats/${contractId}` : "/gestionnaire/echeances";
+      if (role === "ADMIN") return "/admin/contrats";
+      return "/juridique/contrats";
+    }
+    if (contractId) {
+      if (role === "GESTIONNAIRE") return `/gestionnaire/contrats/${contractId}`;
+      if (role === "ADMIN") return "/admin/contrats";
+      if (role === "VALIDEUR") return `/valideur/validations?contratId=${contractId}`;
+      return "/juridique/contrats";
+    }
+    return role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/validations" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications";
+  };
+
+  const openNotification = async (notification) => {
+    setNotificationOpen(false);
+    try {
+      await api.put(`/notifications/${notification.id}/lu`);
+    } catch { /* La navigation reste possible si la mise à jour de lecture échoue. */ }
+    await loadNotifications();
+    navigate(notificationPath(notification));
   };
 
   const loadNotifications = useCallback(async () => {
@@ -82,8 +115,11 @@ export default function WorkspaceLayout() {
     try { const { data } = await api.get(`/notifications/user/${activeUser.id}`); const list = Array.isArray(data) ? data : []; setLatestNotifications(list.filter(n => !n.lu).slice(0, 5)); setUnreadCount(list.filter(n => !n.lu).length); } catch { /* Le bandeau ne doit pas bloquer l’espace de travail si l’API de notifications est indisponible. */ }
   }, [activeUser?.id]);
   const updatePasswordResetCount = useCallback((count) => setPasswordResetCount(count), []);
-  useEffect(() => { loadNotifications(); const timer = window.setInterval(loadNotifications, 60000); return () => window.clearInterval(timer); }, [loadNotifications]);
-  const openNotifications = async () => { setNotificationOpen(v => !v); await loadNotifications(); };
+  useEffect(() => { loadNotifications(); const timer = window.setInterval(loadNotifications, 5000); return () => window.clearInterval(timer); }, [loadNotifications]);
+  const openNotifications = () => {
+    setNotificationOpen((open) => !open);
+    if (!notificationOpen) loadNotifications();
+  };
 
   return (
     <div className="clm-layout">
@@ -100,7 +136,7 @@ export default function WorkspaceLayout() {
             <strong>{page[0]}</strong>
           </div>
           <div className="clm-topbar-actions">
-            <div className="clm-notification-wrap"><button type="button" className="clm-notification-bell" onClick={openNotifications} aria-label="Afficher les notifications"><i className="fa-regular fa-bell" />{(unreadCount + (role === "ADMIN" ? passwordResetCount : 0)) > 0 && <span>{(unreadCount + (role === "ADMIN" ? passwordResetCount : 0)) > 99 ? "99+" : unreadCount + (role === "ADMIN" ? passwordResetCount : 0)}</span>}</button>{notificationOpen && <div className="clm-notification-popover"><div className="clm-notification-popover-head"><strong>Notifications non lues</strong><button onClick={() => setNotificationOpen(false)} aria-label="Fermer">×</button></div>{role === "ADMIN" && passwordResetCount > 0 && <button className="clm-notification-item" onClick={() => { setNotificationOpen(false); setPasswordResetOpen(true); }}><i className="fa-solid fa-key"/><span><strong>Demandes de réinitialisation</strong><small>{passwordResetCount} demande(s) de mot de passe oublié en attente. Cliquez pour examiner.</small></span></button>}{latestNotifications.length ? latestNotifications.map(n => <button className="clm-notification-item" key={n.id} onClick={() => { setNotificationOpen(false); navigate(role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/alertes" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications"); }}><i className="fa-solid fa-bell"/><span><strong>{n.titre || "Notification CLM"}</strong><small>{n.message || "Une nouvelle notification est disponible."}</small></span></button>) : passwordResetCount === 0 && <p className="clm-notification-empty">Aucune notification non lue.</p>}<button className="clm-notification-all" onClick={() => { setNotificationOpen(false); navigate(role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/alertes" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications"); }}>Voir le centre de notifications <i className="fa-solid fa-arrow-right"/></button></div>}</div>
+            <div className="clm-notification-wrap"><button type="button" className="clm-notification-bell" onClick={openNotifications} aria-label="Afficher les notifications"><i className="fa-regular fa-bell" />{(unreadCount + (role === "ADMIN" ? passwordResetCount : 0)) > 0 && <span>{(unreadCount + (role === "ADMIN" ? passwordResetCount : 0)) > 99 ? "99+" : unreadCount + (role === "ADMIN" ? passwordResetCount : 0)}</span>}</button>{notificationOpen && <div className="clm-notification-popover"><div className="clm-notification-popover-head"><strong>Notifications non lues</strong><button onClick={() => setNotificationOpen(false)} aria-label="Fermer">×</button></div>{role === "ADMIN" && passwordResetCount > 0 && <button className="clm-notification-item" onClick={() => { setNotificationOpen(false); setPasswordResetOpen(true); }}><i className="fa-solid fa-key"/><span><strong>Demandes de réinitialisation</strong><small>{passwordResetCount} demande(s) de mot de passe oublié en attente. Cliquez pour examiner.</small></span></button>}{latestNotifications.length ? latestNotifications.map(n => <button className="clm-notification-item" key={n.id} onClick={() => openNotification(n)}><i className="fa-solid fa-bell"/><span><strong>{n.titre || "Notification CLM"}</strong><small>{n.message || "Une nouvelle notification est disponible."}</small></span></button>) : passwordResetCount === 0 && <p className="clm-notification-empty">Aucune notification non lue.</p>}<button className="clm-notification-all" onClick={() => { setNotificationOpen(false); navigate(role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/validations" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications"); }}>Voir le centre de notifications <i className="fa-solid fa-arrow-right"/></button></div>}</div>
             <button type="button" className="clm-profile-button" onClick={() => navigate(profilePath)} aria-label="Accéder à mon profil">
               <i className="fa-solid fa-circle-user" aria-hidden="true" />
               <span>Mon profil</span>

@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api.js";
 
 const date = value => value ? new Date(value).toLocaleString("fr-FR") : "—";
-const decisions = { EN_ATTENTE: "En attente", APPROUVE: "Approuvé", REJETE: "Rejeté", MODIFICATION_DEMANDEE: "Modification demandée" };
+const decisions = { EN_ATTENTE: "En attente", A_VENIR: "À venir", NON_REQUISE: "Non requise", APPROUVE: "Approuvé", REJETE: "Rejeté", MODIFICATION_DEMANDEE: "Modification demandée" };
 export default function ValidationsPage() {
   const [rows, setRows] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
-  useEffect(() => { Promise.all([api.get("/validations"), api.get("/contrats"), api.get("/utilisateurs")]).then(([v, c, u]) => { setRows(v.data || []); setContracts(c.data || []); setUsers(u.data || []); }).catch(() => setError("Impossible de charger l’historique des validations.")); }, []);
+  const load = useCallback(() => Promise.all([api.get("/validations"), api.get("/contrats"), api.get("/utilisateurs")]).then(([v, c, u]) => { setRows(v.data || []); setContracts(c.data || []); setUsers(u.data || []); }).catch(() => setError("Impossible de charger l’historique des validations.")), []);
+  useEffect(() => { load(); }, [load]);
   const name = id => users.find(u => String(u.id) === String(id))?.email || (id ? `Utilisateur #${id}` : "—");
   const contract = id => contracts.find(c => String(c.id) === String(id));
-  return <div className="admin-data-page"><div className="admin-data-toolbar"><div><h2>Historique des validations</h2><p>Consultation des décisions et commentaires, sans modification.</p></div><span>{rows.length} décision(s)</span></div>{error && <p role="alert">{error}</p>}<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Contrat</th><th>Demandeur</th><th>Valideur</th><th>Niveau / cycle</th><th>Décision</th><th>Soumis le</th><th>Traité le</th><th>Commentaire</th></tr></thead><tbody>{rows.map(v => { const c = contract(v.contratId); return <tr key={v.id}><td>{c ? <><strong>{c.reference}</strong><small>{c.objet}</small></> : `Contrat #${v.contratId}`}</td><td>{name(v.demandeurId)}</td><td>{name(v.valideurId)}</td><td>{v.niveau} / {v.cycle}</td><td><span className={`admin-decision ${v.decision === "EN_ATTENTE" ? "pending" : v.decision === "APPROUVE" ? "approved" : "rejected"}`}>{decisions[v.decision] || v.decision}</span></td><td>{date(v.dateSoumission)}</td><td>{date(v.dateValidation)}</td><td>{v.commentaire || "—"}</td></tr>; })}{!rows.length && !error && <tr><td colSpan="8" className="admin-empty">Aucune validation enregistrée.</td></tr>}</tbody></table></div></div>;
+  return <div className="admin-data-page"><div className="admin-data-toolbar"><div><h2>Historique des validations</h2><p>Consultation des décisions prises par les valideurs.</p></div><span>{rows.length} décision(s)</span></div>{error && <p role="alert">{error}</p>}<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Contrat</th><th>Demandeur</th><th>Valideur</th><th>Niveau / cycle</th><th>Décision</th><th>Soumis le</th><th>Traité le</th><th>Commentaire</th></tr></thead><tbody>{rows.map(v => { const c = contract(v.contratId); return <tr key={v.id}><td>{c ? <><strong>{c.reference}</strong><small>{c.objet}</small></> : `Contrat #${v.contratId}`}</td><td>{name(v.demandeurId)}</td><td>{name(v.valideurId)}</td><td>{v.niveau} / {v.cycle}</td><td><span className={`admin-decision ${v.decision === "EN_ATTENTE" ? "pending" : v.decision === "APPROUVE" ? "approved" : "rejected"}`}>{decisions[v.decision] || v.decision}</span></td><td>{date(v.dateSoumission)}</td><td>{date(v.dateValidation)}</td><td>{v.commentaire || "—"}</td></tr>; })}{!rows.length && !error && <tr><td colSpan="8" className="admin-empty">Aucune validation enregistrée.</td></tr>}</tbody></table></div></div>;
 }

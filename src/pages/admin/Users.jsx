@@ -1,9 +1,10 @@
 
 import { useState, useEffect, useCallback } from "react";
+import { API_BASE_URL } from "../../services/api.js";
 import "./DashboardAdmin.css";
 import "./Users.css";
 
-const API_URL = "http://localhost:8080/api/utilisateurs";
+const API_URL = `${API_BASE_URL}/utilisateurs`;
 
 const initialFormState = {
   matricule: "",
@@ -33,7 +34,7 @@ const labelStyle = {
 
 function getHeaders(json = false) {
   const headers = {
-    Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+    Authorization: `Bearer ${sessionStorage.getItem("token") || ""}`,
   };
 
   if (json) {

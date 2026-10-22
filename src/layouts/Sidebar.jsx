@@ -81,7 +81,7 @@ const menus = {
 
 export default function Sidebar({ isClosed = false, onNavigate }) {
   const { user } = useAuth();
-  const storedRole = (() => { try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("utilisateur") || "{}").role; } catch { return "ADMIN"; } })();
+  const storedRole = (() => { try { return JSON.parse(sessionStorage.getItem("user") || sessionStorage.getItem("utilisateur") || "{}").role; } catch { return "ADMIN"; } })();
   const role = String(user?.role || storedRole || "ADMIN").toUpperCase();
   const config = menus[role] || menus.ADMIN;
 

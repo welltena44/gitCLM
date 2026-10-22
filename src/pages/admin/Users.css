@@ -100,6 +100,13 @@
   color: #344158;
 }
 
+/* Keep full identifiers and email addresses readable, including on narrow screens. */
+.users-table td:nth-child(1),
+.users-table td:nth-child(3) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .users-table tbody tr:hover {
   background: #fafbfc;
 }

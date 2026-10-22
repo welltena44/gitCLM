@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { API_BASE_URL } from "../services/api.js";
 import "./ChangePassword.css";
 
 export default function ChangePassword() {
@@ -19,8 +20,8 @@ export default function ChangePassword() {
     if (next !== confirm) return setError("Les deux nouveaux mots de passe ne correspondent pas.");
     setSaving(true);
     try {
-      const response = await fetch("http://localhost:8080/api/auth/change-password", {
-        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionStorage.getItem("token") || ""}` },
         body: JSON.stringify({ userId: String(user.id), motDePasseActuel: current, nouveauMotDePasse: next }),
       });
       const data = await response.json();

@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../services/api.js";
 import "./DashboardAdmin.css";
 
 export default function ReglesValidation() {
   const [regles, setRegles] = useState([]);
   const [typesContrat, setTypesContrat] = useState([]);
+  const [utilisateurs, setUtilisateurs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const initialFormState = {
     id: null,
-    typeContratId: "",
-    montantMinimum: 0,
-    montantMaximum: "",
     niveau: 1,
-    roleRequis: "VALIDEUR"
+    roleRequis: "VALIDEUR",
+    valideurId: ""
   };
 
   const [form, setForm] = useState(initialFormState);
@@ -21,13 +21,15 @@ export default function ReglesValidation() {
   useEffect(() => {
     fetchRegles();
     fetchTypesContrat();
+    fetch(`${API_BASE_URL}/utilisateurs`, { headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` } })
+      .then(r => r.ok ? r.json() : []).then(data => setUtilisateurs(Array.isArray(data) ? data.filter(u => u.role === "VALIDEUR" && u.actif !== false) : [])).catch(() => setUtilisateurs([]));
   }, []);
 
   const fetchRegles = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/regles-validation", {
+      const res = await fetch(`${API_BASE_URL}/regles-validation`, {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
           "Content-Type": "application/json"
         }
       });
@@ -41,9 +43,9 @@ export default function ReglesValidation() {
 
   const fetchTypesContrat = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/types-contrat", {
+      const res = await fetch(`${API_BASE_URL}/types-contrat`, {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
           "Content-Type": "application/json"
         }
       });
@@ -65,11 +67,9 @@ export default function ReglesValidation() {
   const handleOpenEdit = (item) => {
     setForm({
       id: item.id,
-      typeContratId: item.typeContratId !== null && item.typeContratId !== undefined ? item.typeContratId : "",
-      montantMinimum: item.montantMinimum,
-      montantMaximum: item.montantMaximum || "",
       niveau: item.niveau,
       roleRequis: item.roleRequis
+      ,valideurId: item.valideurId ?? ""
     });
     setIsEditing(true);
     setShowModal(true);
@@ -79,24 +79,25 @@ export default function ReglesValidation() {
     e.preventDefault();
     try {
       const url = isEditing
-        ? `http://localhost:8080/api/regles-validation/${form.id}`
-        : "http://localhost:8080/api/regles-validation";
+        ? `${API_BASE_URL}/regles-validation/${form.id}`
+        : `${API_BASE_URL}/regles-validation`;
       
       const method = isEditing ? "PUT" : "POST";
 
       const payload = {
         ...form,
-        typeContratId: form.typeContratId === "" || form.typeContratId === "null" ? null : Number(form.typeContratId),
-        montantMinimum: Number(form.montantMinimum),
-        montantMaximum: form.montantMaximum === "" ? null : Number(form.montantMaximum),
+        typeContratId: null,
+        montantMinimum: 0,
+        montantMaximum: null,
         niveau: Number(form.niveau)
+        ,valideurId: form.valideurId === "" ? null : Number(form.valideurId), roleRequis: "VALIDEUR"
       };
 
       const res = await fetch(url, {
         method: method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         },
         body: JSON.stringify(payload)
       });
@@ -117,10 +118,10 @@ export default function ReglesValidation() {
   const handleDelete = async (id) => {
     if (!window.confirm("Voulez-vous vraiment supprimer cette règle de validation ?")) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/regles-validation/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/regles-validation/${id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         }
       });
       if (!res.ok) throw new Error("Échec de la suppression");
@@ -131,6 +132,8 @@ export default function ReglesValidation() {
   };
 
   // Résout le nom du type de contrat lié à partir de son ID (ou affiche Global si null)
+  const getValideurName = (id) => { const user = utilisateurs.find(u => String(u.id) === String(id)); return user ? ([user.prenom, user.nom].filter(Boolean).join(" ") || user.email) : (id ? `Compte #${id}` : "Tout valideur actif"); };
+
   const getTypeName = (typeContratId) => {
     if (typeContratId === null || typeContratId === undefined || typeContratId === "") {
       return "🌍 Global (Tous types)";
@@ -144,7 +147,7 @@ export default function ReglesValidation() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h2><i className="fa-solid fa-list-check"></i> Configuration des circuits de validation</h2>
-          <p className="subtitle">Définissez les seuils de montants, les rôles requis et l'association avec les types de contrats[cite: 2, 3, 5]</p>
+          <p className="subtitle">Configurez les étapes des circuits : niveau et rôle chargé de valider. Les seuils relèvent de l’espace Juridique.</p>
         </div>
         <button 
           onClick={handleOpenCreate}
@@ -163,14 +166,15 @@ export default function ReglesValidation() {
               <th>Montant Min (MGA)</th>
               <th>Montant Max (MGA)</th>
               <th>Niveau</th>
-              <th>Rôle Requis</th>
+              <th>Rôle requis</th>
+              <th>Valideur ciblé</th>
               <th style={{ textAlign: "center" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {regles.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
+                <td colSpan="8" style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
                   Aucune règle de validation configurée pour l'instant.
                 </td>
               </tr>
@@ -196,9 +200,10 @@ export default function ReglesValidation() {
                   </td>
                   <td>
                     <span style={{ padding: "3px 8px", background: "#f1f5f9", color: "#1e293b", borderRadius: "6px", fontWeight: "600" }}>
-                      {r.roleRequis}
+                      VALIDEUR
                     </span>
                   </td>
+                  <td>{getValideurName(r.valideurId)}</td>
                   <td style={{ textAlign: "center", display: "flex", justifyContent: "center", gap: "12px", padding: "12px" }}>
                     <button 
                       onClick={() => handleOpenEdit(r)} 
@@ -228,43 +233,6 @@ export default function ReglesValidation() {
           <form onSubmit={handleSubmit} style={{ background: "white", padding: "24px", borderRadius: "16px", width: "480px", maxWidth: "100%" }}>
             <h3 style={{ marginBottom: "16px" }}>{isEditing ? "Modifier la règle" : "Ajouter une règle de validation"}</h3>
             
-            <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Type de Contrat associé</label>
-            <select 
-              value={form.typeContratId} 
-              onChange={e => setForm({...form, typeContratId: e.target.value})}
-              style={{ width: "100%", margin: "4px 0 12px 0", padding: "10px", borderRadius: "8px", border: "1px solid #ddd", background: "white" }}
-            >
-              <option value="">🌍 Global (S'applique à tous les types de contrats)</option>
-              {typesContrat.map(t => (
-                <option key={t.id} value={t.id}>{t.nom} (ID: {t.id})</option>
-              ))}
-            </select>
-
-            <div style={{ display: "flex", gap: "10px" }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Montant Minimum (MGA)</label>
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  value={form.montantMinimum} 
-                  onChange={e => setForm({...form, montantMinimum: e.target.value})} 
-                  required 
-                  style={{ width: "100%", margin: "4px 0 12px 0", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }} 
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Montant Maximum (MGA)</label>
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  placeholder="Laisser vide = illimité" 
-                  value={form.montantMaximum} 
-                  onChange={e => setForm({...form, montantMaximum: e.target.value})} 
-                  style={{ width: "100%", margin: "4px 0 12px 0", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }} 
-                />
-              </div>
-            </div>
-
             <div style={{ display: "flex", gap: "10px" }}>
               <div style={{ flex: 1 }}>
                 <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Niveau de validation</label>
@@ -285,12 +253,13 @@ export default function ReglesValidation() {
                   style={{ width: "100%", margin: "4px 0 12px 0", padding: "10px", borderRadius: "8px", border: "1px solid #ddd", background: "white" }}
                 >
                   <option value="VALIDEUR">VALIDEUR</option>
-                  <option value="JURIDIQUE">JURIDIQUE</option>
-                  <option value="ADMIN">ADMIN</option>
-                  <option value="GESTIONNAIRE">GESTIONNAIRE</option>
                 </select>
               </div>
             </div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#475569" }}>Valideur ciblé (facultatif)</label>
+            <select value={form.valideurId} onChange={e => setForm({...form,valideurId:e.target.value})} style={{ width: "100%", margin: "4px 0 12px", padding: "10px", borderRadius: "8px", border: "1px solid #ddd", background: "white" }}>
+              <option value="">Tout valideur disponible</option>{utilisateurs.map(u => <option key={u.id} value={u.id}>{[u.prenom,u.nom].filter(Boolean).join(" ") || u.email || `Compte #${u.id}`}</option>)}
+            </select>
 
             <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
               <button 

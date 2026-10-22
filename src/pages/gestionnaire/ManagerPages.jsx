@@ -24,6 +24,9 @@ const statusLabel = (s) =>
     VALIDE: "Validé",
     APPROUVE: "Approuvé",
     ACTIF: "Actif",
+    SIGNE: "Signé",
+    A_VENIR: "À venir",
+    NON_REQUISE: "Non requise",
     REJETE: "Rejeté",
     EXPIRE: "Expiré",
     RESILIE: "Résilié",
@@ -564,6 +567,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
   const { user } = useAuth();
   const { toast, confirm } = useFeedback();
   const [tab, setTab] = useState("resume");
+  const [docCategory, setDocCategory] = useState("JUSTIFICATIF");
   const [docs, setDocs] = useState([]),
     [parties, setParties] = useState([]),
     [amendments, setAmendments] = useState([]),
@@ -623,7 +627,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     toast("Ajout du document en cours…", "info");
     setBusy(true);
     try {
-      await svc.uploadDocument(c.id, file, user?.id);
+      await svc.uploadDocument(c.id, file, user?.id, docCategory);
       toast("Document ajouté au contrat.");
       await load();
     } catch (ex) {
@@ -733,6 +737,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
       });
       toast("Avenant créé.");
       load();
+      await onRefresh();
     } catch (e) {
       toast(errMessage(e), "error");
     }
@@ -755,6 +760,19 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
       toast(errMessage(e), "error");
     }
   };
+  const sign = async () => {
+    if (!docs.some(d => d.categorie === "CONTRAT_SIGNE")) { setTab("documents"); toast("Ajoutez le PDF du contrat signé avant de confirmer la signature externe.", "warning"); return; }
+    try {
+      await svc.signContract(c.id);
+      toast("Contrat marqué comme signé.");
+      await onRefresh();
+    } catch (e) { toast(errMessage(e), "error"); }
+  };
+  const terminate = async () => {
+    if (!(await confirm({ title: "Résilier ce contrat ?", message: `Le contrat ${c.reference} passera au statut résilié.`, confirmLabel: "Résilier", danger: true }))) return;
+    try { await svc.terminateContract(c.id); toast("Contrat marqué comme résilié."); await onRefresh(); }
+    catch (e) { toast(errMessage(e), "error"); }
+  };
   return (
     <div className="mgr-page">
       <div className="mgr-page-head">
@@ -775,9 +793,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           >
             <i className="fa-regular fa-pen-to-square" /> Modifier
           </Button>
-          <Button onClick={submitValidation}>
-            <i className="fa-solid fa-paper-plane" /> Soumettre en validation
-          </Button>
+          {c.statut === "APPROUVE" ? <Button onClick={sign}><i className="fa-solid fa-file-signature" /> Confirmer la signature externe</Button> : c.statut === "BROUILLON" || c.statut === "EN_ATTENTE" ? <Button onClick={submitValidation}><i className="fa-solid fa-paper-plane" /> Soumettre en validation</Button> : null}
+          {["SIGNE", "ACTIF"].includes(c.statut) && <Button variant="danger-outline" onClick={terminate}><i className="fa-solid fa-ban" /> Résilier</Button>}
         </PageActions>
       </div>
       <div className="mgr-detail-summary">
@@ -860,16 +877,9 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           <div className="mgr-panel-title">
             <div>
               <h3>Documents contractuels</h3>
-              <p>
-                PDF, Word et autres pièces justificatives (limite frontend : 15
-                Mo).
-              </p>
+              <p>Pièces justificatives et exemplaire signé (limite : 15 Mo).</p>
             </div>
-            <label className="mgr-btn primary file-upload">
-              <i className="fa-solid fa-upload" />
-              {busy ? "Envoi…" : "Ajouter un document"}
-              <input type="file" onChange={upload} disabled={busy} />
-            </label>
+            <div><select aria-label="Catégorie du document" value={docCategory} onChange={e => setDocCategory(e.target.value)} disabled={busy} style={{ marginRight: 8, padding: 9, borderRadius: 8 }}><option value="JUSTIFICATIF">Pièce justificative</option>{c.statut === "APPROUVE" && <option value="CONTRAT_SIGNE">Contrat signé (PDF)</option>}</select><label className="mgr-btn primary file-upload"><i className="fa-solid fa-upload" />{busy ? "Envoi…" : "Ajouter un document"}<input type="file" accept={docCategory === "CONTRAT_SIGNE" ? ".pdf,application/pdf" : undefined} onChange={upload} disabled={busy} /></label></div>
           </div>
           {docsLoading ? (
             <LoadingOrEmpty loading />
@@ -887,7 +897,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                   <div className="mgr-list-main">
                     <strong>{d.nomFichier}</strong>
                     <small>
-                      {d.type || "Document"} · Version {d.version || 1} ·{" "}
+                      {d.categorie === "CONTRAT_SIGNE" ? "Contrat signé" : "Pièce justificative"} · {d.type || "Document"} · Version {d.version || 1} ·{" "}
                       {date(d.dateImport)}
                     </small>
                   </div>
@@ -1371,7 +1381,7 @@ export function ContractFormPage() {
         </div>
         <div className="mgr-panel-title">
           <h3>
-            <i className="fa-regular fa-calendar" /> Dates et responsabilités
+            <i className="fa-regular fa-calendar" /> Dates du contrat
           </h3>
         </div>
         <div className="mgr-form-grid">
@@ -1419,16 +1429,6 @@ export function ContractFormPage() {
             />
           </label>
           <label className="mgr-field">
-            <span>ID du responsable *</span>
-            <input
-              required
-              type="number"
-              min="1"
-              value={form.responsableId}
-              onChange={(e) => change("responsableId", e.target.value)}
-            />
-          </label>
-          <label className="mgr-field">
             <span>Préavis (jours)</span>
             <input
               type="number"
@@ -1436,16 +1436,6 @@ export function ContractFormPage() {
               value={form.joursPreavis}
               onChange={(e) => change("joursPreavis", e.target.value)}
             />
-          </label>
-          <label className="mgr-field">
-            <span>Statut</span>
-            <select
-              value={form.statut || "BROUILLON"}
-              onChange={(e) => change("statut", e.target.value)}
-            >
-              <option value="BROUILLON">Brouillon</option>
-              <option value="EN_ATTENTE">En attente</option>
-            </select>
           </label>
           <label className="mgr-check wide">
             <input
@@ -1485,6 +1475,8 @@ export function ManagerValidationsPage() {
     [filter, setFilter] = useState(""),
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
+  const { user } = useAuth();
+  const [busyDecision, setBusyDecision] = useState(null);
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -1504,6 +1496,12 @@ export function ManagerValidationsPage() {
   useEffect(() => {
     load();
   }, [load]);
+  const decide = async (item, decision) => {
+    setBusyDecision(item.id);
+    try { await api.post(`/validations/${item.id}/decider`, { decision, commentaire: "" }); await load(); }
+    catch (e) { setError(errMessage(e)); }
+    finally { setBusyDecision(null); }
+  };
   const data = items.filter((v) => {
     const c = contracts.find((x) => String(x.id) === String(v.contratId));
     return (
@@ -1569,6 +1567,7 @@ export function ManagerValidationsPage() {
                   <th>Décision</th>
                   <th>Commentaire</th>
                   <th>Date</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -1605,6 +1604,7 @@ export function ManagerValidationsPage() {
                       </td>
                       <td>{v.commentaire || "—"}</td>
                       <td>{date(v.dateDecision || v.dateCreation)}</td>
+                      <td>{v.decision === "EN_ATTENTE" && v.valideurId == null && user?.role === v.roleRequis ? <div className="mgr-row-actions"><button title="Approuver" disabled={busyDecision === v.id} onClick={() => decide(v, "APPROUVE")}><i className="fa-solid fa-check"/></button><button title="Demander une modification" disabled={busyDecision === v.id} onClick={() => decide(v, "MODIFICATION_DEMANDEE")}><i className="fa-solid fa-pen"/></button><button title="Rejeter" className="danger" disabled={busyDecision === v.id} onClick={() => decide(v, "REJETE")}><i className="fa-solid fa-xmark"/></button></div> : "—"}</td>
                     </tr>
                   );
                 })}
@@ -2028,7 +2028,7 @@ export function ManagerNotificationsPage() {
                 </small>
                 {n.contratId && (
                   <Link
-                    to={`/gestionnaire/contrats/${n.contratId}`}
+                    to={user?.role === "VALIDEUR" ? `/valideur/validations?contratId=${n.contratId}` : user?.role === "ADMIN" ? "/admin/contrats" : user?.role === "JURIDIQUE" ? "/juridique/contrats" : `/gestionnaire/contrats/${n.contratId}`}
                     className="mgr-contract-link"
                   >
                     Ouvrir le contrat{" "}

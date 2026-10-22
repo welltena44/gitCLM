@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../services/api.js";
 import "./DashboardAdmin.css";
 
 export default function TypesContrat() {
@@ -21,9 +22,9 @@ export default function TypesContrat() {
 
   const fetchTypes = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/types-contrat", {
+      const res = await fetch(`${API_BASE_URL}/types-contrat`, {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
           "Content-Type": "application/json"
         }
       });
@@ -61,8 +62,8 @@ export default function TypesContrat() {
     e.preventDefault();
     try {
       const url = isEditing
-        ? `http://localhost:8080/api/types-contrat/${form.id}`
-        : "http://localhost:8080/api/types-contrat";
+        ? `${API_BASE_URL}/types-contrat/${form.id}`
+        : `${API_BASE_URL}/types-contrat`;
       
       const method = isEditing ? "PUT" : "POST";
 
@@ -70,7 +71,7 @@ export default function TypesContrat() {
         method: method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         },
         body: JSON.stringify(form)
       });
@@ -88,10 +89,10 @@ export default function TypesContrat() {
   const handleDelete = async (id) => {
     if (!window.confirm("Voulez-vous vraiment supprimer ce type de contrat ?")) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/types-contrat/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/types-contrat/${id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         }
       });
       if (!res.ok) throw new Error("Échec de la suppression");

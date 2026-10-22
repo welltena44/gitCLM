@@ -17,8 +17,6 @@ import JournauxPage from "./pages/admin/JournauxPage.jsx";
 import DashboardGestionnaire from "./pages/gestionnaire/DashboardGestionnaire.jsx";
 import DashboardValideur from "./pages/valideur/DashboardValideur.jsx";
 import ValideurValidationPage from "./pages/valideur/Validation.jsx";
-import DashboardJuridique from "./pages/juridique/DashboardJuridique.jsx";
-import WorkspacePage from "./pages/WorkspacePage.jsx";
 import { FeedbackProvider } from "./composants/FeedbackContext.jsx";
 import ContractsPage from "./pages/gestionnaire/Contracts.jsx";
 import ContractFormPage from "./pages/gestionnaire/ContractForm.jsx";
@@ -31,6 +29,7 @@ import ManagerDeadlinesPage from "./pages/gestionnaire/Deadlines.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ContractsReadOnly from "./pages/admin/ContractsReadOnly.jsx";
+import LegalPages from "./pages/juridique/LegalPages.jsx";
 
 export default function App() {
   return (
@@ -81,13 +80,13 @@ export default function App() {
           </Route>
           <Route element={<ProtectedRoute roles={["JURIDIQUE"]} />}>
             <Route path="/juridique" element={<JuridiqueLayout />}>
-              <Route index element={<DashboardJuridique />} />
-              <Route path="contrats" element={<WorkspacePage />} />
-              <Route path="regles" element={<WorkspacePage />} />
-              <Route path="validations" element={<WorkspacePage />} />
-              <Route path="versions" element={<WorkspacePage />} />
-              <Route path="notifications" element={<WorkspacePage />} />
-              <Route path="profil" element={<WorkspacePage />} />
+              <Route index element={<LegalPages />} />
+              <Route path="contrats" element={<LegalPages />} />
+              <Route path="regles" element={<LegalPages />} />
+              <Route path="validations" element={<LegalPages />} />
+              <Route path="versions" element={<LegalPages />} />
+              <Route path="notifications" element={<ManagerNotificationsPage />} />
+              <Route path="profil" element={<ManagerProfilePage />} />
             </Route>
           </Route>
           <Route path="/" element={<Navigate to="/login" replace />} />
