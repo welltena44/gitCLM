@@ -70,6 +70,8 @@ export default function WorkspaceLayout() {
   const handleLogout = async () => {
     const ok = await confirm({ title: "Confirmer la déconnexion", message: "Voulez-vous vraiment fermer votre session CLM ? Les modifications non enregistrées pourraient être perdues.", confirmLabel: "Se déconnecter", danger: true });
     if (!ok) return;
+    // Demande au backend de tracer la déconnexion tant que le token est encore présent.
+    try { await api.post("/auth/logout"); } catch (error) { console.warn("La déconnexion n'a pas pu être tracée côté serveur.", error); }
     if (typeof logout === "function") logout();
     sessionStorage.removeItem("user");
     sessionStorage.removeItem("utilisateur");

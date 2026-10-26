@@ -101,7 +101,6 @@ export function ContractsPage() {
   const [applied, setApplied] = useState({ q: "", status: "", typeId: "", service: "", responsableId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
   const [parties, setParties] = useState([]),
     [users, setUsers] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
   const { id } = useParams();
   const nav = useNavigate();
   const { toast, confirm } = useFeedback();
@@ -177,6 +176,8 @@ export function ContractsPage() {
       });
   }, [contracts, parties, users, types, applied]);
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  // Empêche de rester sur une page vide après un filtre ou une suppression.
+  useEffect(() => { setPage(current => Math.min(current, pages)); }, [pages]);
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
   const remove = async (c) => {
     if (
@@ -422,7 +423,7 @@ export function ContractsPage() {
         <div className="mgr-panel-title">
           <div>
             <h3>Résultats</h3>
-              <p>{filtered.length} contrat(s) correspondant à votre recherche{selectedIds.length ? ` · ${selectedIds.length} sélectionné(s)` : ""}</p>
+              <p>{filtered.length} contrat(s) correspondant à votre recherche</p>
           </div>
           <label className="mgr-page-size">
             Lignes{" "}
@@ -443,84 +444,53 @@ export function ContractsPage() {
         />
         {!loading && !error && visible.length > 0 && (
           <>
+            {/* Les contrats restent dans une liste compacte ; le clic ouvre le détail. */}
             <div className="mgr-table-wrap">
-              <table className="mgr-table">
+              <table className="mgr-table mgr-contract-list-table">
                 <thead>
                   <tr>
-                    <th><input aria-label="Sélectionner les contrats de cette page" type="checkbox" checked={visible.length > 0 && visible.every((c) => selectedIds.includes(c.id))} onChange={(e) => setSelectedIds((ids) => e.target.checked ? [...new Set([...ids, ...visible.map((c) => c.id)])] : ids.filter((id) => !visible.some((c) => c.id === id)))} /></th>
                     <th>Référence / objet</th>
                     <th>Type</th>
-                    <th>Partenaire</th>
-                    <th>Montant</th>
-                    <th>Signature / fin</th>
                     <th>Statut</th>
                     <th>Service / responsable</th>
-                    <th className="actions-col">Actions</th>
+                    <th>Montant</th>
+                    <th>Signature / fin</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {visible.map((c) => (
-                    <tr key={c.id}>
-                      <td><input aria-label={`Sélectionner ${c.reference || c.objet}`} type="checkbox" checked={selectedIds.includes(c.id)} onChange={(e) => setSelectedIds((ids) => e.target.checked ? [...ids, c.id] : ids.filter((selectedId) => selectedId !== c.id))} /></td>
-                      <td>
-                        <button
-                          className="mgr-contract-link"
-                          onClick={() => nav(`/gestionnaire/contrats/${c.id}`)}
-                        >
-                          {c.reference || `CLM-${c.id}`}
-                        </button>
-                        <strong className="mgr-cell-title">{c.objet}</strong>
-                        <small>Créé le {date(c.dateCreation)}</small>
-                      </td>
-                      <td>
-                        <span>{types.find((t) => String(t.id) === String(c.typeId))?.nom || `Type #${c.typeId || "—"}`}</span>
-                      </td>
-                      <td>
-                        {(parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom).join(", ")) || "—"}
-                      </td>
-                      <td>{money(c.montant, c.devise)}</td>
-                      <td>
-                        <small>Signature : {date(c.dateSignature)}</small>
-                        <small>Fin : {date(c.dateFin)}</small>
-                      </td>
-                      <td>
-                        <span className={`mgr-status ${statusClass(c.statut)}`}>
-                          {statusLabel(c.statut)}
-                        </span>
-                      </td>
-                      <td>
-                        <span>{c.service || "—"}</span>
-                        <small>{[users.find((u) => String(u.id) === String(c.responsableId))?.prenom, users.find((u) => String(u.id) === String(c.responsableId))?.nom].filter(Boolean).join(" ") || c.responsableNom || (c.responsableId ? `Responsable #${c.responsableId}` : "—")}</small>
-                      </td>
-                      <td>
-                        <div className="mgr-row-actions">
-                          <button
-                            title="Afficher"
-                            onClick={() =>
-                              nav(`/gestionnaire/contrats/${c.id}`)
-                            }
-                          >
-                            <i className="fa-regular fa-eye" />
-                          </button>
-                          <button
-                            title="Modifier"
-                            onClick={() =>
-                              nav(`/gestionnaire/contrats/${c.id}/modifier`)
-                            }
-                          >
-                            <i className="fa-regular fa-pen-to-square" />
-                          </button>
-                          <button
-                            title="Supprimer"
-                            className="danger"
-                            onClick={() => remove(c)}
-                          >
-                            <i className="fa-regular fa-trash-can" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {visible.map((c) => {
+                    // Résout les informations liées pour éviter de les répéter dans la vue.
+                    const typeName = types.find((t) => String(t.id) === String(c.typeId))?.nom || `Type #${c.typeId || "—"}`;
+                    const manager = users.find((u) => String(u.id) === String(c.responsableId));
+                    const managerMatricule = manager?.matricule || "—";
+                    const partner = parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom).filter(Boolean).join(", ");
+                    const openDetails = () => nav(`/gestionnaire/contrats/${c.id}`);
+                    return (
+                      <tr className="mgr-contract-row" key={c.id} tabIndex={0} role="button"
+                        aria-label={`Afficher le contrat ${c.reference || c.id}`}
+                        onClick={openDetails}
+                        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openDetails(); } }}>
+                        <td>
+                          <strong>{c.reference || `CLM-${c.id}`}</strong>
+                          <small className="mgr-cell-title">{c.objet || "Objet non renseigné"}</small>
+                          {partner && <small>Partie prenante : {partner}</small>}
+                        </td>
+                        <td>{typeName}</td>
+                        <td><span className={`mgr-status ${statusClass(c.statut)}`}>{statusLabel(c.statut)}</span></td>
+                        <td>{c.service || "—"}<small>Matricule : {managerMatricule}</small></td>
+                        <td><strong>{money(c.montant, c.devise)}</strong></td>
+                        <td>{date(c.dateSignature)}<small>Fin : {date(c.dateFin)}</small></td>
+                        <td>
+                          <div className="mgr-row-actions">
+                            <button type="button" title="Afficher le contrat" aria-label="Afficher le contrat" onClick={(event) => { event.stopPropagation(); openDetails(); }}><i className="fa-regular fa-eye"/></button>
+                            <button type="button" title="Modifier" aria-label="Modifier le contrat" onClick={(event) => { event.stopPropagation(); nav(`/gestionnaire/contrats/${c.id}/modifier`); }}><i className="fa-regular fa-pen-to-square"/></button>
+                            <button type="button" title="Supprimer" aria-label="Supprimer le contrat" className="danger" onClick={(event) => { event.stopPropagation(); remove(c); }}><i className="fa-regular fa-trash-can"/></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -851,7 +821,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               ["Objet", c.objet],
               ["Description", c.description],
               ["Type", types.find((t) => String(t.id) === String(c.typeId))?.nom || (c.typeId ? `Type #${c.typeId}` : "—")],
-              ["Responsable", (() => { const person = users.find((u) => String(u.id) === String(c.responsableId)); return [person?.prenom, person?.nom].filter(Boolean).join(" ") || c.responsableNom || (c.responsableId ? `Responsable #${c.responsableId}` : "—"); })()],
+              ["Responsable (matricule)", users.find((person) => String(person.id) === String(c.responsableId))?.matricule || "—"],
               ["Service", c.service],
               ["Date de signature", date(c.dateSignature)],
               ["Date de début", date(c.dateDebut)],
@@ -1471,6 +1441,7 @@ export function ContractFormPage() {
 export function ManagerValidationsPage() {
   const [items, setItems] = useState([]),
     [contracts, setContracts] = useState([]),
+    [users, setUsers] = useState([]),
     [q, setQ] = useState(""),
     [filter, setFilter] = useState(""),
     [loading, setLoading] = useState(true),
@@ -1480,12 +1451,14 @@ export function ManagerValidationsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [v, c] = await Promise.all([
+      const [v, c, directory] = await Promise.all([
         svc.getValidations(),
         svc.getContracts(),
+        api.get("/utilisateurs").then(response => response.data),
       ]);
       setItems(v || []);
       setContracts(c || []);
+      setUsers(directory || []);
       setError("");
     } catch (e) {
       setError(errMessage(e));
@@ -1587,7 +1560,7 @@ export function ManagerValidationsPage() {
                         {v.etape || `Validation #${v.id}`}
                         <small>
                           {v.valideurId
-                            ? `Valideur #${v.valideurId}`
+                            ? `Matricule ${users.find(person => String(person.id) === String(v.valideurId))?.matricule || "—"}`
                             : "Valideur à attribuer"}
                         </small>
                       </td>

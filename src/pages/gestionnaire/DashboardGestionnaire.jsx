@@ -8,6 +8,7 @@ import './ManagerPages.css';
 const date = value => value
   ? new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString('fr-FR')
   : '—';
+const money = (value, currency = 'Ar') => `${Number(value || 0).toLocaleString('fr-FR')} ${currency || 'Ar'}`;
 
 const statusLabel = status => ({
   BROUILLON: 'Brouillon',
@@ -103,20 +104,9 @@ export default function DashboardGestionnaire() {
         </div>
         {loading ? <div className="mgr-state"><i className="fa-solid fa-spinner fa-spin" /> Chargement…</div>
           : recent.length === 0 ? <div className="mgr-state">Aucun contrat disponible pour le moment.</div>
-            : <div className="mgr-table-wrap">
-              <table className="mgr-table">
-                <thead><tr><th>Référence / objet</th><th>Service</th><th>Statut</th><th>Échéance</th><th>Action</th></tr></thead>
-                <tbody>{recent.map(contract => (
-                  <tr key={contract.id}>
-                    <td><Link className="mgr-contract-link" to={`/gestionnaire/contrats/${contract.id}`}>{contract.reference || `CLM-${contract.id}`}</Link><small>{contract.objet}</small></td>
-                    <td>{contract.service || '—'}</td>
-                    <td><span className={`mgr-status ${statusClass(contract.statut)}`}>{statusLabel(contract.statut)}</span></td>
-                    <td>{date(contract.dateFin)}</td>
-                    <td><Link className="mgr-contract-link" to={`/gestionnaire/contrats/${contract.id}`}>Ouvrir</Link></td>
-                  </tr>
-                ))}</tbody>
-              </table>
-            </div>}
+            : <div className="mgr-contract-cards">{recent.map(contract => (
+              <article className="mgr-contract-card" key={contract.id}><header><span className="mgr-file-icon"><i className="fa-solid fa-file-contract"/></span><span className={`mgr-status ${statusClass(contract.statut)}`}>{statusLabel(contract.statut)}</span></header><Link className="mgr-contract-link" to={`/gestionnaire/contrats/${contract.id}`}>{contract.reference || `CLM-${contract.id}`}</Link><h3>{contract.objet || 'Objet non renseigné'}</h3><div className="mgr-contract-card-meta"><span><small>Service</small>{contract.service || '—'}</span><span><small>Montant</small>{money(contract.montant,contract.devise)}</span><span><small>Échéance</small>{date(contract.dateFin)}</span><span><small>Mis à jour</small>{date(contract.dateModification || contract.dateCreation)}</span></div><footer><small>Ouvrir le dossier</small><Link className="mgr-contract-link" to={`/gestionnaire/contrats/${contract.id}`}><i className="fa-solid fa-arrow-right"/></Link></footer></article>
+            ))}</div>}
       </section>
 
       <section className="mgr-panel">

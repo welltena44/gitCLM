@@ -81,6 +81,7 @@ input, select, textarea { max-width: 100%; }
 .mgr-kpis > div:hover { transform: translateY(-1px); }
 .mgr-kpis strong { letter-spacing: -.4px; }
 .clm-notification-popover { box-shadow: 0 18px 44px rgba(27,39,54,.14); }
+table thead th { background: linear-gradient(180deg, #edf6f5, #e4f0ef) !important; color: #315d60 !important; border-bottom-color: #cbdedb !important; }
 
 /* Contrôles de formulaire cohérents dans les espaces connectés. */
 .clm-content .mgr-field > span {
@@ -214,4 +215,45 @@ input, select, textarea { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+
+/* Tables harmonisées pour les écrans de gestion CLM. */
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap, .admin-panel, .legal-panel) {
+  min-width: 0;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) {
+  overflow: auto; border: 1px solid #dfe7ef; border-radius: 13px; background: #fff;
+  box-shadow: 0 5px 18px rgba(18, 38, 63, .045); scrollbar-width: thin;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) table {
+  width: 100%; border-collapse: separate; border-spacing: 0; color: #26364b;
+  font-size: 12px; line-height: 1.5;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) thead th {
+  position: sticky; top: 0; z-index: 1; padding: 14px 15px;
+  color: #52647a; background: #f3f6fa; border-bottom: 1px solid #dfe7ef;
+  font-size: 10px; font-weight: 850; letter-spacing: .055em; text-align: left;
+  text-transform: uppercase; white-space: nowrap;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) tbody td {
+  padding: 13px 15px; border-bottom: 1px solid #edf1f5; vertical-align: middle;
+  background: #fff; transition: background .15s ease;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) tbody tr:last-child td { border-bottom: 0; }
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) tbody tr:hover td { background: #f6f9fc; }
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) td strong { color: #172b45; font-weight: 800; }
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) td small {
+  display: block; margin-top: 4px; color: #78889b; font-size: 11px; line-height: 1.45;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) details summary {
+  color: #176b83; font-weight: 750; cursor: pointer;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) details pre {
+  max-width: 460px; max-height: 280px; overflow: auto; padding: 12px;
+  border: 1px solid #e2e9f0; border-radius: 9px; background: #f7f9fc;
+  color: #34465d; font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+@media (max-width: 650px) {
+  :where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) table { min-width: 720px; }
 }
