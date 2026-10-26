@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
@@ -102,6 +102,8 @@ export function ContractsPage() {
   const [parties, setParties] = useState([]),
     [users, setUsers] = useState([]);
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const openedFromNotification = searchParams.get("notification") === "1";
   const nav = useNavigate();
   const { toast, confirm } = useFeedback();
   const reload = useCallback(async () => {
@@ -525,6 +527,7 @@ export function ContractsPage() {
       </section>
       {id && selected && <div className="mgr-detail-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) nav("/gestionnaire/contrats"); }}>
         <aside className="mgr-detail-drawer" role="dialog" aria-modal="true" aria-label={`Détail du contrat ${selected.reference || selected.id}`}>
+          {openedFromNotification && <p className="mgr-notification-target"><i className="fa-solid fa-bell"/> Contrat signalé par une notification</p>}
           <ContractDetails contract={selected} onRefresh={reload} types={types} users={users} />
         </aside>
       </div>}
@@ -1447,6 +1450,8 @@ export function ManagerValidationsPage() {
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const targetContractId = searchParams.get("contratId");
   const [busyDecision, setBusyDecision] = useState(null);
   const load = useCallback(async () => {
     setLoading(true);
@@ -1481,6 +1486,7 @@ export function ManagerValidationsPage() {
       (!filter ||
         String(v.decision || v.statut || "EN_ATTENTE").toUpperCase() ===
           filter) &&
+      (!targetContractId || String(v.contratId) === targetContractId) &&
       (!q ||
         `${c?.reference || ""} ${c?.objet || ""} ${v.commentaire || ""} ${v.id || ""}`
           .toLowerCase()
@@ -1549,7 +1555,7 @@ export function ManagerValidationsPage() {
                     (x) => String(x.id) === String(v.contratId),
                   );
                   return (
-                    <tr key={v.id}>
+                    <tr key={v.id} className={String(v.contratId) === targetContractId ? "notification-target" : ""}>
                       <td>
                         <strong>
                           {c?.reference || `Contrat #${v.contratId || "—"}`}

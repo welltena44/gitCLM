@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getContracts, getContractTypes, getValidations, getAmendments, getParties, getDocuments, downloadDocument } from "../../services/contractService.js";
@@ -85,17 +85,28 @@ function LegalDashboard({ data, loading, error, load }) {
 }
 
 function LegalRules({ data, loading, error, load }) {
-  const emptyForm = { montantMinimum: 0, montantMaximum: "" };
+  const [searchParams, setSearchParams] = useSearchParams();
+  const targetRuleId = searchParams.get("regleId");
+  const emptyForm = { montantMinimum: "", montantMaximum: "" };
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionError, setActionError] = useState("");
-  const openNew = () => { setForm(emptyForm); setEditing(null); setShowForm(true); setActionError(""); };
   const openEdit = rule => {
     setForm({ montantMinimum: rule.montantMinimum ?? 0, montantMaximum: rule.montantMaximum ?? "" });
     setEditing(rule.id); setShowForm(true); setActionError("");
   };
+  useEffect(() => {
+    if (!targetRuleId || loading) return;
+    const rule = data.rules.find(item => String(item.id) === targetRuleId);
+    if (!rule) return;
+    setForm({ montantMinimum: rule.montantMinimum ?? "", montantMaximum: rule.montantMaximum ?? "" });
+    setEditing(rule.id);
+    setShowForm(true);
+    setActionError("");
+    setSearchParams(current => { current.delete("regleId"); return current; }, { replace: true });
+  }, [targetRuleId, loading, data.rules, setSearchParams]);
   const save = async event => {
     event.preventDefault(); setSaving(true); setActionError("");
     const payload = { ...form, montantMinimum: Number(form.montantMinimum), montantMaximum: form.montantMaximum === "" ? null : Number(form.montantMaximum) };
@@ -106,14 +117,14 @@ function LegalRules({ data, loading, error, load }) {
     } catch (e) { setActionError(err(e)); }
     finally { setSaving(false); }
   };
-  return <LegalFrame title="Règles et seuils" description="Définissez les seuils financiers. L’administrateur choisit les types de contrats et configure les circuits de validation." loading={loading} error={error} onRefresh={load}>
+  return <LegalFrame title="Seuils de validation" description="Définissez les bornes financières des circuits créés par l’Administrateur. Toute modification attend sa confirmation." loading={loading} error={error} onRefresh={load}>
     {actionError && <p className="legal-state error" role="alert">{actionError}</p>}
     <section className="legal-panel">
-      <div className="legal-panel-head"><h3>Seuils de validation</h3><button className="legal-rule-button" type="button" onClick={openNew}><i className="fa-solid fa-plus"/> Ajouter une règle</button></div>
-      <p className="legal-rule-help">Modifiez ici les seuils financiers applicables globalement. Les types de contrats, niveaux et rôles du circuit sont gérés par l’administrateur.</p>
-      <div className="legal-table-wrap"><table><thead><tr><th>Type</th><th>Montant minimum</th><th>Montant maximum</th><th>Niveau</th><th>Rôle requis</th><th>Actions</th></tr></thead><tbody>{data.rules.map(r=><tr key={r.id}><td>{data.types.find(t=>String(t.id)===String(r.typeContratId))?.nom || "Tous les types"}</td><td>{money(r.montantMinimum)}</td><td>{r.montantMaximum == null ? "Sans plafond" : money(r.montantMaximum)}</td><td>{r.niveau}</td><td><span className="legal-tag">{r.roleRequis}</span></td><td><div className="legal-row-actions"><button type="button" onClick={()=>openEdit(r)} aria-label={`Modifier les seuils de la règle ${r.id}`}><i className="fa-solid fa-pen"/></button></div></td></tr>)}</tbody></table>{!data.rules.length && <p className="legal-empty">Aucune règle de validation configurée.</p>}</div>
+      <div className="legal-panel-head"><h3>Circuits à paramétrer</h3></div>
+      <p className="legal-rule-help">Sélectionnez une règle créée par l’Administrateur pour définir ou modifier son seuil. Une modification doit être confirmée par l’Administrateur avant de s’appliquer.</p>
+      <div className="legal-table-wrap"><table><thead><tr><th>Type</th><th>Niveau</th><th>Rôle requis</th><th>Montant minimum</th><th>Montant maximum</th><th>État</th><th>Actions</th></tr></thead><tbody>{data.rules.map(r=><tr key={r.id} className={String(r.id) === targetRuleId ? "notification-target" : ""}><td>{data.types.find(t=>String(t.id)===String(r.typeContratId))?.nom || "Tous les types"}</td><td>{r.niveau}</td><td><span className="legal-tag">{r.roleRequis}</span></td><td>{r.statut === "EN_ATTENTE_SEUIL" ? "À définir" : money(r.montantMinimum)}</td><td>{r.statut === "EN_ATTENTE_SEUIL" ? "À définir" : r.montantMaximum == null ? "Sans plafond" : money(r.montantMaximum)}</td><td>{r.statut === "ACTIVE" ? "Confirmé" : r.statut === "EN_ATTENTE_CONFIRMATION" ? "En attente de confirmation Admin" : "À définir par le Juridique"}</td><td><div className="legal-row-actions"><button type="button" onClick={()=>openEdit(r)} aria-label={`Définir ou modifier le seuil de la règle ${r.id}`}><i className="fa-solid fa-pen"/></button></div></td></tr>)}</tbody></table>{!data.rules.length && <p className="legal-empty">Aucun circuit n’a encore été créé par l’Administrateur.</p>}</div>
     </section>
-    {showForm && <div className="legal-rule-overlay"><form className="legal-rule-form" onSubmit={save}><h3>{editing == null ? "Ajouter une règle" : "Modifier la règle"}</h3>
+    {showForm && <div className="legal-rule-overlay"><form className="legal-rule-form" onSubmit={save}><h3>{editing == null ? "Définir le seuil" : "Définir ou modifier le seuil"}</h3>
       <div className="legal-rule-fields"><label>Montant minimum<input type="number" min="0" step="0.01" required value={form.montantMinimum} onChange={e=>setForm({...form,montantMinimum:e.target.value})}/></label><label>Montant maximum<input type="number" min="0" step="0.01" placeholder="Sans plafond" value={form.montantMaximum} onChange={e=>setForm({...form,montantMaximum:e.target.value})}/></label></div>
       {actionError && <p className="legal-state error" role="alert">{actionError}</p>}<div className="legal-rule-actions"><button type="button" disabled={saving} onClick={()=>{setEditing(null);setForm(emptyForm);setShowForm(false);setActionError("");}}>Annuler</button><button type="submit" disabled={saving}>{saving ? "Enregistrement…" : editing == null ? "Créer la règle" : "Enregistrer"}</button></div>
     </form></div>}
@@ -122,6 +133,7 @@ function LegalRules({ data, loading, error, load }) {
 
 export default function LegalPages() {
   const { pathname, search } = useLocation(); const { data, loading, error, load } = useLegalData();
+  const requestedContractId = new URLSearchParams(search).get("contratId");
   const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [busyDecision, setBusyDecision] = useState(null);
@@ -129,12 +141,16 @@ export default function LegalPages() {
   const [selectedValidation, setSelectedValidation] = useState(null);
   // Contrat sélectionné dans le tableau du portefeuille juridique.
   const [selectedContract, setSelectedContract] = useState(null);
-  const requestedContractId = new URLSearchParams(search).get("contratId");
   useEffect(() => {
     if (pathname === "/juridique/contrats" && requestedContractId) {
       setSelectedContract(data.contracts.find(contract => String(contract.id) === requestedContractId) || null);
     }
   }, [pathname, requestedContractId, data.contracts]);
+  useEffect(() => {
+    if (pathname !== "/juridique/validations" || !requestedContractId || loading) return;
+    const validation = data.validations.find(item => String(item.contratId) === requestedContractId && item.decision === "EN_ATTENTE");
+    if (validation) setSelectedValidation(validation);
+  }, [pathname, requestedContractId, loading, data.validations]);
   // Ferme le panneau de détail avec Escape, comme les autres dialogues.
   useEffect(() => {
     if (!selectedContract) return undefined;
@@ -154,7 +170,7 @@ export default function LegalPages() {
         <table className="legal-contract-list">
           <thead><tr><th>Référence / objet</th><th>Type</th><th>Statut</th><th>Service</th><th>Responsable (matricule)</th><th>Montant</th><th>Fin du contrat</th><th>Consulter</th></tr></thead>
           <tbody>{list.map(c => (
-            <tr key={c.id} className="legal-contract-row" tabIndex={0} role="button" aria-label={`Ouvrir le contrat ${c.reference || c.id}`}
+            <tr key={c.id} className={`legal-contract-row ${String(c.id) === requestedContractId ? "notification-target" : ""}`} tabIndex={0} role="button" aria-label={`Ouvrir le contrat ${c.reference || c.id}`}
               onClick={() => setSelectedContract(c)}
               onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedContract(c); } }}>
               <td><strong>{c.reference || `Contrat #${c.id}`}</strong><small>{c.objet || "Objet non renseigné"}</small></td>
@@ -198,10 +214,10 @@ export default function LegalPages() {
     return <LegalFrame title="Contrats à approuver" description="Consultez le dossier complet avant de rendre votre décision Juridique." loading={loading} error={error} onRefresh={load}>
       {decisionError && <p className="legal-state error" role="alert">{decisionError}</p>}
       <section className="legal-panel legal-pending-panel"><div className="legal-panel-head"><div><h3>En attente de votre approbation</h3><p>{pendingLegal.length} dossier(s) à traiter</p></div></div>
-        <div className="legal-table-wrap legal-incoming-table"><table><thead><tr><th>Référence / objet</th><th>Type</th><th>Montant</th><th>Service</th><th>Début / fin</th><th>Reçue le</th><th>État</th></tr></thead><tbody>{pendingLegal.map(v => { const c = contractsById.get(String(v.contratId)); return <tr key={v.id} className="legal-incoming-row" tabIndex={0} role="button" onClick={() => setSelectedValidation(v)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedValidation(v); } }}><td><strong>{c?.reference || `Contrat #${v.contratId}`}</strong><small>{c?.objet || "Objet non renseigné"}</small></td><td>{data.types.find(t=>String(t.id)===String(c?.typeId))?.nom || "—"}</td><td>{money(c?.montant,c?.devise)}</td><td>{c?.service || "—"}</td><td>{formatDate(c?.dateDebut)} / {formatDate(c?.dateFin)}</td><td>{formatDate(v.dateSoumission)}</td><td><span className="legal-status pending">Niveau {v.niveau} · Ouvrir</span></td></tr>; })}</tbody></table>{!pendingLegal.length&&<p className="legal-empty">Aucun contrat n’attend actuellement votre approbation.</p>}</div>
+        <div className="legal-table-wrap legal-incoming-table"><table><thead><tr><th>Référence / objet</th><th>Type</th><th>Montant</th><th>Service</th><th>Début / fin</th><th>Reçue le</th><th>État</th></tr></thead><tbody>{pendingLegal.map(v => { const c = contractsById.get(String(v.contratId)); return <tr key={v.id} className={`legal-incoming-row ${String(v.contratId) === requestedContractId ? "notification-target" : ""}`} tabIndex={0} role="button" onClick={() => setSelectedValidation(v)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedValidation(v); } }}><td><strong>{c?.reference || `Contrat #${v.contratId}`}</strong><small>{c?.objet || "Objet non renseigné"}</small></td><td>{data.types.find(t=>String(t.id)===String(c?.typeId))?.nom || "—"}</td><td>{money(c?.montant,c?.devise)}</td><td>{c?.service || "—"}</td><td>{formatDate(c?.dateDebut)} / {formatDate(c?.dateFin)}</td><td>{formatDate(v.dateSoumission)}</td><td><span className="legal-status pending">Niveau {v.niveau} · Ouvrir</span></td></tr>; })}</tbody></table>{!pendingLegal.length&&<p className="legal-empty">Aucun contrat n’attend actuellement votre approbation.</p>}</div>
       </section>
       {selectedValidation && <LegalReviewDialog key={selectedValidation.id} validation={selectedValidation} contract={contractsById.get(String(selectedValidation.contratId))} typeName={data.types.find(t=>String(t.id)===String(contractsById.get(String(selectedValidation.contratId))?.typeId))?.nom} busy={busyDecision === selectedValidation.id} onDecide={decide} allowDecision={user?.role === "JURIDIQUE" && assignedToMe(selectedValidation)} onClose={()=>setSelectedValidation(null)}/>}
-      <section className="legal-panel"><div className="legal-panel-head"><div><h3>Historique des validations</h3><p>Historique des étapes juridiques visibles par votre rôle.</p></div></div><div className="legal-table-wrap"><table><thead><tr><th>Contrat</th><th>Étape</th><th>Rôle requis</th><th>Matricule demandeur</th><th>Matricule valideur</th><th>Décision</th><th>Commentaire</th><th>Date</th></tr></thead><tbody>{data.validations.map(v => { const c = contractsById.get(String(v.contratId)); return <tr key={`history-${v.id}`}><td><strong>{c?.reference || `Contrat #${v.contratId}`}</strong><small>{c?.objet}</small></td><td>{v.etape || `Étape ${v.niveau || "—"}`}</td><td>{v.roleRequis || "—"}</td><td>{data.users.find(person => String(person.id) === String(v.demandeurId))?.matricule || "—"}</td><td>{data.users.find(person => String(person.id) === String(v.valideurId))?.matricule || "—"}</td><td><span className={`legal-status ${getStatusClass(v.decision || v.statut)}`}>{v.decision || v.statut || "EN_ATTENTE"}</span></td><td>{v.commentaire || "—"}</td><td>{formatDate(v.dateValidation || v.dateSoumission)}</td></tr>; })}</tbody></table>{!data.validations.length && <p className="legal-empty">Aucune validation enregistrée.</p>}</div></section>
+      <section className="legal-panel"><div className="legal-panel-head"><div><h3>Historique des validations</h3><p>Historique des étapes juridiques visibles par votre rôle.</p></div></div><div className="legal-table-wrap"><table><thead><tr><th>Contrat</th><th>Étape</th><th>Rôle requis</th><th>Matricule demandeur</th><th>Matricule valideur</th><th>Décision</th><th>Commentaire</th><th>Date</th></tr></thead><tbody>{data.validations.map(v => { const c = contractsById.get(String(v.contratId)); return <tr key={`history-${v.id}`} className={String(v.contratId) === requestedContractId ? "notification-target" : ""}><td><strong>{c?.reference || `Contrat #${v.contratId}`}</strong><small>{c?.objet}</small></td><td>{v.etape || `Étape ${v.niveau || "—"}`}</td><td>{v.roleRequis || "—"}</td><td>{data.users.find(person => String(person.id) === String(v.demandeurId))?.matricule || "—"}</td><td>{data.users.find(person => String(person.id) === String(v.valideurId))?.matricule || "—"}</td><td><span className={`legal-status ${getStatusClass(v.decision || v.statut)}`}>{v.decision || v.statut || "EN_ATTENTE"}</span></td><td>{v.commentaire || "—"}</td><td>{formatDate(v.dateValidation || v.dateSoumission)}</td></tr>; })}</tbody></table>{!data.validations.length && <p className="legal-empty">Aucune validation enregistrée.</p>}</div></section>
     </LegalFrame>;
   }
   if (pathname === "/juridique/versions") return <LegalFrame title="Versions et avenants" description="Traçabilité des versions et modifications associées aux contrats." loading={loading} error={error} onRefresh={load}><div className="legal-table-wrap"><table><thead><tr><th>Contrat</th><th>Version</th><th>Date</th><th>Matricule créateur</th><th>Avenant</th><th>Contenu archivé</th></tr></thead><tbody>{data.versions.map(v=>{const c=contractsById.get(String(v.contratId));return <tr key={v.id}><td><strong>{c?.reference || `Contrat #${v.contratId}`}</strong><small>{c?.objet}</small></td><td>v{v.version}</td><td>{formatDate(v.dateCreation)}</td><td>{data.users.find(person=>String(person.id)===String(v.creePar))?.matricule || "—"}</td><td>{v.avenantId ? `Avenant #${v.avenantId}` : "—"}</td><td><details className="legal-version-recap"><summary>Consulter le récapitulatif</summary><div className="legal-version-recap-grid">{versionRecap(v.contenu).map(([label,value])=><div key={label}><small>{label}</small><strong>{value || "—"}</strong></div>)}</div></details></td></tr>;})}</tbody></table>{!data.versions.length && <p className="legal-empty">Aucune version archivée.</p>}</div><h3 className="legal-subtitle">Avenants</h3><div className="legal-table-wrap"><table><thead><tr><th>Numéro</th><th>Contrat</th><th>Date</th><th>Modifications</th><th>Montant après</th></tr></thead><tbody>{data.amendments.map(a=><tr key={a.id}><td>{a.numero || `#${a.id}`}</td><td>{contractsById.get(String(a.contratId))?.reference || `Contrat #${a.contratId}`}</td><td>{formatDate(a.dateAvenant)}</td><td>{a.modifications || a.description || "—"}</td><td>{money(a.montantApres,contractsById.get(String(a.contratId))?.devise)}</td></tr>)}</tbody></table>{!data.amendments.length && <p className="legal-empty">Aucun avenant enregistré.</p>}</div></LegalFrame>;

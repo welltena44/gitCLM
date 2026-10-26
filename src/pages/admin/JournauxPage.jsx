@@ -3,7 +3,7 @@ import api from "../../services/api.js";
 import "./DashboardAdmin.css";
 
 const date = value => value ? new Date(value).toLocaleString("fr-FR") : "—";
-const actionLabel = action => ({ CONNEXION: "Connexion", DECONNEXION: "Déconnexion", FERMETURE_ONGLET: "Fermeture d’onglet" }[action] || String(action || "Action"));
+const actionLabel = action => ({ CONNEXION: "Connexion", DECONNEXION: "Déconnexion", FERMETURE_ONGLET: "Déconnexion" }[action] || String(action || "Action"));
 const actionClass = action => ({ CONNEXION: "audit-action-login", DECONNEXION: "audit-action-logout", FERMETURE_ONGLET: "audit-action-logout" }[action] || "audit-action-default");
 export default function JournauxPage() {
   const [rows, setRows] = useState([]), [contracts, setContracts] = useState([]), [users, setUsers] = useState([]), [query, setQuery] = useState(""), [error, setError] = useState("");

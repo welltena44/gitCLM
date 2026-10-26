@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import { API_BASE_URL } from "../services/api.js";
+import { reportSessionEnd } from "../services/api.js";
 
 const AuthContext = createContext();
 
@@ -16,14 +16,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!user) return undefined;
     const logTabClose = () => {
-      const token = sessionStorage.getItem("token");
-      if (!token) return;
-      fetch(`${API_BASE_URL}/auth/tab-close`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: "{}",
-        keepalive: true
-      }).catch(() => {});
+      reportSessionEnd();
     };
     window.addEventListener("pagehide", logTabClose);
     return () => window.removeEventListener("pagehide", logTabClose);

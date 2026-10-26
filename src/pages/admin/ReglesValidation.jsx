@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { API_BASE_URL } from "../../services/api.js";
 import "./DashboardAdmin.css";
 
 export default function ReglesValidation() {
+  const [searchParams] = useSearchParams();
+  const targetRuleId = searchParams.get("regleId");
   const [regles, setRegles] = useState([]);
   const [typesContrat, setTypesContrat] = useState([]);
   const [utilisateurs, setUtilisateurs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmingId, setConfirmingId] = useState(null);
 
   const initialFormState = {
     id: null,
@@ -15,7 +19,6 @@ export default function ReglesValidation() {
     roleRequis: "VALIDEUR",
     valideurId: "",
     typeContratId: "",
-    regleSourceId: ""
   };
 
   const [form, setForm] = useState(initialFormState);
@@ -73,7 +76,6 @@ export default function ReglesValidation() {
       roleRequis: item.roleRequis,
       valideurId: item.valideurId ?? "",
       typeContratId: item.typeContratId ?? "",
-      regleSourceId: ""
     });
     setIsEditing(true);
     setShowModal(true);
@@ -94,7 +96,6 @@ export default function ReglesValidation() {
         roleRequis: form.roleRequis,
         typeContratId: form.typeContratId === "" ? null : Number(form.typeContratId),
         valideurId: form.valideurId === "" ? null : Number(form.valideurId),
-        ...(isEditing ? {} : { regleSourceId: Number(form.regleSourceId) })
       };
 
       const res = await fetch(url, {
@@ -116,6 +117,22 @@ export default function ReglesValidation() {
       fetchRegles();
     } catch (err) {
       alert("Erreur : " + err.message);
+    }
+  };
+
+  const handleConfirm = async id => {
+    setConfirmingId(id);
+    try {
+      const res = await fetch(`${API_BASE_URL}/regles-validation/${id}/confirmer`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` }
+      });
+      if (!res.ok) throw new Error("Impossible de confirmer ce seuil.");
+      await fetchRegles();
+    } catch (err) {
+      alert("Erreur : " + err.message);
+    } finally {
+      setConfirmingId(null);
     }
   };
 
@@ -151,7 +168,7 @@ export default function ReglesValidation() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h2><i className="fa-solid fa-list-check"></i> Configuration des circuits de validation</h2>
-          <p className="subtitle">Configurez les étapes des circuits : niveau et rôle chargé de valider. Les seuils relèvent de l’espace Juridique.</p>
+          <p className="subtitle">Créez les étapes, niveaux et responsables du circuit. Le Juridique définit ensuite les seuils; vous confirmez leur activation.</p>
         </div>
         <button 
           onClick={handleOpenCreate}
@@ -167,8 +184,7 @@ export default function ReglesValidation() {
             <tr style={{ background: "#f8fafc", textAlign: "left" }}>
               <th style={{ padding: "12px" }}>ID</th>
               <th style={{ padding: "12px" }}>Type de Contrat (Relation)</th>
-              <th>Montant Min </th>
-              <th>Montant Max </th>
+              <th>État du seuil</th>
               <th>Niveau</th>
               <th>Rôle requis</th>
               <th>Valideur ciblé</th>
@@ -178,13 +194,13 @@ export default function ReglesValidation() {
           <tbody>
             {regles.length === 0 ? (
               <tr>
-                <td colSpan="8" style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
+                  <td colSpan="7" style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
                   Aucune règle de validation configurée pour l'instant.
                 </td>
               </tr>
             ) : (
               regles.map(r => (
-                <tr key={r.id} style={{ borderTop: "1px solid #eee" }}>
+                <tr key={r.id} className={String(r.id) === targetRuleId ? "notification-target" : ""} style={{ borderTop: "1px solid #eee" }}>
                   <td style={{ padding: "12px", fontWeight: "bold" }}>{r.id}</td>
                   <td style={{ padding: "12px" }}>
                     <span style={{ 
@@ -195,8 +211,7 @@ export default function ReglesValidation() {
                       {getTypeName(r.typeContratId)}
                     </span>
                   </td>
-                  <td>{Number(r.montantMinimum).toLocaleString()} Ar</td>
-                  <td>{r.montantMaximum ? `${Number(r.montantMaximum).toLocaleString()} Ar` : "Illimité (∞)"}</td>
+                  <td>{r.statut === "ACTIVE" ? "Confirmé" : r.statut === "EN_ATTENTE_CONFIRMATION" ? "À confirmer" : "À définir par le Juridique"}</td>
                   <td>
                     <span style={{ padding: "3px 8px", background: "#fef3c7", color: "#92400e", borderRadius: "6px", fontWeight: "bold" }}>
                       Niveau {r.niveau}
@@ -209,6 +224,7 @@ export default function ReglesValidation() {
                   </td>
                   <td>{getValideurName(r.valideurId, r.roleRequis)}</td>
                   <td style={{ textAlign: "center", display: "flex", justifyContent: "center", gap: "12px", padding: "12px" }}>
+                    {r.statut === "EN_ATTENTE_CONFIRMATION" && <button type="button" disabled={confirmingId === r.id} onClick={() => handleConfirm(r.id)} style={{ color: "#16734a", background: "none", border: "none", cursor: "pointer", fontSize: "16px" }} title="Confirmer le seuil" aria-label={`Confirmer le seuil de la règle ${r.id}`}><i className="fa-solid fa-check"/></button>}
                     <button 
                       onClick={() => handleOpenEdit(r)} 
                       style={{ color: "#2563eb", background: "none", border: "none", cursor: "pointer", fontSize: "16px" }}
@@ -237,13 +253,6 @@ export default function ReglesValidation() {
           <form onSubmit={handleSubmit} style={{ background: "white", padding: "24px", borderRadius: "16px", width: "480px", maxWidth: "100%" }}>
             <h3 style={{ marginBottom: "16px" }}>{isEditing ? "Modifier la règle" : "Ajouter une règle de validation"}</h3>
             
-            {!isEditing && <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Seuil défini par le Juridique</label>
-              <select required value={form.regleSourceId} onChange={e => setForm({...form,regleSourceId:e.target.value})} style={{ width: "100%", marginTop: 4, padding: 10, borderRadius: 8, border: "1px solid #ddd", background: "white" }}>
-                <option value="">Choisir un seuil existant…</option>{regles.map(r => <option key={r.id} value={r.id}>#{r.id} · {getTypeName(r.typeContratId)} · {Number(r.montantMinimum).toLocaleString()} à {r.montantMaximum == null ? "∞" : Number(r.montantMaximum).toLocaleString()} Ar</option>)}
-              </select>
-              <small style={{ color: "#64748b" }}>La plage de montant vient du seuil juridique sélectionné et le type est choisi ici. Si ce type a déjà une règle, modifie-la; sinon, crée une règle dédiée avec le rôle « VALIDEUR + JURIDIQUE » si les deux accords sont requis.</small>
-            </div>}
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Type de contrat</label>
               <select required value={form.typeContratId} onChange={e => setForm({...form,typeContratId:e.target.value})} style={{ width: "100%", marginTop: 4, padding: 10, borderRadius: 8, border: "1px solid #ddd", background: "white" }}>

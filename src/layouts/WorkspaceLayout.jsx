@@ -82,23 +82,27 @@ export default function WorkspaceLayout() {
   const notificationPath = (notification) => {
     const type = String(notification?.type || "").toUpperCase();
     const contractId = notification?.contratId;
+    if (notification?.regleValidationId) {
+      const rulesPath = role === "ADMIN" ? "/admin/regles" : role === "JURIDIQUE" ? "/juridique/regles" : null;
+      if (rulesPath) return `${rulesPath}?regleId=${notification.regleValidationId}`;
+    }
     if (type.includes("VALID")) {
-      if (role === "ADMIN") return "/admin/validations";
+      if (role === "ADMIN") return contractId ? `/admin/validations?contratId=${contractId}` : "/admin/validations";
       if (role === "VALIDEUR") return contractId ? `/valideur/validations?contratId=${contractId}` : "/valideur/validations";
-      if (role === "JURIDIQUE") return "/juridique/validations";
+      if (role === "JURIDIQUE") return contractId ? `/juridique/validations?contratId=${contractId}` : "/juridique/validations";
       return contractId ? `/gestionnaire/validations?contratId=${contractId}` : "/gestionnaire/validations";
     }
     if (type.includes("AVENANT") && role === "GESTIONNAIRE") return "/gestionnaire/avenants";
     if (type.includes("ECHEANCE") || type.includes("RENOUVELLEMENT") || type.includes("RESILIATION")) {
-      if (role === "GESTIONNAIRE") return contractId ? `/gestionnaire/contrats/${contractId}` : "/gestionnaire/echeances";
-      if (role === "ADMIN") return "/admin/contrats";
-      return "/juridique/contrats";
+      if (role === "GESTIONNAIRE") return contractId ? `/gestionnaire/contrats/${contractId}?notification=1` : "/gestionnaire/echeances";
+      if (role === "ADMIN") return contractId ? `/admin/contrats?contratId=${contractId}` : "/admin/contrats";
+      return contractId ? `/juridique/contrats?contratId=${contractId}` : "/juridique/contrats";
     }
     if (contractId) {
-      if (role === "GESTIONNAIRE") return `/gestionnaire/contrats/${contractId}`;
-      if (role === "ADMIN") return "/admin/contrats";
+      if (role === "GESTIONNAIRE") return `/gestionnaire/contrats/${contractId}?notification=1`;
+      if (role === "ADMIN") return `/admin/contrats?contratId=${contractId}`;
       if (role === "VALIDEUR") return `/valideur/validations?contratId=${contractId}`;
-      return "/juridique/contrats";
+      return `/juridique/contrats?contratId=${contractId}`;
     }
     return role === "GESTIONNAIRE" ? "/gestionnaire/notifications" : role === "ADMIN" ? "/admin/validations" : role === "VALIDEUR" ? "/valideur/notifications" : "/juridique/notifications";
   };

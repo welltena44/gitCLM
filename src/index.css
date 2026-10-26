@@ -82,6 +82,8 @@ input, select, textarea { max-width: 100%; }
 .mgr-kpis strong { letter-spacing: -.4px; }
 .clm-notification-popover { box-shadow: 0 18px 44px rgba(27,39,54,.14); }
 table thead th { background: linear-gradient(180deg, #edf6f5, #e4f0ef) !important; color: #315d60 !important; border-bottom-color: #cbdedb !important; }
+.admin-contract-card.notification-target { border: 2px solid #16847e; box-shadow: 0 0 0 4px #16847e24; }
+tr.notification-target td { background: #eaf7f4 !important; }
 
 /* Contrôles de formulaire cohérents dans les espaces connectés. */
 .clm-content .mgr-field > span {
