@@ -116,7 +116,11 @@ export default function TypesContrat() {
       >
         <div>
           <h2>
-            <i className="fa-solid fa-file-contract"></i> Gestion des types de
+            <i
+              className="fa-solid fa-file-contract page-title-icon"
+              aria-hidden="true"
+            />
+            Gestion des types de
             contrats
           </h2>
           <p className="subtitle">
@@ -143,7 +147,7 @@ export default function TypesContrat() {
       </div>
 
       <div
-        className="stat-card"
+        className="stat-card admin-table-surface"
         style={{ marginTop: "20px", padding: "0", overflowX: "auto" }}
       >
         <table

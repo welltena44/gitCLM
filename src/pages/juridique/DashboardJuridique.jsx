@@ -9,7 +9,13 @@ export default function Dashboard() {
         </div>
         <div>
           <span>ESPACE JURIDIQUE / ACHATS</span>
-          <h2>Bienvenue dans votre espace juridique / achats</h2>
+          <h2>
+            <i
+              className="fa-solid fa-scale-balanced page-title-icon"
+              aria-hidden="true"
+            />
+            Bienvenue dans votre espace juridique / achats
+          </h2>
           <p>
             Suivez les contrats, les validations et les règles de conformité de
             votre périmètre.

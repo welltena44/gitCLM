@@ -66,7 +66,13 @@ export default function ParametresAlertesPage() {
     <div className="admin-data-page">
       <div className="admin-data-toolbar">
         <div>
-          <h2>Paramètres des alertes d’échéance</h2>
+          <h2>
+            <i
+              className="fa-solid fa-bell page-title-icon"
+              aria-hidden="true"
+            />
+            Paramètres des alertes d’échéance
+          </h2>
           <p>
             Configurez à combien de jours avant l’échéance une alerte est
             déclenchée.

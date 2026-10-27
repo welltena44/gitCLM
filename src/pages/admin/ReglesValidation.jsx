@@ -213,7 +213,11 @@ export default function ReglesValidation() {
       >
         <div>
           <h2>
-            <i className="fa-solid fa-list-check"></i> Configuration des
+            <i
+              className="fa-solid fa-list-check page-title-icon"
+              aria-hidden="true"
+            />
+            Configuration des
             circuits de validation
           </h2>
           <p className="subtitle">
@@ -240,7 +244,7 @@ export default function ReglesValidation() {
       </div>
 
       <div
-        className="stat-card"
+        className="stat-card admin-table-surface"
         style={{ marginTop: "20px", padding: "0", overflowX: "auto" }}
       >
         <table

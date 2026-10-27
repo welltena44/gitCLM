@@ -28,7 +28,15 @@ export default function DashboardValideur() {
   const upcoming = pending.slice(0, 5);
   return (
     <div className="role-dashboard validation-dashboard">
-      
+      <header className="validation-dashboard-heading">
+        <h2>
+          <i
+            className="fa-solid fa-clipboard-check page-title-icon"
+            aria-hidden="true"
+          />
+          Tableau de bord
+        </h2>
+      </header>
       {error && (
         <p role="alert" className="validation-error">
           {error}
@@ -54,7 +62,7 @@ export default function DashboardValideur() {
             <h3>Demandes en attente</h3>
             <p>Les validations qui attendent votre décision.</p>
           </div>
-          <Link to="/valideur/validations">
+          <Link to="/valideur/contrats">
             Ouvrir la file <i className="fa-solid fa-arrow-right" />
           </Link>
         </header>

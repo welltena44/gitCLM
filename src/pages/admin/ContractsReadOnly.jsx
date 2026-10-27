@@ -50,7 +50,13 @@ export default function ContractsReadOnly() {
     <div className="admin-data-page">
       <div className="admin-data-toolbar">
         <div>
-          <h2>Référentiel des contrats</h2>
+          <h2>
+            <i
+              className="fa-solid fa-file-contract page-title-icon"
+              aria-hidden="true"
+            />
+            Référentiel des contrats
+          </h2>
           <p>Consultation globale en lecture seule.</p>
         </div>
         <span>{filtered.length} contrat(s)</span>

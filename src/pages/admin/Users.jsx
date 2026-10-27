@@ -309,7 +309,11 @@ export default function Users() {
         }}
       >
         <h2>
-          <i className="fa-solid fa-users" /> Gestion des utilisateurs
+          <i
+            className="fa-solid fa-users page-title-icon"
+            aria-hidden="true"
+          />
+          Gestion des utilisateurs
         </h2>
 
         <button

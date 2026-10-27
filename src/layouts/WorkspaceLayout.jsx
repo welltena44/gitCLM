@@ -1,111 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./WorkspaceLayout.css";
 import { useFeedback } from "../composants/FeedbackContext.jsx";
 import api from "../services/api.js";
 import PasswordResetRequestsPopup from "../composants/PasswordResetRequestsPopup.jsx";
-
-const pageTitles = {
-  "/admin": ["Tableau de bord", "Vue d’ensemble de l’activité CLM"],
-  "/admin/users": [
-    "Gestion des utilisateurs",
-    "Comptes, rôles et accès à la plateforme",
-  ],
-  "/admin/types-contrat": [
-    "Types de contrat",
-    "Référentiel des catégories de contrats",
-  ],
-  "/admin/regles": ["Règles de validation", "Seuils et circuits de validation"],
-  "/admin/alertes": [
-    "Paramètres des alertes",
-    "Configuration des notifications et échéances",
-  ],
-  "/admin/validations": [
-    "Validations",
-    "Vue globale des décisions de validation",
-  ],
-  "/admin/versions": [
-    "Versions des contrats",
-    "Historique des versions conservées",
-  ],
-  "/admin/journaux": ["Journaux d’audit", "Traçabilité des actions effectuées"],
-  "/admin/profil": ["Mon profil", "Informations du compte connecté"],
-  "/gestionnaire": [
-    "Tableau de bord",
-    "Vue d’ensemble de votre activité contractuelle",
-  ],
-  "/gestionnaire/contrats": [
-    "Mes contrats",
-    "Consultez et suivez les contrats de votre périmètre",
-  ],
-  "/gestionnaire/nouveau": [
-    "Nouveau contrat",
-    "Préparez une nouvelle fiche contractuelle",
-  ],
-  "/gestionnaire/validations": [
-    "Suivi des validations",
-    "Suivez les décisions et les demandes de correction",
-  ],
-  "/gestionnaire/avenants": [
-    "Mes avenants",
-    "Suivi des modifications contractuelles",
-  ],
-  "/gestionnaire/documents": ["Documents", "Documents associés à vos contrats"],
-  "/gestionnaire/echeances": [
-    "Échéances et alertes",
-    "Anticipez les fins de contrat et les dates de préavis",
-  ],
-  "/gestionnaire/notifications": [
-    "Notifications",
-    "Informations importantes sur vos contrats",
-  ],
-  "/gestionnaire/profil": ["Mon profil", "Informations du compte connecté"],
-  "/valideur": ["Tableau de bord", "Vue d’ensemble de vos validations"],
-  "/valideur/validations": [
-    "Mes validations",
-    "Décisions qui vous sont attribuées",
-  ],
-  "/valideur/contrats": [
-    "Contrats à examiner",
-    "Contrats nécessitant votre avis",
-  ],
-  "/valideur/notifications": [
-    "Notifications",
-    "Alertes liées à vos validations",
-  ],
-  "/valideur/profil": ["Mon profil", "Informations du compte connecté"],
-  "/juridique": ["Tableau de bord", "Vue d’ensemble juridique des contrats"],
-  "/juridique/contrats": [
-    "Tous les contrats",
-    "Consultation du portefeuille contractuel",
-  ],
-  "/juridique/regles": [
-    "Règles et seuils",
-    "Consultation des règles de validation",
-  ],
-  "/juridique/validations": [
-    "Suivi des validations",
-    "Avancement des circuits de validation",
-  ],
-  "/juridique/versions": [
-    "Versions des contrats",
-    "Historique des modifications contractuelles",
-  ],
-  "/juridique/notifications": [
-    "Notifications",
-    "Alertes et échéances contractuelles",
-  ],
-  "/juridique/profil": ["Mon profil", "Informations du compte connecté"],
-};
-
-const roleNames = {
-  ADMIN: "Administration",
-  GESTIONNAIRE: "Gestionnaire",
-  VALIDEUR: "Valideur",
-  JURIDIQUE: "Juridique / Achats",
-};
 
 export default function WorkspaceLayout() {
   const [menuClosed, setMenuClosed] = useState(() => window.innerWidth <= 800);
@@ -117,15 +17,6 @@ export default function WorkspaceLayout() {
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [latestNotifications, setLatestNotifications] = useState([]);
-  const location = useLocation();
-  const page = useMemo(
-    () =>
-      pageTitles[location.pathname] || [
-        "Espace CLM",
-        "Gestion du cycle de vie des contrats",
-      ],
-    [location.pathname],
-  );
   const storedUser = useMemo(() => {
     try {
       return JSON.parse(
@@ -193,8 +84,8 @@ export default function WorkspaceLayout() {
           : "/admin/validations";
       if (role === "VALIDEUR")
         return contractId
-          ? `/valideur/validations?contratId=${contractId}`
-          : "/valideur/validations";
+          ? `/valideur/contrats?contratId=${contractId}`
+          : "/valideur/contrats";
       if (role === "JURIDIQUE")
         return contractId
           ? `/juridique/validations?contratId=${contractId}`
@@ -227,7 +118,7 @@ export default function WorkspaceLayout() {
         return `/gestionnaire/contrats/${contractId}?notification=1`;
       if (role === "ADMIN") return `/admin/contrats?contratId=${contractId}`;
       if (role === "VALIDEUR")
-        return `/valideur/validations?contratId=${contractId}`;
+        return `/valideur/contrats?contratId=${contractId}`;
       return `/juridique/contrats?contratId=${contractId}`;
     }
     return role === "GESTIONNAIRE"
@@ -314,7 +205,6 @@ export default function WorkspaceLayout() {
           </button>
           <div className="clm-topbar-context">
             <span className="clm-topbar-eyebrow">PLATEFORME CLM · SPAT</span>
-            <strong>{page[0]}</strong>
           </div>
           <div className="clm-topbar-actions">
             <div className="clm-notification-wrap">
@@ -424,15 +314,6 @@ export default function WorkspaceLayout() {
           </div>
         </header>
         <section className="clm-content">
-          <div className="clm-page-heading">
-            <div>
-              <span className="clm-page-kicker">
-                ESPACE {roleNames[role]?.toUpperCase() || role}
-              </span>
-              <h1>{page[0]}</h1>
-              <p>{page[1]}</p>
-            </div>
-          </div>
           <Outlet />
         </section>
         <footer className="clm-footer">

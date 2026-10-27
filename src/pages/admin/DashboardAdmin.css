@@ -227,6 +227,39 @@
 .admin-table tbody tr:hover td {
   background: #fafbff;
 }
+.admin-home .admin-table-surface {
+  overflow: auto;
+  border: 1px solid #c6d6ea;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 26px rgba(32, 63, 105, 0.14);
+}
+.admin-home .admin-table-surface table {
+  background: #fff;
+  color: #24364d;
+}
+.admin-home .admin-table-surface thead th {
+  padding: 14px 16px !important;
+  color: #fff !important;
+  background: #25496f !important;
+  border-bottom: 1px solid #1b3b60;
+  font-weight: 800;
+}
+.admin-home .admin-table-surface tbody td {
+  padding: 13px 16px !important;
+  color: #24364d;
+  background: #fff;
+  border-bottom: 1px solid #e1e9f3;
+}
+.admin-home .admin-table-surface tbody tr:nth-child(even) td {
+  background: #f2f6fc;
+}
+.admin-home .admin-table-surface tbody tr:hover td {
+  background: #e2edfc !important;
+}
+.admin-home .admin-table-surface tbody tr:last-child td {
+  border-bottom: 0;
+}
 button,
 input,
 select,

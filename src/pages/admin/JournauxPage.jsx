@@ -57,7 +57,13 @@ export default function JournauxPage() {
     <div className="admin-data-page">
       <div className="admin-data-toolbar">
         <div>
-          <h2>Journaux d’audit</h2>
+          <h2>
+            <i
+              className="fa-solid fa-clipboard-list page-title-icon"
+              aria-hidden="true"
+            />
+            Journaux d’audit
+          </h2>
           <p>Historique des actions enregistrées sur la plateforme.</p>
         </div>
         <span>{filtered.length} entrée(s)</span>

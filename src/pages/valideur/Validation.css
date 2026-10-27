@@ -11,6 +11,12 @@
 .validation-dashboard {
   color: #172033;
 }
+.validation-dashboard-heading h2 {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(22px, 2vw, 29px);
+  font-weight: 850;
+}
 .validation-inbox-toolbar,
 .validation-panel > header {
   display: flex;
@@ -61,6 +67,19 @@
 .validation-card h3 {
   margin: 4px 0 0;
   font-size: 18px;
+}
+.validation-history-result {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #d4e1f2;
+  border-radius: 10px;
+  background: #f2f6fc;
+  color: #334b68;
+  font-size: 13px;
+}
+.validation-history-result p {
+  margin: 8px 0 0;
+  color: #64748b;
 }
 .validation-kicker {
   color: #64748b;

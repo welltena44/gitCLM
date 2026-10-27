@@ -2007,7 +2007,7 @@ export function ManagerNotificationsPage() {
                 </small>
                 {n.contratId && (
                   <Link
-                    to={user?.role === "VALIDEUR" ? `/valideur/validations?contratId=${n.contratId}` : user?.role === "ADMIN" ? "/admin/contrats" : user?.role === "JURIDIQUE" ? "/juridique/contrats" : `/gestionnaire/contrats/${n.contratId}`}
+                    to={user?.role === "VALIDEUR" ? `/valideur/contrats?contratId=${n.contratId}` : user?.role === "ADMIN" ? "/admin/contrats" : user?.role === "JURIDIQUE" ? "/juridique/contrats" : `/gestionnaire/contrats/${n.contratId}`}
                     className="mgr-contract-link"
                   >
                     Ouvrir le contrat{" "}

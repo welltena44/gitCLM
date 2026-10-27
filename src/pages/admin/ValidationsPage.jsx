@@ -17,6 +17,7 @@ export default function ValidationsPage() {
   const [rows, setRows] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [users, setUsers] = useState([]);
+  const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const load = useCallback(
     () =>
@@ -47,14 +48,42 @@ export default function ValidationsPage() {
         ...rows.filter((row) => String(row.contratId) !== targetContractId),
       ]
     : rows;
+  const search = query.trim().toLocaleLowerCase("fr");
+  const filteredRows = displayedRows.filter((row) => {
+    const linkedContract = contract(row.contratId);
+    return (
+      !search ||
+      [
+        linkedContract?.reference,
+        linkedContract?.objet,
+        row.contratId,
+        name(row.demandeurId),
+        name(row.valideurId),
+        decisions[row.decision] || row.decision,
+        row.niveau,
+        row.cycle,
+        row.commentaire,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase("fr")
+        .includes(search)
+    );
+  });
   return (
     <div className="admin-data-page">
       <div className="admin-data-toolbar">
         <div>
-          <h2>Historique des validations</h2>
+          <h2>
+            <i
+              className="fa-solid fa-clipboard-check page-title-icon"
+              aria-hidden="true"
+            />
+            Historique des validations
+          </h2>
           <p>Consultation des décisions prises par les valideurs.</p>
         </div>
-        <span>{rows.length} décision(s)</span>
+        <span>{filteredRows.length} décision(s)</span>
       </div>
       {targetContractId && (
         <p className="admin-info-panel">
@@ -68,6 +97,16 @@ export default function ValidationsPage() {
           </span>
         </p>
       )}
+      <label className="audit-search">
+        Rechercher
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Référence, matricule, décision, commentaire…"
+          aria-label="Rechercher dans l’historique des validations"
+        />
+      </label>
       {error && <p role="alert">{error}</p>}
       <div className="admin-table-wrap">
         <table className="admin-table">
@@ -84,7 +123,7 @@ export default function ValidationsPage() {
             </tr>
           </thead>
           <tbody>
-            {displayedRows.map((v) => {
+            {filteredRows.map((v) => {
               const c = contract(v.contratId);
               return (
                 <tr
@@ -123,10 +162,17 @@ export default function ValidationsPage() {
                 </tr>
               );
             })}
-            {!rows.length && !error && (
+            {rows.length === 0 && !error && (
               <tr>
                 <td colSpan="8" className="admin-empty">
                   Aucune validation enregistrée.
+                </td>
+              </tr>
+            )}
+            {rows.length > 0 && filteredRows.length === 0 && (
+              <tr>
+                <td colSpan="8" className="admin-empty">
+                  Aucune validation ne correspond à votre recherche.
                 </td>
               </tr>
             )}

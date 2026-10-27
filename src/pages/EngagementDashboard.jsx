@@ -132,6 +132,10 @@ export default function EngagementDashboard({
             {isAdmin ? "PILOTAGE GLOBAL" : "SURVEILLANCE CONTRACTUELLE"}
           </span>
           <h2>
+            <i
+              className={`fa-solid ${isAdmin ? "fa-chart-line" : "fa-scale-balanced"} page-title-icon`}
+              aria-hidden="true"
+            />
             {isAdmin
               ? "Dashboard des engagements"
               : "Surveillance des engagements"}

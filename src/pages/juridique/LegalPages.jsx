@@ -118,12 +118,24 @@ function LegalFrame({
   onRefresh,
   children,
 }) {
+  const titleIcon = {
+    "Seuils de validation": "fa-scale-balanced",
+    "Portefeuille des contrats": "fa-file-contract",
+    "Contrats à approuver": "fa-circle-check",
+    "Versions et avenants": "fa-file-circle-plus",
+  }[title] || "fa-scale-balanced";
   return (
     <main className="legal-page">
       <header className="legal-page-head">
         <div>
           <p className="legal-eyebrow">ESPACE JURIDIQUE · CONSULTATION</p>
-          <h2>{title}</h2>
+          <h2>
+            <i
+              className={`fa-solid ${titleIcon} page-title-icon`}
+              aria-hidden="true"
+            />
+            {title}
+          </h2>
           <p>{description}</p>
         </div>
         <button className="legal-refresh" onClick={onRefresh}>
@@ -241,6 +253,10 @@ function LegalReviewDialog({
           <div>
             <span className="legal-eyebrow">DOSSIER SOUMIS À VALIDATION</span>
             <h2 id="legal-review-title">
+              <i
+                className="fa-solid fa-scale-balanced page-title-icon"
+                aria-hidden="true"
+              />
               {contract?.reference || `Contrat #${validation.contratId}`}
             </h2>
             <p>{contract?.objet || "Objet non renseigné"}</p>
@@ -848,6 +864,10 @@ export default function LegalPages() {
                 <div>
                   <span className="legal-eyebrow">DOSSIER CONTRACTUEL</span>
                   <h2>
+                    <i
+                      className="fa-solid fa-file-contract page-title-icon"
+                      aria-hidden="true"
+                    />
                     {selectedContract.reference ||
                       `Contrat #${selectedContract.id}`}
                   </h2>
