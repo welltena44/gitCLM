@@ -2144,9 +2144,7 @@ export function ManagerProfilePage() {
         </form>
         <p className="mgr-profile-note">
           <i className="fa-solid fa-shield-halved" /> Le mot de passe n’est pas
-          modifiable depuis cette page. Une fonctionnalité dédiée de changement
-          de mot de passe doit être reliée au mécanisme d’authentification du
-          backend.
+          modifiable depuis cette page. 
         </p>
       </section>
     </div>

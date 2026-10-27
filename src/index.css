@@ -5,7 +5,7 @@
   --spat-blue: #53677e;
   --spat-blue-dark: #3d5067;
   --spat-red: #a45c5c;
-  --clm-bg: #f8fafc;
+  --clm-bg: #edf5ff;
   --clm-text: #202a36;
   --clm-muted: #697586;
   --clm-border: #e5e8ed;
@@ -37,6 +37,8 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", mon
 /* Shared polish for every workspace and role-specific screen. */
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 button { touch-action: manipulation; }
+button:not(:disabled) { transition: outline-color .16s ease, box-shadow .16s ease; }
+button:not(:disabled):hover { outline: 2px solid rgba(37, 99, 235, .2); outline-offset: 1px; }
 :focus-visible { outline: 3px solid rgba(22, 139, 210, .28); outline-offset: 2px; }
 .clm-content { animation: page-enter .38s cubic-bezier(.2,.75,.25,1) both; }
 .clm-page-heading, .mgr-page-head, .workspace-welcome, .role-welcome { animation: page-enter .42s cubic-bezier(.2,.75,.25,1) both; }

@@ -1,1 +1,151 @@
-.clm-toast-stack{position:fixed;right:22px;top:20px;z-index:3000;display:grid;gap:10px;width:min(390px,calc(100vw - 28px));pointer-events:none}.clm-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;padding:14px 13px;background:#fff;border:1px solid #e5eaf2;border-radius:14px;box-shadow:0 14px 38px #13244820;animation:clmToastIn .2s ease}.clm-toast-symbol{width:34px;height:34px;display:grid;place-items:center;flex-shrink:0;border-radius:10px;background:#e9f8ef;color:#21834b}.clm-toast.error .clm-toast-symbol{background:#fff0f0;color:#c53030}.clm-toast.warning .clm-toast-symbol{background:#fff7e6;color:#a66a00}.clm-toast>span:nth-child(2){display:grid;gap:4px;flex:1}.clm-toast strong{font-size:12px;color:#172033}.clm-toast small{font-size:12px;color:#64748b;line-height:1.45}.clm-toast>button{border:0;background:none;color:#94a3b8;font-size:22px;cursor:pointer}.clm-modal-backdrop{position:fixed;inset:0;z-index:2900;background:#101a30a8;display:grid;place-items:center;padding:18px;backdrop-filter:blur(4px)}.clm-modal{width:min(440px,100%);background:#fff;border-radius:20px;padding:28px;box-shadow:0 24px 80px #07122b50;text-align:center;animation:clmToastIn .18s ease}.clm-modal-icon{width:52px;height:52px;border-radius:16px;margin:0 auto 14px;display:grid;place-items:center;background:#edf2ff;color:#168bd2;font-size:21px}.clm-modal-icon.danger{background:#fff0f0;color:#c53030}.clm-modal h2{margin:0 0 9px;color:#172033;font-size:20px}.clm-modal p{margin:0;color:#64748b;font-size:13px;line-height:1.65}.clm-modal-actions{display:flex;justify-content:center;gap:10px;margin-top:24px}.clm-btn{border:1px solid transparent;border-radius:10px;padding:11px 16px;font-size:12px;font-weight:750;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}.clm-btn.primary{background:#168bd2;color:#fff}.clm-btn.danger{background:#c53030;color:#fff}.clm-btn.secondary{background:#fff;border-color:#dbe2ed;color:#475569}.clm-btn:disabled{opacity:.55;cursor:not-allowed}@keyframes clmToastIn{from{opacity:0;transform:translateY(-6px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.clm-toast-stack {
+  position: fixed;
+  right: 22px;
+  top: 20px;
+  z-index: 3000;
+  display: grid;
+  gap: 10px;
+  width: min(390px, calc(100vw - 28px));
+  pointer-events: none;
+}
+.clm-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 13px;
+  background: #fff;
+  border: 1px solid #e5eaf2;
+  border-radius: 14px;
+  box-shadow: 0 14px 38px #13244820;
+  animation: clmToastIn 0.2s ease;
+}
+.clm-toast-symbol {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #e9f8ef;
+  color: #21834b;
+}
+.clm-toast.error .clm-toast-symbol {
+  background: #fff0f0;
+  color: #c53030;
+}
+.clm-toast.warning .clm-toast-symbol {
+  background: #fff7e6;
+  color: #a66a00;
+}
+.clm-toast > span:nth-child(2) {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+}
+.clm-toast strong {
+  font-size: 12px;
+  color: #172033;
+}
+.clm-toast small {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.45;
+}
+.clm-toast > button {
+  border: 0;
+  background: none;
+  color: #94a3b8;
+  font-size: 22px;
+  cursor: pointer;
+}
+.clm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2900;
+  background: #101a30a8;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  backdrop-filter: blur(4px);
+}
+.clm-modal {
+  width: min(440px, 100%);
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 24px 80px #07122b50;
+  text-align: center;
+  animation: clmToastIn 0.18s ease;
+}
+.clm-modal-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  background: #edf2ff;
+  color: #168bd2;
+  font-size: 21px;
+}
+.clm-modal-icon.danger {
+  background: #fff0f0;
+  color: #c53030;
+}
+.clm-modal h2 {
+  margin: 0 0 9px;
+  color: #172033;
+  font-size: 20px;
+}
+.clm-modal p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.clm-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+.clm-btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 11px 16px;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.clm-btn.primary {
+  background: #168bd2;
+  color: #fff;
+}
+.clm-btn.danger {
+  background: #c53030;
+  color: #fff;
+}
+.clm-btn.secondary {
+  background: #fff;
+  border-color: #dbe2ed;
+  color: #475569;
+}
+.clm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+@keyframes clmToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

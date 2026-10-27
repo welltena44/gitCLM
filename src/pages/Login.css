@@ -38,13 +38,13 @@
   background:
     radial-gradient(
       circle at top left,
-      rgba(22, 139, 210, 0.08),
-      transparent 35%
+      rgba(22, 139, 210, 0.13),
+      transparent 38%
     ),
     linear-gradient(
       180deg,
-      #f1f5f9 0%,
-      #e2e8f0 100%
+      #f3f8ff 0%,
+      #e6f0ff 100%
     );
 
   font-family: Inter, "Segoe UI", Arial, sans-serif;
