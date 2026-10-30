@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { API_BASE_URL } from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
+import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
 import "./Users.css";
 
@@ -59,6 +61,7 @@ async function readError(response) {
 }
 
 export default function Users() {
+  const { confirm } = useFeedback();
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -234,10 +237,12 @@ export default function Users() {
   const handleDelete = async (id, matricule) => {
     if (deletingId !== null || saving) return;
 
-    const confirmation = window.confirm(
-      `Voulez-vous vraiment supprimer l'utilisateur de matricule ${matricule} ?`,
-    );
-
+    const confirmation = await confirm({
+      title: "Supprimer cet utilisateur ?",
+      message: `Le compte de matricule ${matricule} sera supprimé.`,
+      confirmLabel: "Supprimer",
+      danger: true,
+    });
     if (!confirmation) return;
 
     setDeletingId(id);
@@ -387,6 +392,8 @@ export default function Users() {
       </div>
 
       <div className="stat-card users-table-card">
+        <Pagination items={filteredUsers} resetKey={searchTerm}>
+          {(visibleUsers) => (
         <table className="users-table">
           <thead>
             <tr style={{ background: "#f8fafc", textAlign: "left" }}>
@@ -424,7 +431,7 @@ export default function Users() {
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((user) => (
+              visibleUsers.map((user) => (
                 <tr key={user.id} style={{ borderTop: "1px solid #eee" }}>
                   <td style={{ padding: "12px", fontWeight: "bold" }}>
                     {user.matricule}
@@ -532,6 +539,8 @@ export default function Users() {
             )}
           </tbody>
         </table>
+          )}
+        </Pagination>
       </div>
 
       {showModal && (

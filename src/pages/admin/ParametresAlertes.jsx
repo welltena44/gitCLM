@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
+import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
 
 const empty = { joursAvant: "", actif: true };
@@ -9,6 +11,7 @@ export default function ParametresAlertesPage() {
     [editing, setEditing] = useState(null),
     [error, setError] = useState(""),
     [saving, setSaving] = useState(false);
+  const { confirm, toast } = useFeedback();
   const load = useCallback(async () => {
     try {
       const { data } = await api.get("/parametres-alertes");
@@ -39,6 +42,7 @@ export default function ParametresAlertesPage() {
       setForm(empty);
       setEditing(null);
       await load();
+      toast(editing ? "Délai d’alerte mis à jour." : "Délai d’alerte ajouté.");
     } catch (err) {
       setError(
         err.message ||
@@ -54,12 +58,20 @@ export default function ParametresAlertesPage() {
     setForm({ joursAvant: row.joursAvant, actif: row.actif });
   };
   const remove = async (id) => {
-    if (!window.confirm("Supprimer ce délai d’alerte ?")) return;
+    const accepted = await confirm({
+      title: "Supprimer ce délai d’alerte ?",
+      message: "Les alertes futures ne seront plus déclenchées à ce délai.",
+      confirmLabel: "Supprimer",
+      danger: true,
+    });
+    if (!accepted) return;
     try {
       await api.delete(`/parametres-alertes/${id}`);
       await load();
+      toast("Délai d’alerte supprimé.");
     } catch (e) {
       setError(e.response?.data?.message || "Suppression impossible.");
+      toast(e.response?.data?.message || "Suppression impossible.", "error");
     }
   };
   return (
@@ -123,6 +135,8 @@ export default function ParametresAlertesPage() {
           </button>
         )}
       </form>
+      <Pagination items={[...rows].sort((a, b) => a.joursAvant - b.joursAvant)}>
+        {(visibleRows) => (
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -133,9 +147,7 @@ export default function ParametresAlertesPage() {
             </tr>
           </thead>
           <tbody>
-            {rows
-              .sort((a, b) => a.joursAvant - b.joursAvant)
-              .map((row) => (
+            {visibleRows.map((row) => (
                 <tr key={row.id}>
                   <td>J-{row.joursAvant}</td>
                   <td>{row.actif ? "Actif" : "Désactivé"}</td>
@@ -155,6 +167,8 @@ export default function ParametresAlertesPage() {
           </tbody>
         </table>
       </div>
+        )}
+      </Pagination>
     </div>
   );
 }

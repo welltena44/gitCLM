@@ -285,7 +285,7 @@ export default function WorkspaceLayout() {
                         role === "GESTIONNAIRE"
                           ? "/gestionnaire/notifications"
                           : role === "ADMIN"
-                            ? "/admin/validations"
+                            ? "/admin/notifications"
                             : role === "VALIDEUR"
                               ? "/valideur/notifications"
                               : "/juridique/notifications",

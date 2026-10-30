@@ -1,8 +1,21 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import Pagination from "../composants/Pagination.jsx";
 import "./EngagementDashboard.css";
+import DashboardBarChart from "./DashboardBarChart.jsx";
 
 const ACTIVE_STATUSES = ["ACTIF", "APPROUVE", "VALIDE", "SIGNE"];
+const STATUS_LABELS = {
+  BROUILLON: "Brouillon",
+  EN_ATTENTE: "En attente",
+  EN_VALIDATION: "En validation",
+  ACTIF: "Actif",
+  APPROUVE: "Approuvé",
+  VALIDE: "Validé",
+  SIGNE: "Signé",
+  REJETE: "Rejeté",
+  EXPIRE: "Expiré",
+};
 const money = (value) => Number(value || 0).toLocaleString("fr-FR");
 const formatDate = (value) =>
   value
@@ -104,6 +117,12 @@ export default function EngagementDashboard({
       types.find((type) => String(type.id) === String(contract.typeId))?.nom,
   );
   const serviceCounts = countBy(active, (contract) => contract.service);
+  const statusCounts = countBy(
+    filtered,
+    (contract) =>
+      STATUS_LABELS[String(contract.statut || "").toUpperCase()] ||
+      contract.statut,
+  );
   const managerMatricule = (id) =>
     users.find((user) => String(user.id) === String(id))?.matricule || "—";
   const portfolioPath = isAdmin ? "/admin/contrats" : "/juridique/contrats";
@@ -115,15 +134,6 @@ export default function EngagementDashboard({
         <p className="engagement-state">Chargement du portefeuille…</p>
       </main>
     );
-  if (error)
-    return (
-      <main className="engagement-dashboard">
-        <p className="engagement-state error" role="alert">
-          {error}
-        </p>
-      </main>
-    );
-
   return (
     <main className="engagement-dashboard">
       <header className="engagement-heading">
@@ -154,6 +164,11 @@ export default function EngagementDashboard({
           <i className="fa-solid fa-rotate" /> Actualiser
         </button>
       </header>
+      {error && (
+        <p className="engagement-state error" role="alert">
+          {error}
+        </p>
+      )}
       <section
         className="engagement-filters"
         aria-label="Filtres du portefeuille"
@@ -246,8 +261,26 @@ export default function EngagementDashboard({
         </section>
       )}
       <section className="engagement-breakdowns">
-        <Breakdown title="Contrats actifs par type" rows={typeCounts} />
-        <Breakdown title="Contrats actifs par service" rows={serviceCounts} />
+        {isAdmin && (
+          <DashboardBarChart
+            title="Contrats par statut"
+            rows={statusCounts}
+            emptyLabel="Aucun contrat à représenter."
+            variant="pie"
+          />
+        )}
+        <DashboardBarChart
+          title="Contrats actifs par type"
+          rows={typeCounts}
+          emptyLabel="Aucun contrat actif."
+          variant={isAdmin ? "pie" : "donut"}
+        />
+        <DashboardBarChart
+          title="Contrats actifs par service"
+          rows={serviceCounts}
+          emptyLabel="Aucun contrat actif."
+          variant={isAdmin ? "pie" : "donut"}
+        />
       </section>
       <section className="engagement-panel">
         <div className="engagement-panel-heading">
@@ -262,6 +295,8 @@ export default function EngagementDashboard({
             Voir le portefeuille <i className="fa-solid fa-arrow-right" />
           </Link>
         </div>
+        <Pagination items={upcoming} resetKey={deadlineDays}>
+          {(visibleContracts) => (
         <div className="engagement-table-wrap">
           <table>
             <thead>
@@ -275,7 +310,7 @@ export default function EngagementDashboard({
               </tr>
             </thead>
             <tbody>
-              {upcoming.slice(0, 10).map((contract) => (
+              {visibleContracts.map((contract) => (
                 <tr key={contract.id}>
                   <td>
                     <Link to={`${portfolioPath}?contratId=${contract.id}`}>
@@ -304,6 +339,8 @@ export default function EngagementDashboard({
             </p>
           )}
         </div>
+          )}
+        </Pagination>
       </section>
       <section className="engagement-panel">
         <div className="engagement-panel-heading">
@@ -318,6 +355,8 @@ export default function EngagementDashboard({
             Ouvrir les validations <i className="fa-solid fa-arrow-right" />
           </Link>
         </div>
+        <Pagination items={legalReviewContracts}>
+          {(visibleContracts) => (
         <div className="engagement-table-wrap">
           <table>
             <thead>
@@ -331,7 +370,7 @@ export default function EngagementDashboard({
               </tr>
             </thead>
             <tbody>
-              {legalReviewContracts.slice(0, 10).map((contract) => (
+              {visibleContracts.map((contract) => (
                 <tr key={contract.id}>
                   <td>
                     <Link to={`${portfolioPath}?contratId=${contract.id}`}>
@@ -358,27 +397,10 @@ export default function EngagementDashboard({
             </p>
           )}
         </div>
+          )}
+        </Pagination>
       </section>
     </main>
   );
 }
 
-function Breakdown({ title, rows }) {
-  return (
-    <section className="engagement-breakdown">
-      <h3>{title}</h3>
-      {rows.length ? (
-        <ul>
-          {rows.map(([label, count]) => (
-            <li key={label}>
-              <span>{label}</span>
-              <strong>{count}</strong>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>Aucun contrat actif.</p>
-      )}
-    </section>
-  );
-}

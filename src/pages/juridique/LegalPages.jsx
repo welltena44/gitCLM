@@ -11,6 +11,7 @@ import {
   getDocuments,
   downloadDocument,
 } from "../../services/contractService.js";
+import Pagination from "../../composants/Pagination.jsx";
 import EngagementDashboard from "../EngagementDashboard.jsx";
 import "./LegalPages.css";
 
@@ -331,8 +332,10 @@ function LegalReviewDialog({
             {details.loading ? (
               <p>Chargement…</p>
             ) : details.parties.length ? (
+              <Pagination items={details.parties} resetKey={validation.id}>
+                {(visibleParties) => (
               <div className="legal-review-parties">
-                {details.parties.map((p) => (
+                {visibleParties.map((p) => (
                   <article key={p.id}>
                     <strong>{p.nom}</strong>
                     <span>{p.type || "Partie"}</span>
@@ -343,6 +346,8 @@ function LegalReviewDialog({
                   </article>
                 ))}
               </div>
+                )}
+              </Pagination>
             ) : (
               <p>Aucune partie prenante enregistrée.</p>
             )}
@@ -352,8 +357,10 @@ function LegalReviewDialog({
             {details.loading ? (
               <p>Chargement…</p>
             ) : details.documents.length ? (
+              <Pagination items={details.documents} resetKey={validation.id}>
+                {(visibleDocuments) => (
               <ul className="legal-doc-list">
-                {details.documents.map((d) => (
+                {visibleDocuments.map((d) => (
                   <li key={d.id}>
                     <span>
                       <i className="fa-regular fa-file-pdf" />{" "}
@@ -373,6 +380,8 @@ function LegalReviewDialog({
                   </li>
                 ))}
               </ul>
+                )}
+              </Pagination>
             ) : (
               <p>Aucun document joint.</p>
             )}
@@ -543,6 +552,8 @@ function LegalRules({ data, loading, error, load }) {
           modifier son seuil. Une modification doit être confirmée par
           l’Administrateur avant de s’appliquer.
         </p>
+        <Pagination items={data.rules} resetKey={targetRuleId}>
+          {(visibleRules) => (
         <div className="legal-table-wrap">
           <table>
             <thead>
@@ -557,7 +568,7 @@ function LegalRules({ data, loading, error, load }) {
               </tr>
             </thead>
             <tbody>
-              {data.rules.map((r) => (
+              {visibleRules.map((r) => (
                 <tr
                   key={r.id}
                   className={
@@ -607,12 +618,14 @@ function LegalRules({ data, loading, error, load }) {
               ))}
             </tbody>
           </table>
-          {!data.rules.length && (
-            <p className="legal-empty">
-              Aucun circuit n’a encore été créé par l’Administrateur.
-            </p>
-          )}
         </div>
+          )}
+        </Pagination>
+        {!data.rules.length && (
+          <p className="legal-empty">
+            Aucun circuit n’a encore été créé par l’Administrateur.
+          </p>
+        )}
       </section>
       {showForm && (
         <div className="legal-rule-overlay">
@@ -770,6 +783,11 @@ export default function LegalPages() {
           placeholder="Référence, objet, service ou statut"
           aria-label="Rechercher un contrat"
         />
+        <Pagination
+          items={list}
+          resetKey={`${query}:${requestedContractId || ""}`}
+        >
+          {(visibleContracts) => (
         <div className="legal-table-wrap legal-contract-list-wrap">
           <table className="legal-contract-list">
             <thead>
@@ -785,7 +803,7 @@ export default function LegalPages() {
               </tr>
             </thead>
             <tbody>
-              {list.map((c) => (
+              {visibleContracts.map((c) => (
                 <tr
                   key={c.id}
                   className={`legal-contract-row ${String(c.id) === requestedContractId ? "notification-target" : ""}`}
@@ -839,12 +857,14 @@ export default function LegalPages() {
               ))}
             </tbody>
           </table>
-          {!list.length && (
-            <p className="legal-empty">
-              Aucun contrat ne correspond à la recherche.
-            </p>
-          )}
         </div>
+          )}
+        </Pagination>
+        {!list.length && (
+          <p className="legal-empty">
+            Aucun contrat ne correspond à la recherche.
+          </p>
+        )}
         {selectedContract && (
           <div
             className="legal-contract-overlay"
@@ -998,6 +1018,11 @@ export default function LegalPages() {
               <p>{pendingLegal.length} dossier(s) à traiter</p>
             </div>
           </div>
+          <Pagination
+            items={pendingLegal}
+            resetKey={requestedContractId || ""}
+          >
+            {(visiblePending) => (
           <div className="legal-table-wrap legal-incoming-table">
             <table>
               <thead>
@@ -1012,7 +1037,7 @@ export default function LegalPages() {
                 </tr>
               </thead>
               <tbody>
-                {pendingLegal.map((v) => {
+                {visiblePending.map((v) => {
                   const c = contractsById.get(String(v.contratId));
                   return (
                     <tr
@@ -1055,12 +1080,14 @@ export default function LegalPages() {
                 })}
               </tbody>
             </table>
-            {!pendingLegal.length && (
-              <p className="legal-empty">
-                Aucun contrat n’attend actuellement votre approbation.
-              </p>
-            )}
           </div>
+            )}
+          </Pagination>
+          {!pendingLegal.length && (
+            <p className="legal-empty">
+              Aucun contrat n’attend actuellement votre approbation.
+            </p>
+          )}
         </section>
         {selectedValidation && (
           <LegalReviewDialog
@@ -1092,6 +1119,11 @@ export default function LegalPages() {
               <p>Historique des étapes juridiques visibles par votre rôle.</p>
             </div>
           </div>
+          <Pagination
+            items={data.validations}
+            resetKey={requestedContractId || ""}
+          >
+            {(visibleValidations) => (
           <div className="legal-table-wrap">
             <table>
               <thead>
@@ -1107,7 +1139,7 @@ export default function LegalPages() {
                 </tr>
               </thead>
               <tbody>
-                {data.validations.map((v) => {
+                {visibleValidations.map((v) => {
                   const c = contractsById.get(String(v.contratId));
                   return (
                     <tr
@@ -1154,10 +1186,12 @@ export default function LegalPages() {
                 })}
               </tbody>
             </table>
-            {!data.validations.length && (
-              <p className="legal-empty">Aucune validation enregistrée.</p>
-            )}
           </div>
+            )}
+          </Pagination>
+          {!data.validations.length && (
+            <p className="legal-empty">Aucune validation enregistrée.</p>
+          )}
         </section>
       </LegalFrame>
     );
@@ -1171,6 +1205,8 @@ export default function LegalPages() {
         error={error}
         onRefresh={load}
       >
+        <Pagination items={data.versions}>
+          {(visibleVersions) => (
         <div className="legal-table-wrap">
           <table>
             <thead>
@@ -1184,7 +1220,7 @@ export default function LegalPages() {
               </tr>
             </thead>
             <tbody>
-              {data.versions.map((v) => {
+              {visibleVersions.map((v) => {
                 const c = contractsById.get(String(v.contratId));
                 return (
                   <tr key={v.id}>
@@ -1220,11 +1256,15 @@ export default function LegalPages() {
               })}
             </tbody>
           </table>
-          {!data.versions.length && (
-            <p className="legal-empty">Aucune version archivée.</p>
-          )}
         </div>
+          )}
+        </Pagination>
+        {!data.versions.length && (
+          <p className="legal-empty">Aucune version archivée.</p>
+        )}
         <h3 className="legal-subtitle">Avenants</h3>
+        <Pagination items={data.amendments}>
+          {(visibleAmendments) => (
         <div className="legal-table-wrap">
           <table>
             <thead>
@@ -1237,7 +1277,7 @@ export default function LegalPages() {
               </tr>
             </thead>
             <tbody>
-              {data.amendments.map((a) => (
+              {visibleAmendments.map((a) => (
                 <tr key={a.id}>
                   <td>{a.numero || `#${a.id}`}</td>
                   <td>
@@ -1256,10 +1296,12 @@ export default function LegalPages() {
               ))}
             </tbody>
           </table>
-          {!data.amendments.length && (
-            <p className="legal-empty">Aucun avenant enregistré.</p>
-          )}
         </div>
+          )}
+        </Pagination>
+        {!data.amendments.length && (
+          <p className="legal-empty">Aucun avenant enregistré.</p>
+        )}
       </LegalFrame>
     );
   return null;

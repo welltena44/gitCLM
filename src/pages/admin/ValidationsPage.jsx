@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
 
 const date = (value) => (value ? new Date(value).toLocaleString("fr-FR") : "—");
 const decisions = {
@@ -108,6 +109,8 @@ export default function ValidationsPage() {
         />
       </label>
       {error && <p role="alert">{error}</p>}
+      <Pagination items={filteredRows} resetKey={`${query}:${targetContractId || ""}`}>
+        {(visibleRows) => (
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -123,7 +126,7 @@ export default function ValidationsPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredRows.map((v) => {
+            {visibleRows.map((v) => {
               const c = contract(v.contratId);
               return (
                 <tr
@@ -179,6 +182,8 @@ export default function ValidationsPage() {
           </tbody>
         </table>
       </div>
+        )}
+      </Pagination>
     </div>
   );
 }

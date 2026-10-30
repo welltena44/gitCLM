@@ -17,22 +17,25 @@ export default function DashboardAdmin() {
     setLoading(true);
     setError("");
     try {
-      const [contracts, users, validations, types] = await Promise.all([
+      const results = await Promise.allSettled([
         api.get("/contrats"),
         api.get("/utilisateurs"),
         api.get("/validations"),
         api.get("/types-contrat/actifs"),
       ]);
+      const getData = (result) =>
+        result.status === "fulfilled" ? result.value.data || [] : [];
       setData({
-        contracts: contracts.data || [],
-        users: users.data || [],
-        validations: validations.data || [],
-        types: types.data || [],
+        contracts: getData(results[0]),
+        users: getData(results[1]),
+        validations: getData(results[2]),
+        types: getData(results[3]),
       });
-    } catch {
+      if (results.some((result) => result.status === "rejected")) {
       setError(
         "Impossible de charger les indicateurs. Vérifiez que le serveur est disponible.",
       );
+      }
     } finally {
       setLoading(false);
     }

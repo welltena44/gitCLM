@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import api from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
+import DashboardBarChart from "../DashboardBarChart.jsx";
 import "../role-dashboard.css";
 import "./Validation.css";
 
@@ -25,7 +27,25 @@ export default function DashboardValideur() {
   );
   const pending = mine.filter((v) => v.decision === "EN_ATTENTE");
   const decisions = mine.filter((v) => v.decision !== "EN_ATTENTE");
-  const upcoming = pending.slice(0, 5);
+  const upcoming = pending;
+  const decisionLabels = {
+    EN_ATTENTE: "En attente",
+    APPROUVE: "Approuvées",
+    VALIDE: "Validées",
+    REJETE: "Rejetées",
+    MODIFICATION_DEMANDEE: "Modifications demandées",
+  };
+  const decisionCounts = Array.from(
+    mine.reduce((counts, validation) => {
+      const decision = String(validation.decision || "NON_DEFINIE").toUpperCase();
+      const label = decisionLabels[decision] || decision.replaceAll("_", " ");
+      counts.set(label, (counts.get(label) || 0) + 1);
+      return counts;
+    }, new Map()),
+  ).sort(
+    (left, right) =>
+      right[1] - left[1] || left[0].localeCompare(right[0], "fr"),
+  );
   return (
     <div className="role-dashboard validation-dashboard">
       <header className="validation-dashboard-heading">
@@ -56,6 +76,11 @@ export default function DashboardValideur() {
           <strong>{new Set(mine.map((v) => v.contratId)).size}</strong>
         </article>
       </div>
+      <DashboardBarChart
+        title="Décisions de validation"
+        rows={decisionCounts}
+        emptyLabel="Aucune validation à représenter."
+      />
       <section className="validation-panel">
         <header>
           <div>
@@ -67,8 +92,10 @@ export default function DashboardValideur() {
           </Link>
         </header>
         {upcoming.length ? (
+          <Pagination items={upcoming}>
+            {(visibleItems) => (
           <div className="validation-list">
-            {upcoming.map((v) => {
+            {visibleItems.map((v) => {
               const c = contracts.find(
                 (x) => String(x.id) === String(v.contratId),
               );
@@ -87,6 +114,8 @@ export default function DashboardValideur() {
               );
             })}
           </div>
+            )}
+          </Pagination>
         ) : (
           <p className="validation-empty">Aucune demande en attente.</p>
         )}

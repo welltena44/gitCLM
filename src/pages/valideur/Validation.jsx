@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useLocation, useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
 
 const label = {
   EN_ATTENTE: "En attente",
@@ -163,7 +164,11 @@ export default function Validation() {
             : "Aucune validation en attente ne vous est attribuée."}
         </p>
       ) : (
-        inbox.map((v) => {
+        <Pagination
+          items={inbox}
+          resetKey={`${isHistory}:${selectedContractId || ""}`}
+        >
+          {(visibleInbox) => visibleInbox.map((v) => {
           const c = contractFor(v.contratId);
           return (
             <article
@@ -224,8 +229,13 @@ export default function Validation() {
                     </p>
                     <h4>Pièces jointes</h4>
                     {(documents[c.id] || []).length ? (
+                      <Pagination
+                        items={documents[c.id] || []}
+                        resetKey={c.id}
+                      >
+                        {(visibleDocuments) => (
                       <ul className="validation-documents">
-                        {documents[c.id].map((doc) => (
+                        {visibleDocuments.map((doc) => (
                           <li key={doc.id}>
                             <span>
                               {doc.nomFichier}{" "}
@@ -243,6 +253,8 @@ export default function Validation() {
                           </li>
                         ))}
                       </ul>
+                        )}
+                      </Pagination>
                     ) : (
                       <p>Aucune pièce jointe disponible.</p>
                     )}
@@ -300,7 +312,8 @@ export default function Validation() {
               )}
             </article>
           );
-        })
+          })}
+        </Pagination>
       )}
     </div>
   );

@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { API_BASE_URL } from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
+import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
 
 export default function TypesContrat() {
+  const { confirm, toast } = useFeedback();
   const [types, setTypes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -16,11 +19,7 @@ export default function TypesContrat() {
 
   const [form, setForm] = useState(initialFormState);
 
-  useEffect(() => {
-    fetchTypes();
-  }, []);
-
-  const fetchTypes = async () => {
+  const fetchTypes = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/types-contrat`, {
         headers: {
@@ -37,11 +36,16 @@ export default function TypesContrat() {
       setTypes(data);
     } catch (e) {
       console.error("Erreur lors du chargement des types de contrats :", e);
-      alert(
-        "Impossible de charger les données depuis la base de données. Vérifiez la console.",
+      toast(
+        "Impossible de charger les types de contrats.",
+        "error",
       );
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchTypes();
+  }, [fetchTypes]);
 
   const handleOpenCreate = () => {
     setForm(initialFormState);
@@ -82,15 +86,21 @@ export default function TypesContrat() {
 
       setShowModal(false);
       setForm(initialFormState);
-      fetchTypes();
+      await fetchTypes();
+      toast(isEditing ? "Type de contrat mis à jour." : "Type de contrat créé.");
     } catch (err) {
-      alert("Erreur : " + err.message);
+      toast(err.message || "Échec de l’enregistrement du type de contrat.", "error");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce type de contrat ?"))
-      return;
+    const accepted = await confirm({
+      title: "Supprimer ce type de contrat ?",
+      message: "Les contrats existants ne seront pas supprimés.",
+      confirmLabel: "Supprimer",
+      danger: true,
+    });
+    if (!accepted) return;
     try {
       const res = await fetch(`${API_BASE_URL}/types-contrat/${id}`, {
         method: "DELETE",
@@ -99,57 +109,55 @@ export default function TypesContrat() {
         },
       });
       if (!res.ok) throw new Error("Échec de la suppression");
-      fetchTypes();
+      await fetchTypes();
+      toast("Type de contrat supprimé.");
     } catch (err) {
-      alert("Erreur suppression: " + err.message);
+      toast(err.message || "Échec de la suppression du type de contrat.", "error");
     }
   };
 
   return (
     <div className="admin-home">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div className="admin-page-header">
         <div>
           <h2>
             <i
               className="fa-solid fa-file-contract page-title-icon"
               aria-hidden="true"
             />
-            Gestion des types de
-            contrats
+            Gestion des types de contrats
           </h2>
           <p className="subtitle">
             Administrez les catégories et descriptions des contrats de
             l'entreprise
           </p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          style={{
-            background: "#2563eb",
-            color: "white",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <i className="fa-solid fa-plus"></i> Créer un type
-        </button>
+        <div className="admin-page-actions">
+          <button
+            onClick={handleOpenCreate}
+            style={{
+              background: "#2563eb",
+              color: "white",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <i className="fa-solid fa-plus"></i> Créer un type
+          </button>
+        </div>
       </div>
 
       <div
         className="stat-card admin-table-surface"
         style={{ marginTop: "20px", padding: "0", overflowX: "auto" }}
       >
+        <Pagination items={types}>
+          {(visibleTypes) => (
         <table
           style={{
             width: "100%",
@@ -181,7 +189,7 @@ export default function TypesContrat() {
                 </td>
               </tr>
             ) : (
-              types.map((t) => (
+              visibleTypes.map((t) => (
                 <tr key={t.id} style={{ borderTop: "1px solid #eee" }}>
                   <td style={{ padding: "12px", fontWeight: "bold" }}>
                     {t.id}
@@ -242,6 +250,8 @@ export default function TypesContrat() {
             )}
           </tbody>
         </table>
+          )}
+        </Pagination>
       </div>
 
       {showModal && (

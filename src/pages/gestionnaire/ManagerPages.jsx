@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import api from "../../services/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
+import Pagination from "../../composants/Pagination.jsx";
 import * as svc from "../../services/contractService.js";
 import "./ManagerPages.css";
 
@@ -89,7 +90,6 @@ export function ContractsPage() {
     [status, setStatus] = useState(""),
     [typeId, setTypeId] = useState(""),
     [service, setService] = useState(""),
-    [responsableId, setResponsableId] = useState(""),
     [start, setStart] = useState(""),
     [end, setEnd] = useState(""),
     [signatureStart, setSignatureStart] = useState(""),
@@ -98,7 +98,7 @@ export function ContractsPage() {
     [sortDirection, setSortDirection] = useState("desc"),
     [page, setPage] = useState(1),
     [pageSize, setPageSize] = useState(10);
-  const [applied, setApplied] = useState({ q: "", status: "", typeId: "", service: "", responsableId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+  const [applied, setApplied] = useState({ q: "", status: "", typeId: "", service: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
   const [parties, setParties] = useState([]),
     [users, setUsers] = useState([]);
   const { id } = useParams();
@@ -149,8 +149,6 @@ export function ContractsPage() {
           types.find((t) => String(t.id) === String(c.typeId))?.nom,
           c.description,
           c.service,
-          c.responsableNom,
-          users.find((u) => String(u.id) === String(c.responsableId))?.nom,
           ...parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom),
         ]
           .filter(Boolean)
@@ -161,7 +159,6 @@ export function ContractsPage() {
           (!applied.status || c.statut === applied.status) &&
           (!applied.typeId || String(c.typeId) === applied.typeId) &&
           (!applied.service || c.service === applied.service) &&
-          (!applied.responsableId || String(c.responsableId) === applied.responsableId) &&
           (!applied.start || String(c.dateFin || "") >= applied.start) &&
           (!applied.end || String(c.dateFin || "") <= applied.end) &&
           (!applied.signatureStart || String(c.dateSignature || "") >= applied.signatureStart) &&
@@ -176,7 +173,7 @@ export function ContractsPage() {
           : String(x).localeCompare(String(y), undefined, { numeric: true });
         return applied.sortDirection === "asc" ? order : -order;
       });
-  }, [contracts, parties, users, types, applied]);
+  }, [contracts, parties, types, applied]);
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   // Empêche de rester sur une page vide après un filtre ou une suppression.
   useEffect(() => { setPage(current => Math.min(current, pages)); }, [pages]);
@@ -206,18 +203,17 @@ export function ContractsPage() {
     setStatus("");
     setTypeId("");
     setService("");
-    setResponsableId("");
     setStart("");
     setEnd("");
     setSignatureStart("");
     setSignatureEnd("");
     setSort("dateModification");
     setSortDirection("desc");
-    setApplied({ q: "", status: "", typeId: "", service: "", responsableId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+    setApplied({ q: "", status: "", typeId: "", service: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
     setPage(1);
   };
   const applyFilters = () => {
-    setApplied({ q, status, typeId, service, responsableId, start, end, signatureStart, signatureEnd, sort, sortDirection });
+    setApplied({ q, status, typeId, service, start, end, signatureStart, signatureEnd, sort, sortDirection });
     setPage(1);
   };
   const exportCsv = () => {
@@ -366,13 +362,6 @@ export function ContractsPage() {
               {services.map((s) => (
                 <option key={s}>{s}</option>
               ))}
-            </select>
-          </label>
-          <label className="mgr-field">
-            <span>Responsable</span>
-            <select value={responsableId} onChange={(e) => setResponsableId(e.target.value)}>
-              <option value="">Tous les responsables</option>
-              {[...new Map(users.filter((u) => contracts.some((c) => String(c.responsableId) === String(u.id))).map((u) => [u.id, u])).values()].map((u) => <option key={u.id} value={u.id}>{[u.prenom, u.nom].filter(Boolean).join(" ") || `Responsable #${u.id}`}</option>)}
             </select>
           </label>
           <label className="mgr-field">
@@ -861,8 +850,10 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           ) : docs.length === 0 ? (
             <LoadingOrEmpty empty />
           ) : (
+            <Pagination items={docs} resetKey={c.id}>
+              {(visibleDocuments) => (
             <div className="mgr-list">
-              {docs.map((d) => (
+              {visibleDocuments.map((d) => (
                 <div className="mgr-list-row" key={d.id}>
                   <span className="mgr-file-icon">
                     <i className="fa-regular fa-file-lines" />
@@ -891,6 +882,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                 </div>
               ))}
             </div>
+              )}
+            </Pagination>
           )}
         </section>
       )}
@@ -954,8 +947,10 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           {parties.length === 0 ? (
             <LoadingOrEmpty empty />
           ) : (
+            <Pagination items={parties} resetKey={c.id}>
+              {(visibleParties) => (
             <div className="mgr-list">
-              {parties.map((p) => (
+              {visibleParties.map((p) => (
                 <div className="mgr-list-row" key={p.id}>
                   <span className="mgr-avatar">
                     {(p.nom || "?").slice(0, 1).toUpperCase()}
@@ -976,6 +971,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                 </div>
               ))}
             </div>
+              )}
+            </Pagination>
           )}
         </section>
       )}
@@ -1062,7 +1059,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               </Button>
             </div>
           </form>
-          {amendments.map((a) => (
+          <Pagination items={amendments} resetKey={c.id}>
+            {(visibleAmendments) => visibleAmendments.map((a) => (
             <div className="mgr-timeline-item" key={a.id}>
               <strong>
                 Avenant n°{a.numero} — {a.description}
@@ -1073,7 +1071,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               </small>
               <p>{a.modifications}</p>
             </div>
-          ))}
+            ))}
+          </Pagination>
         </section>
       )}
       {tab === "validations" && (
@@ -1090,32 +1089,36 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           {validations.length === 0 ? (
             <LoadingOrEmpty empty />
           ) : (
+            <Pagination items={validations} resetKey={c.id}>
+              {(visibleValidations) => (
             <div className="mgr-list">
-              {validations.map((v) => (
+              {visibleValidations.map((v) => (
                 <div className="mgr-list-row" key={v.id}>
                   <span className="mgr-file-icon">
                     <i className="fa-solid fa-stamp" />
                   </span>
                   <div className="mgr-list-main">
                     <strong>
-                      {v.etape || v.typeValidation || `Validation #${v.id}`}
+                      {v.etape || `${v.roleRequis || "Validation"} — niveau ${v.niveau ?? "—"}`}
                     </strong>
                     <small>
                       Valideur : {v.valideurId || "À attribuer"} ·{" "}
-                      {date(v.dateDecision || v.dateCreation)}
+                      {date(v.dateValidation || v.dateSoumission)}
                     </small>
                     <p>
                       {v.commentaire || v.decision || "En attente de décision"}
                     </p>
                   </div>
                   <span
-                    className={`mgr-status ${statusClass(v.statut || v.decision)}`}
+                    className={`mgr-status ${statusClass(v.decision)}`}
                   >
-                    {statusLabel(v.statut || v.decision || "EN_ATTENTE")}
+                    {statusLabel(v.decision || "EN_ATTENTE")}
                   </span>
                 </div>
               ))}
             </div>
+              )}
+            </Pagination>
           )}
         </section>
       )}
@@ -1155,7 +1158,6 @@ export function ContractFormPage() {
     dateFin: "",
     dureeMois: "",
     statut: "BROUILLON",
-    service: user?.service || "",
     renouvellementAutomatique: false,
     joursPreavis: 30,
     responsableId: user?.id || "",
@@ -1177,7 +1179,6 @@ export function ContractFormPage() {
             dateDebut: c.dateDebut || "",
             dateFin: c.dateFin || "",
             dureeMois: c.dureeMois ?? "",
-            service: c.service || "",
             typeId: c.typeId ?? "",
             responsableId: c.responsableId ?? user?.id ?? "",
           }));
@@ -1395,10 +1396,11 @@ export function ContractFormPage() {
             />
           </label>
           <label className="mgr-field">
-            <span>Service</span>
+            <span>Service du responsable</span>
             <input
-              value={form.service || ""}
-              onChange={(e) => change("service", e.target.value)}
+              value={user?.service || ""}
+              readOnly
+              placeholder="À renseigner dans votre profil"
             />
           </label>
           <label className="mgr-field">
@@ -1484,7 +1486,7 @@ export function ManagerValidationsPage() {
     const c = contracts.find((x) => String(x.id) === String(v.contratId));
     return (
       (!filter ||
-        String(v.decision || v.statut || "EN_ATTENTE").toUpperCase() ===
+        String(v.decision || "EN_ATTENTE").toUpperCase() ===
           filter) &&
       (!targetContractId || String(v.contratId) === targetContractId) &&
       (!q ||
@@ -1537,6 +1539,11 @@ export function ManagerValidationsPage() {
           empty={!loading && !data.length}
         />
         {!loading && data.length > 0 && (
+          <Pagination
+            items={data}
+            resetKey={`${q}:${filter}:${targetContractId || ""}`}
+          >
+            {(visibleRows) => (
           <div className="mgr-table-wrap">
             <table className="mgr-table">
               <thead>
@@ -1550,7 +1557,7 @@ export function ManagerValidationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((v) => {
+                {visibleRows.map((v) => {
                   const c = contracts.find(
                     (x) => String(x.id) === String(v.contratId),
                   );
@@ -1563,7 +1570,7 @@ export function ManagerValidationsPage() {
                         <small>{c?.objet || "Objet indisponible"}</small>
                       </td>
                       <td>
-                        {v.etape || `Validation #${v.id}`}
+                        {v.etape || `${v.roleRequis || "Validation"} — niveau ${v.niveau ?? "—"}`}
                         <small>
                           {v.valideurId
                             ? `Matricule ${users.find(person => String(person.id) === String(v.valideurId))?.matricule || "—"}`
@@ -1572,17 +1579,17 @@ export function ManagerValidationsPage() {
                       </td>
                       <td>
                         <span
-                          className={`mgr-status ${statusClass(String(v.decision || v.statut || "EN_ATTENTE").toUpperCase())}`}
+                          className={`mgr-status ${statusClass(String(v.decision || "EN_ATTENTE").toUpperCase())}`}
                         >
                           {statusLabel(
                             String(
-                              v.decision || v.statut || "EN_ATTENTE",
+                              v.decision || "EN_ATTENTE",
                             ).toUpperCase(),
                           )}
                         </span>
                       </td>
                       <td>{v.commentaire || "—"}</td>
-                      <td>{date(v.dateDecision || v.dateCreation)}</td>
+                      <td>{date(v.dateValidation || v.dateSoumission)}</td>
                       <td>{v.decision === "EN_ATTENTE" && v.valideurId == null && user?.role === v.roleRequis ? <div className="mgr-row-actions"><button title="Approuver" disabled={busyDecision === v.id} onClick={() => decide(v, "APPROUVE")}><i className="fa-solid fa-check"/></button><button title="Demander une modification" disabled={busyDecision === v.id} onClick={() => decide(v, "MODIFICATION_DEMANDEE")}><i className="fa-solid fa-pen"/></button><button title="Rejeter" className="danger" disabled={busyDecision === v.id} onClick={() => decide(v, "REJETE")}><i className="fa-solid fa-xmark"/></button></div> : "—"}</td>
                     </tr>
                   );
@@ -1590,6 +1597,8 @@ export function ManagerValidationsPage() {
               </tbody>
             </table>
           </div>
+            )}
+          </Pagination>
         )}
       </section>
     </div>
@@ -1660,6 +1669,8 @@ export function ManagerAmendmentsPage() {
           empty={!loading && !data.length}
         />
         {data.length > 0 && (
+          <Pagination items={data} resetKey={q}>
+            {(visibleRows) => (
           <div className="mgr-table-wrap">
             <table className="mgr-table">
               <thead>
@@ -1672,7 +1683,7 @@ export function ManagerAmendmentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((a) => {
+                {visibleRows.map((a) => {
                   const c = contracts.find(
                     (x) => String(x.id) === String(a.contratId),
                   );
@@ -1700,6 +1711,8 @@ export function ManagerAmendmentsPage() {
               </tbody>
             </table>
           </div>
+            )}
+          </Pagination>
         )}
       </section>
     </div>
@@ -1801,6 +1814,8 @@ export function ManagerDocumentsPage() {
           empty={!loading && !data.length}
         />
         {data.length > 0 && (
+          <Pagination items={data} resetKey={`${q}:${type}`}>
+            {(visibleRows) => (
           <div className="mgr-table-wrap">
             <table className="mgr-table">
               <thead>
@@ -1813,7 +1828,7 @@ export function ManagerDocumentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((d) => {
+                {visibleRows.map((d) => {
                   const c = contracts.find(
                     (x) => String(x.id) === String(d.contratId),
                   );
@@ -1847,6 +1862,8 @@ export function ManagerDocumentsPage() {
               </tbody>
             </table>
           </div>
+            )}
+          </Pagination>
         )}
       </section>
     </div>
@@ -1980,8 +1997,10 @@ export function ManagerNotificationsPage() {
           error={error}
           empty={!loading && !data.length}
         />
+        <Pagination items={data} resetKey={`${q}:${filter}`}>
+          {(visibleItems) => (
         <div className="mgr-notifications">
-          {data.map((n) => (
+          {visibleItems.map((n) => (
             <article
               key={n.id}
               className={`mgr-notification ${n.lu ? "read" : ""}`}
@@ -2028,6 +2047,8 @@ export function ManagerNotificationsPage() {
             </article>
           ))}
         </div>
+          )}
+        </Pagination>
       </section>
     </div>
   );

@@ -125,50 +125,16 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-.engagement-breakdown,
 .engagement-panel {
   min-width: 0;
   border: 1px solid #e1e9ed;
   border-radius: 9px;
   background: #fff;
 }
-.engagement-breakdown {
-  padding: 15px;
-}
-.engagement-breakdown h3,
 .engagement-panel h3 {
   margin: 0;
   color: #244253;
   font-size: 14px;
-}
-.engagement-breakdown ul {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px 14px;
-  margin: 12px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.engagement-breakdown li {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 7px 9px;
-  border-radius: 6px;
-  background: #f4f7f8;
-  color: #536b79;
-  font-size: 11px;
-}
-.engagement-breakdown li span {
-  overflow-wrap: anywhere;
-}
-.engagement-breakdown li strong {
-  color: #176e6b;
-}
-.engagement-breakdown > p {
-  margin: 12px 0 0;
-  color: #718490;
-  font-size: 12px;
 }
 .engagement-panel {
   padding: 15px;
@@ -243,9 +209,6 @@
     flex-direction: column;
   }
   .engagement-breakdowns {
-    grid-template-columns: 1fr;
-  }
-  .engagement-breakdown ul {
     grid-template-columns: 1fr;
   }
   .engagement-panel-heading {

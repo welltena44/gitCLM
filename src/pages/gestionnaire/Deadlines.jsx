@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as svc from "../../services/contractService.js";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
+import Pagination from "../../composants/Pagination.jsx";
 import "./ManagerPages.css";
 const date = (v) =>
   v
@@ -182,6 +183,8 @@ export default function ManagerDeadlinesPage() {
             Aucune échéance ne correspond aux critères.
           </div>
         ) : (
+          <Pagination items={data} resetKey={`${q}:${period}:${kind}`}>
+            {(visibleRows) => (
           <div className="mgr-table-wrap">
             <table className="mgr-table">
               <thead>
@@ -195,7 +198,7 @@ export default function ManagerDeadlinesPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((c) => (
+                {visibleRows.map((c) => (
                   <tr key={c.id}>
                     <td>
                       <Link
@@ -240,6 +243,8 @@ export default function ManagerDeadlinesPage() {
               </tbody>
             </table>
           </div>
+            )}
+          </Pagination>
         )}
         <p className="mgr-profile-note">
           <i className="fa-solid fa-circle-info" /> Ces échéances sont calculées

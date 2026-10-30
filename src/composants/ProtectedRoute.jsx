@@ -14,7 +14,13 @@ export default function ProtectedRoute({ children, roles }) {
 
   // Mauvais rôle
   if (roles && user && !roles.includes(user.role)) {
-    return <Navigate to="/login" replace />;
+    const homeByRole = {
+      ADMIN: "/admin",
+      GESTIONNAIRE: "/gestionnaire",
+      JURIDIQUE: "/juridique",
+      VALIDEUR: "/valideur",
+    };
+    return <Navigate to={homeByRole[user.role] || "/login"} replace />;
   }
 
   // Si on l'utilise avec <ProtectedRoute><Dashboard /></ProtectedRoute>

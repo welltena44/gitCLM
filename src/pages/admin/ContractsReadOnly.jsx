@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
 import "./DashboardAdmin.css";
 const date = (value) =>
   value
@@ -79,8 +80,13 @@ export default function ContractsReadOnly() {
           </span>
         </p>
       )}
-      <div className="admin-contract-grid">
-        {filtered.map((c) => (
+      <Pagination
+        items={filtered}
+        resetKey={`${query}:${targetContractId || ""}`}
+      >
+        {(visibleContracts) => (
+          <div className="admin-contract-grid">
+            {visibleContracts.map((c) => (
           <article
             className={`admin-contract-card ${String(c.id) === targetContractId ? "notification-target" : ""}`}
             key={c.id}
@@ -115,9 +121,11 @@ export default function ContractsReadOnly() {
                 {date(c.dateFin)}
               </span>
             </div>
-          </article>
-        ))}
-      </div>
+            </article>
+            ))}
+          </div>
+        )}
+      </Pagination>
       {filtered.length === 0 && !error && (
         <p className="admin-empty">Aucun contrat correspondant.</p>
       )}

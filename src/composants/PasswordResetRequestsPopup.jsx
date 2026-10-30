@@ -13,7 +13,7 @@ export default function PasswordResetRequestsPopup({
   const [snoozed, setSnoozed] = useState(() => new Set());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const { toast } = useFeedback();
+  const { toast, confirm } = useFeedback();
 
   const load = useCallback(async () => {
     if (!adminId) return;
@@ -41,6 +41,19 @@ export default function PasswordResetRequestsPopup({
 
   const traiter = async (action) => {
     if (!activeId || busy) return;
+    const accepted = await confirm({
+      title:
+        action === "approve"
+          ? "Réinitialiser ce mot de passe ?"
+          : "Rejeter cette demande ?",
+      message:
+        action === "approve"
+          ? "Un mot de passe provisoire sera généré et envoyé à l’adresse e-mail du compte."
+          : "La demande de réinitialisation sera rejetée.",
+      confirmLabel: action === "approve" ? "Réinitialiser" : "Rejeter",
+      danger: action === "reject",
+    });
+    if (!accepted) return;
     setBusy(true);
     setError("");
     try {

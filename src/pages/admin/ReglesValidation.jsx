@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { API_BASE_URL } from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
+import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
 
 export default function ReglesValidation() {
@@ -12,6 +14,7 @@ export default function ReglesValidation() {
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+  const { confirm, toast } = useFeedback();
 
   const initialFormState = {
     id: null,
@@ -130,13 +133,21 @@ export default function ReglesValidation() {
 
       setShowModal(false);
       setForm(initialFormState);
-      fetchRegles();
+      await fetchRegles();
+      toast(isEditing ? "Règle mise à jour." : "Règle créée.");
     } catch (err) {
-      alert("Erreur : " + err.message);
+      toast(err.message || "Échec de l’enregistrement de la règle.", "error");
     }
   };
 
   const handleConfirm = async (id) => {
+    const accepted = await confirm({
+      title: "Activer cette règle de validation ?",
+      message:
+        "Le seuil défini par le Juridique sera activé et pourra s’appliquer aux contrats concernés.",
+      confirmLabel: "Activer la règle",
+    });
+    if (!accepted) return;
     setConfirmingId(id);
     try {
       const res = await fetch(
@@ -148,22 +159,27 @@ export default function ReglesValidation() {
           },
         },
       );
-      if (!res.ok) throw new Error("Impossible de confirmer ce seuil.");
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Impossible de confirmer ce seuil.");
+      }
       await fetchRegles();
+      toast("Le seuil est confirmé et la règle est active.");
     } catch (err) {
-      alert("Erreur : " + err.message);
+      toast(err.message || "Impossible de confirmer ce seuil.", "error");
     } finally {
       setConfirmingId(null);
     }
   };
 
   const handleDelete = async (id) => {
-    if (
-      !window.confirm(
-        "Voulez-vous vraiment supprimer cette règle de validation ?",
-      )
-    )
-      return;
+    const accepted = await confirm({
+      title: "Supprimer cette règle ?",
+      message: "Cette règle de validation sera supprimée définitivement.",
+      confirmLabel: "Supprimer",
+      danger: true,
+    });
+    if (!accepted) return;
     try {
       const res = await fetch(`${API_BASE_URL}/regles-validation/${id}`, {
         method: "DELETE",
@@ -172,9 +188,10 @@ export default function ReglesValidation() {
         },
       });
       if (!res.ok) throw new Error("Échec de la suppression");
-      fetchRegles();
+      await fetchRegles();
+      toast("Règle de validation supprimée.");
     } catch (err) {
-      alert("Erreur suppression: " + err.message);
+      toast(err.message || "Échec de la suppression de la règle.", "error");
     }
   };
 
@@ -204,49 +221,46 @@ export default function ReglesValidation() {
 
   return (
     <div className="admin-home">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div className="admin-page-header">
         <div>
           <h2>
             <i
               className="fa-solid fa-list-check page-title-icon"
               aria-hidden="true"
             />
-            Configuration des
-            circuits de validation
+            Configuration des circuits de validation
           </h2>
           <p className="subtitle">
             Créez les étapes, niveaux et responsables du circuit. Le Juridique
             définit ensuite les seuils; vous confirmez leur activation.
           </p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          style={{
-            background: "#2563eb",
-            color: "white",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <i className="fa-solid fa-plus"></i> Ajouter une règle
-        </button>
+        <div className="admin-page-actions">
+          <button
+            onClick={handleOpenCreate}
+            style={{
+              background: "#2563eb",
+              color: "white",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <i className="fa-solid fa-plus"></i> Ajouter une règle
+          </button>
+        </div>
       </div>
 
       <div
         className="stat-card admin-table-surface"
         style={{ marginTop: "20px", padding: "0", overflowX: "auto" }}
       >
+        <Pagination items={regles} resetKey={targetRuleId}>
+          {(visibleRules) => (
         <table
           style={{
             width: "100%",
@@ -280,7 +294,7 @@ export default function ReglesValidation() {
                 </td>
               </tr>
             ) : (
-              regles.map((r) => (
+              visibleRules.map((r) => (
                 <tr
                   key={r.id}
                   className={
@@ -398,6 +412,8 @@ export default function ReglesValidation() {
             )}
           </tbody>
         </table>
+          )}
+        </Pagination>
       </div>
 
       {/* Modal Création / Modification */}

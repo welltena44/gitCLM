@@ -30,6 +30,7 @@ import ChangePassword from "./pages/ChangePassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ContractsReadOnly from "./pages/admin/ContractsReadOnly.jsx";
 import LegalPages from "./pages/juridique/LegalPages.jsx";
+import AdminNotificationsPage from "./pages/admin/NotificationsPage.jsx";
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="validations" element={<ValidationsPage />} />
               <Route path="versions" element={<VersionsPage />} />
               <Route path="journaux" element={<JournauxPage />} />
+              <Route path="notifications" element={<AdminNotificationsPage />} />
               <Route path="profil" element={<ManagerProfilePage />} />
             </Route>
           </Route>

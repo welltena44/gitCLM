@@ -41,9 +41,7 @@
 .modernSidebar-nav.closed {
   width: 0;
   min-width: 0;
-  margin-left: -280px;
   border-right: 0;
-  transform: translateX(-100%);
   pointer-events: none;
 }
 

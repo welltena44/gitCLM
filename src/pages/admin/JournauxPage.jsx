@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
 import "./DashboardAdmin.css";
 
 const date = (value) => (value ? new Date(value).toLocaleString("fr-FR") : "—");
@@ -77,6 +78,8 @@ export default function JournauxPage() {
         />
       </label>
       {error && <p role="alert">{error}</p>}
+      <Pagination items={filtered} resetKey={query}>
+        {(visibleRows) => (
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -89,7 +92,7 @@ export default function JournauxPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => {
+            {visibleRows.map((r) => {
               const c = contracts.find(
                 (x) => String(x.id) === String(r.contratId),
               );
@@ -138,6 +141,8 @@ export default function JournauxPage() {
           </tbody>
         </table>
       </div>
+        )}
+      </Pagination>
     </div>
   );
 }

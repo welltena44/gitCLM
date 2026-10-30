@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import * as svc from "../../services/contractService.js";
+import Pagination from "../../composants/Pagination.jsx";
+import DashboardBarChart from "../DashboardBarChart.jsx";
 import "../role-dashboard.css";
 import "./ManagerPages.css";
 
@@ -87,13 +89,22 @@ export default function DashboardGestionnaire() {
           String(b.dateModification || b.dateCreation || "").localeCompare(
             String(a.dateModification || a.dateCreation || ""),
           ),
-        )
-        .slice(0, 6),
+        ),
     [contracts],
   );
   const unread = notifications.filter(
     (notification) => !notification.lu,
   ).length;
+  const statusCounts = Array.from(
+    contracts.reduce((counts, contract) => {
+      const label = statusLabel(contract.statut);
+      counts.set(label, (counts.get(label) || 0) + 1);
+      return counts;
+    }, new Map()),
+  ).sort(
+    (left, right) =>
+      right[1] - left[1] || left[0].localeCompare(right[0], "fr"),
+  );
 
   return (
     <div className="role-dashboard mgr-page">
@@ -146,6 +157,12 @@ export default function DashboardGestionnaire() {
         </div>
       </div>
 
+      <DashboardBarChart
+        title="Contrats par statut"
+        rows={statusCounts}
+        emptyLabel="Aucun contrat à représenter."
+      />
+
       <section className="mgr-panel">
         <div className="mgr-panel-title">
           <div>
@@ -165,8 +182,10 @@ export default function DashboardGestionnaire() {
             Aucun contrat disponible pour le moment.
           </div>
         ) : (
+          <Pagination items={recent}>
+            {(visibleContracts) => (
           <div className="mgr-contract-cards">
-            {recent.map((contract) => (
+            {visibleContracts.map((contract) => (
               <article className="mgr-contract-card" key={contract.id}>
                 <header>
                   <span className="mgr-file-icon">
@@ -215,6 +234,8 @@ export default function DashboardGestionnaire() {
               </article>
             ))}
           </div>
+            )}
+          </Pagination>
         )}
       </section>
 
@@ -231,7 +252,8 @@ export default function DashboardGestionnaire() {
         {notifications.length === 0 ? (
           <div className="mgr-state">Aucune notification à afficher.</div>
         ) : (
-          notifications.slice(0, 4).map((notification) => (
+          <Pagination items={notifications}>
+            {(visibleNotifications) => visibleNotifications.map((notification) => (
             <div className="mgr-notification" key={notification.id}>
               <span className="mgr-notif-icon">
                 <i className="fa-solid fa-bell" />
@@ -253,7 +275,8 @@ export default function DashboardGestionnaire() {
                 </small>
               </div>
             </div>
-          ))
+            ))}
+          </Pagination>
         )}
       </section>
     </div>

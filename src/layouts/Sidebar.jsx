@@ -13,6 +13,7 @@ const menus = {
         links: [
           ["Tableau de bord", "/admin", "fa-table-columns"],
           ["Utilisateurs", "/admin/users", "fa-users"],
+          ["Notifications", "/admin/notifications", "fa-bell"],
         ],
       },
       {
