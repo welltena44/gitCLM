@@ -1,2 +1,2 @@
-import { ManagerAmendmentsPage } from './ManagerPages.jsx';
+import { ManagerAmendmentsPage } from "./ManagerPages.jsx";
 export default ManagerAmendmentsPage;

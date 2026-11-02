@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
+import Pagination from "../../composants/Pagination.jsx";
 import * as svc from "../../services/contractService.js";
 import "./ManagerPages.css";
 
@@ -89,7 +90,6 @@ export function ContractsPage() {
     [status, setStatus] = useState(""),
     [typeId, setTypeId] = useState(""),
     [service, setService] = useState(""),
-    [responsableId, setResponsableId] = useState(""),
     [start, setStart] = useState(""),
     [end, setEnd] = useState(""),
     [signatureStart, setSignatureStart] = useState(""),
@@ -98,11 +98,12 @@ export function ContractsPage() {
     [sortDirection, setSortDirection] = useState("desc"),
     [page, setPage] = useState(1),
     [pageSize, setPageSize] = useState(10);
-  const [applied, setApplied] = useState({ q: "", status: "", typeId: "", service: "", responsableId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+  const [applied, setApplied] = useState({ q: "", status: "", typeId: "", service: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
   const [parties, setParties] = useState([]),
     [users, setUsers] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const openedFromNotification = searchParams.get("notification") === "1";
   const nav = useNavigate();
   const { toast, confirm } = useFeedback();
   const reload = useCallback(async () => {
@@ -148,8 +149,6 @@ export function ContractsPage() {
           types.find((t) => String(t.id) === String(c.typeId))?.nom,
           c.description,
           c.service,
-          c.responsableNom,
-          users.find((u) => String(u.id) === String(c.responsableId))?.nom,
           ...parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom),
         ]
           .filter(Boolean)
@@ -160,7 +159,6 @@ export function ContractsPage() {
           (!applied.status || c.statut === applied.status) &&
           (!applied.typeId || String(c.typeId) === applied.typeId) &&
           (!applied.service || c.service === applied.service) &&
-          (!applied.responsableId || String(c.responsableId) === applied.responsableId) &&
           (!applied.start || String(c.dateFin || "") >= applied.start) &&
           (!applied.end || String(c.dateFin || "") <= applied.end) &&
           (!applied.signatureStart || String(c.dateSignature || "") >= applied.signatureStart) &&
@@ -175,8 +173,10 @@ export function ContractsPage() {
           : String(x).localeCompare(String(y), undefined, { numeric: true });
         return applied.sortDirection === "asc" ? order : -order;
       });
-  }, [contracts, parties, users, types, applied]);
+  }, [contracts, parties, types, applied]);
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  // Empêche de rester sur une page vide après un filtre ou une suppression.
+  useEffect(() => { setPage(current => Math.min(current, pages)); }, [pages]);
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
   const remove = async (c) => {
     if (
@@ -203,18 +203,17 @@ export function ContractsPage() {
     setStatus("");
     setTypeId("");
     setService("");
-    setResponsableId("");
     setStart("");
     setEnd("");
     setSignatureStart("");
     setSignatureEnd("");
     setSort("dateModification");
     setSortDirection("desc");
-    setApplied({ q: "", status: "", typeId: "", service: "", responsableId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+    setApplied({ q: "", status: "", typeId: "", service: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
     setPage(1);
   };
   const applyFilters = () => {
-    setApplied({ q, status, typeId, service, responsableId, start, end, signatureStart, signatureEnd, sort, sortDirection });
+    setApplied({ q, status, typeId, service, start, end, signatureStart, signatureEnd, sort, sortDirection });
     setPage(1);
   };
   const exportCsv = () => {
@@ -366,13 +365,6 @@ export function ContractsPage() {
             </select>
           </label>
           <label className="mgr-field">
-            <span>Responsable</span>
-            <select value={responsableId} onChange={(e) => setResponsableId(e.target.value)}>
-              <option value="">Tous les responsables</option>
-              {[...new Map(users.filter((u) => contracts.some((c) => String(c.responsableId) === String(u.id))).map((u) => [u.id, u])).values()].map((u) => <option key={u.id} value={u.id}>{[u.prenom, u.nom].filter(Boolean).join(" ") || `Responsable #${u.id}`}</option>)}
-            </select>
-          </label>
-          <label className="mgr-field">
             <span>Signature à partir du</span>
             <input type="date" value={signatureStart} onChange={(e) => setSignatureStart(e.target.value)} />
           </label>
@@ -422,7 +414,7 @@ export function ContractsPage() {
         <div className="mgr-panel-title">
           <div>
             <h3>Résultats</h3>
-              <p>{filtered.length} contrat(s) correspondant à votre recherche{selectedIds.length ? ` · ${selectedIds.length} sélectionné(s)` : ""}</p>
+              <p>{filtered.length} contrat(s) correspondant à votre recherche</p>
           </div>
           <label className="mgr-page-size">
             Lignes{" "}
@@ -443,84 +435,53 @@ export function ContractsPage() {
         />
         {!loading && !error && visible.length > 0 && (
           <>
+            {/* Les contrats restent dans une liste compacte ; le clic ouvre le détail. */}
             <div className="mgr-table-wrap">
-              <table className="mgr-table">
+              <table className="mgr-table mgr-contract-list-table">
                 <thead>
                   <tr>
-                    <th><input aria-label="Sélectionner les contrats de cette page" type="checkbox" checked={visible.length > 0 && visible.every((c) => selectedIds.includes(c.id))} onChange={(e) => setSelectedIds((ids) => e.target.checked ? [...new Set([...ids, ...visible.map((c) => c.id)])] : ids.filter((id) => !visible.some((c) => c.id === id)))} /></th>
                     <th>Référence / objet</th>
                     <th>Type</th>
-                    <th>Partenaire</th>
-                    <th>Montant</th>
-                    <th>Signature / fin</th>
                     <th>Statut</th>
                     <th>Service / responsable</th>
-                    <th className="actions-col">Actions</th>
+                    <th>Montant</th>
+                    <th>Signature / fin</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {visible.map((c) => (
-                    <tr key={c.id}>
-                      <td><input aria-label={`Sélectionner ${c.reference || c.objet}`} type="checkbox" checked={selectedIds.includes(c.id)} onChange={(e) => setSelectedIds((ids) => e.target.checked ? [...ids, c.id] : ids.filter((selectedId) => selectedId !== c.id))} /></td>
-                      <td>
-                        <button
-                          className="mgr-contract-link"
-                          onClick={() => nav(`/gestionnaire/contrats/${c.id}`)}
-                        >
-                          {c.reference || `CLM-${c.id}`}
-                        </button>
-                        <strong className="mgr-cell-title">{c.objet}</strong>
-                        <small>Créé le {date(c.dateCreation)}</small>
-                      </td>
-                      <td>
-                        <span>{types.find((t) => String(t.id) === String(c.typeId))?.nom || `Type #${c.typeId || "—"}`}</span>
-                      </td>
-                      <td>
-                        {(parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom).join(", ")) || "—"}
-                      </td>
-                      <td>{money(c.montant, c.devise)}</td>
-                      <td>
-                        <small>Signature : {date(c.dateSignature)}</small>
-                        <small>Fin : {date(c.dateFin)}</small>
-                      </td>
-                      <td>
-                        <span className={`mgr-status ${statusClass(c.statut)}`}>
-                          {statusLabel(c.statut)}
-                        </span>
-                      </td>
-                      <td>
-                        <span>{c.service || "—"}</span>
-                        <small>{[users.find((u) => String(u.id) === String(c.responsableId))?.prenom, users.find((u) => String(u.id) === String(c.responsableId))?.nom].filter(Boolean).join(" ") || c.responsableNom || (c.responsableId ? `Responsable #${c.responsableId}` : "—")}</small>
-                      </td>
-                      <td>
-                        <div className="mgr-row-actions">
-                          <button
-                            title="Afficher"
-                            onClick={() =>
-                              nav(`/gestionnaire/contrats/${c.id}`)
-                            }
-                          >
-                            <i className="fa-regular fa-eye" />
-                          </button>
-                          <button
-                            title="Modifier"
-                            onClick={() =>
-                              nav(`/gestionnaire/contrats/${c.id}/modifier`)
-                            }
-                          >
-                            <i className="fa-regular fa-pen-to-square" />
-                          </button>
-                          <button
-                            title="Supprimer"
-                            className="danger"
-                            onClick={() => remove(c)}
-                          >
-                            <i className="fa-regular fa-trash-can" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {visible.map((c) => {
+                    // Résout les informations liées pour éviter de les répéter dans la vue.
+                    const typeName = types.find((t) => String(t.id) === String(c.typeId))?.nom || `Type #${c.typeId || "—"}`;
+                    const manager = users.find((u) => String(u.id) === String(c.responsableId));
+                    const managerMatricule = manager?.matricule || "—";
+                    const partner = parties.filter((p) => String(p.contratId) === String(c.id)).map((p) => p.nom).filter(Boolean).join(", ");
+                    const openDetails = () => nav(`/gestionnaire/contrats/${c.id}`);
+                    return (
+                      <tr className="mgr-contract-row" key={c.id} tabIndex={0} role="button"
+                        aria-label={`Afficher le contrat ${c.reference || c.id}`}
+                        onClick={openDetails}
+                        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openDetails(); } }}>
+                        <td>
+                          <strong>{c.reference || `CLM-${c.id}`}</strong>
+                          <small className="mgr-cell-title">{c.objet || "Objet non renseigné"}</small>
+                          {partner && <small>Partie prenante : {partner}</small>}
+                        </td>
+                        <td>{typeName}</td>
+                        <td><span className={`mgr-status ${statusClass(c.statut)}`}>{statusLabel(c.statut)}</span></td>
+                        <td>{c.service || "—"}<small>Matricule : {managerMatricule}</small></td>
+                        <td><strong>{money(c.montant, c.devise)}</strong></td>
+                        <td>{date(c.dateSignature)}<small>Fin : {date(c.dateFin)}</small></td>
+                        <td>
+                          <div className="mgr-row-actions">
+                            <button type="button" title="Afficher le contrat" aria-label="Afficher le contrat" onClick={(event) => { event.stopPropagation(); openDetails(); }}><i className="fa-regular fa-eye"/></button>
+                            <button type="button" title="Modifier" aria-label="Modifier le contrat" onClick={(event) => { event.stopPropagation(); nav(`/gestionnaire/contrats/${c.id}/modifier`); }}><i className="fa-regular fa-pen-to-square"/></button>
+                            <button type="button" title="Supprimer" aria-label="Supprimer le contrat" className="danger" onClick={(event) => { event.stopPropagation(); remove(c); }}><i className="fa-regular fa-trash-can"/></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -555,6 +516,7 @@ export function ContractsPage() {
       </section>
       {id && selected && <div className="mgr-detail-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) nav("/gestionnaire/contrats"); }}>
         <aside className="mgr-detail-drawer" role="dialog" aria-modal="true" aria-label={`Détail du contrat ${selected.reference || selected.id}`}>
+          {openedFromNotification && <p className="mgr-notification-target"><i className="fa-solid fa-bell"/> Contrat signalé par une notification</p>}
           <ContractDetails contract={selected} onRefresh={reload} types={types} users={users} />
         </aside>
       </div>}
@@ -572,6 +534,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     [parties, setParties] = useState([]),
     [amendments, setAmendments] = useState([]),
     [validations, setValidations] = useState([]),
+    [obligations, setObligations] = useState([]),
     [docsLoading, setDocsLoading] = useState(true),
     [docsError, setDocsError] = useState(""),
     [busy, setBusy] = useState(false);
@@ -592,20 +555,27 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     dateFinAvant: c.dateFin || "",
     dateFinApres: "",
   });
+  const [obligationForm, setObligationForm] = useState({
+    titre: "",
+    description: "",
+    echeance: "",
+  });
   const load = useCallback(async () => {
     setDocsLoading(true);
     setDocsError("");
     try {
-      const [d, p, a, v] = await Promise.all([
+      const [d, p, a, v, o] = await Promise.all([
         svc.getDocuments(c.id),
         svc.getParties(c.id),
         svc.getAmendments(c.id),
         svc.getValidations(c.id),
+        api.get(`/contrats/${c.id}/obligations`).then((response) => response.data),
       ]);
       setDocs(d || []);
       setParties(p || []);
       setAmendments(a || []);
       setValidations(v || []);
+      setObligations(o || []);
     } catch (e) {
       setDocsError(errMessage(e));
       toast(errMessage(e), "error");
@@ -760,6 +730,36 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
       toast(errMessage(e), "error");
     }
   };
+  const saveObligation = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      await api.post(`/contrats/${c.id}/obligations`, obligationForm);
+      setObligationForm({ titre: "", description: "", echeance: "" });
+      toast("Obligation ajoutée au contrat.");
+      await load();
+    } catch (e) {
+      toast(errMessage(e), "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const updateObligation = async (obligation, action) => {
+    const closing = action === "cloturer";
+    if (!(await confirm({
+      title: closing ? "Clôturer cette obligation ?" : "Annuler cette obligation ?",
+      message: `« ${obligation.titre} » sera ${closing ? "marquée comme terminée" : "annulée"}.`,
+      confirmLabel: closing ? "Clôturer" : "Annuler l’obligation",
+      danger: !closing,
+    }))) return;
+    try {
+      await api.put(`/obligations/${obligation.id}/${action}`);
+      toast(closing ? "Obligation clôturée." : "Obligation annulée.");
+      await load();
+    } catch (e) {
+      toast(errMessage(e), "error");
+    }
+  };
   const sign = async () => {
     if (!docs.some(d => d.categorie === "CONTRAT_SIGNE")) { setTab("documents"); toast("Ajoutez le PDF du contrat signé avant de confirmer la signature externe.", "warning"); return; }
     try {
@@ -769,6 +769,11 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     } catch (e) { toast(errMessage(e), "error"); }
   };
   const terminate = async () => {
+    if (obligations.some((obligation) => obligation.statut === "EN_COURS")) {
+      setTab("obligations");
+      toast("Clôturez ou annulez les obligations en cours avant de résilier.", "warning");
+      return;
+    }
     if (!(await confirm({ title: "Résilier ce contrat ?", message: `Le contrat ${c.reference} passera au statut résilié.`, confirmLabel: "Résilier", danger: true }))) return;
     try { await svc.terminateContract(c.id); toast("Contrat marqué comme résilié."); await onRefresh(); }
     catch (e) { toast(errMessage(e), "error"); }
@@ -793,7 +798,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           >
             <i className="fa-regular fa-pen-to-square" /> Modifier
           </Button>
-          {c.statut === "APPROUVE" ? <Button onClick={sign}><i className="fa-solid fa-file-signature" /> Confirmer la signature externe</Button> : c.statut === "BROUILLON" || c.statut === "EN_ATTENTE" ? <Button onClick={submitValidation}><i className="fa-solid fa-paper-plane" /> Soumettre en validation</Button> : null}
+          {c.statut === "APPROUVE" ? <Button onClick={sign}><i className="fa-solid fa-file-signature" /> Confirmer la signature externe</Button> : ["BROUILLON", "EN_ATTENTE", "REJETE"].includes(c.statut) ? <Button onClick={submitValidation}><i className="fa-solid fa-paper-plane" /> Soumettre en validation</Button> : null}
           {["SIGNE", "ACTIF"].includes(c.statut) && <Button variant="danger-outline" onClick={terminate}><i className="fa-solid fa-ban" /> Résilier</Button>}
         </PageActions>
       </div>
@@ -829,6 +834,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           ["documents", `Documents (${docs.length})`],
           ["parties", `Parties (${parties.length})`],
           ["avenants", `Avenants (${amendments.length})`],
+          ["obligations", `Obligations (${obligations.filter((item) => item.statut === "EN_COURS").length})`],
           ["validations", `Validations (${validations.length})`],
         ].map(([v, l]) => (
           <button
@@ -851,7 +857,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               ["Objet", c.objet],
               ["Description", c.description],
               ["Type", types.find((t) => String(t.id) === String(c.typeId))?.nom || (c.typeId ? `Type #${c.typeId}` : "—")],
-              ["Responsable", (() => { const person = users.find((u) => String(u.id) === String(c.responsableId)); return [person?.prenom, person?.nom].filter(Boolean).join(" ") || c.responsableNom || (c.responsableId ? `Responsable #${c.responsableId}` : "—"); })()],
+              ["Responsable (matricule)", users.find((person) => String(person.id) === String(c.responsableId))?.matricule || "—"],
               ["Service", c.service],
               ["Date de signature", date(c.dateSignature)],
               ["Date de début", date(c.dateDebut)],
@@ -888,8 +894,10 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           ) : docs.length === 0 ? (
             <LoadingOrEmpty empty />
           ) : (
+            <Pagination items={docs} resetKey={c.id}>
+              {(visibleDocuments) => (
             <div className="mgr-list">
-              {docs.map((d) => (
+              {visibleDocuments.map((d) => (
                 <div className="mgr-list-row" key={d.id}>
                   <span className="mgr-file-icon">
                     <i className="fa-regular fa-file-lines" />
@@ -918,6 +926,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                 </div>
               ))}
             </div>
+              )}
+            </Pagination>
           )}
         </section>
       )}
@@ -981,8 +991,10 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           {parties.length === 0 ? (
             <LoadingOrEmpty empty />
           ) : (
+            <Pagination items={parties} resetKey={c.id}>
+              {(visibleParties) => (
             <div className="mgr-list">
-              {parties.map((p) => (
+              {visibleParties.map((p) => (
                 <div className="mgr-list-row" key={p.id}>
                   <span className="mgr-avatar">
                     {(p.nom || "?").slice(0, 1).toUpperCase()}
@@ -1003,6 +1015,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                 </div>
               ))}
             </div>
+              )}
+            </Pagination>
           )}
         </section>
       )}
@@ -1089,7 +1103,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               </Button>
             </div>
           </form>
-          {amendments.map((a) => (
+          <Pagination items={amendments} resetKey={c.id}>
+            {(visibleAmendments) => visibleAmendments.map((a) => (
             <div className="mgr-timeline-item" key={a.id}>
               <strong>
                 Avenant n°{a.numero} — {a.description}
@@ -1100,7 +1115,122 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               </small>
               <p>{a.modifications}</p>
             </div>
-          ))}
+            ))}
+          </Pagination>
+        </section>
+      )}
+      {tab === "obligations" && (
+        <section className="mgr-panel">
+          <div className="mgr-panel-title">
+            <div>
+              <h3>Obligations contractuelles</h3>
+              <p>
+                Suivez les engagements à terminer avant la clôture ou la
+                résiliation du contrat.
+              </p>
+            </div>
+          </div>
+          <form className="mgr-form-grid" onSubmit={saveObligation}>
+            <label className="mgr-field">
+              <span>Obligation *</span>
+              <input
+                required
+                value={obligationForm.titre}
+                onChange={(event) =>
+                  setObligationForm({
+                    ...obligationForm,
+                    titre: event.target.value,
+                  })
+                }
+                placeholder="Ex. remettre les livrables finaux"
+              />
+            </label>
+            <label className="mgr-field">
+              <span>Échéance</span>
+              <input
+                type="date"
+                value={obligationForm.echeance}
+                onChange={(event) =>
+                  setObligationForm({
+                    ...obligationForm,
+                    echeance: event.target.value,
+                  })
+                }
+              />
+            </label>
+            <label className="mgr-field wide">
+              <span>Description</span>
+              <textarea
+                rows="3"
+                value={obligationForm.description}
+                onChange={(event) =>
+                  setObligationForm({
+                    ...obligationForm,
+                    description: event.target.value,
+                  })
+                }
+              />
+            </label>
+            <div className="mgr-form-actions">
+              <Button type="submit" disabled={busy}>
+                <i className="fa-solid fa-plus" /> Ajouter l’obligation
+              </Button>
+            </div>
+          </form>
+          {docsError ? (
+            <div className="mgr-inline-error">{docsError}</div>
+          ) : obligations.length === 0 ? (
+            <LoadingOrEmpty empty />
+          ) : (
+            <Pagination items={obligations} resetKey={c.id}>
+              {(visibleObligations) => (
+                <div className="mgr-list">
+                  {visibleObligations.map((obligation) => (
+                    <div className="mgr-list-row" key={obligation.id}>
+                      <span className="mgr-file-icon">
+                        <i className="fa-solid fa-list-check" />
+                      </span>
+                      <div className="mgr-list-main">
+                        <strong>{obligation.titre}</strong>
+                        <small>
+                          Échéance : {date(obligation.echeance)} · Créée le{" "}
+                          {date(obligation.dateCreation)}
+                        </small>
+                        {obligation.description && <p>{obligation.description}</p>}
+                      </div>
+                      <span
+                        className={`mgr-status ${statusClass(obligation.statut)}`}
+                      >
+                        {obligation.statut === "EN_COURS"
+                          ? "En cours"
+                          : obligation.statut === "TERMINEE"
+                            ? "Terminée"
+                            : obligation.statut === "ANNULEE"
+                              ? "Annulée"
+                              : obligation.statut}
+                      </span>
+                      {obligation.statut === "EN_COURS" && (
+                        <PageActions>
+                          <Button
+                            variant="secondary"
+                            onClick={() => updateObligation(obligation, "cloturer")}
+                          >
+                            <i className="fa-solid fa-check" /> Clôturer
+                          </Button>
+                          <Button
+                            variant="danger-outline"
+                            onClick={() => updateObligation(obligation, "annuler")}
+                          >
+                            <i className="fa-solid fa-ban" /> Annuler
+                          </Button>
+                        </PageActions>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Pagination>
+          )}
         </section>
       )}
       {tab === "validations" && (
@@ -1117,32 +1247,36 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
           {validations.length === 0 ? (
             <LoadingOrEmpty empty />
           ) : (
+            <Pagination items={validations} resetKey={c.id}>
+              {(visibleValidations) => (
             <div className="mgr-list">
-              {validations.map((v) => (
+              {visibleValidations.map((v) => (
                 <div className="mgr-list-row" key={v.id}>
                   <span className="mgr-file-icon">
                     <i className="fa-solid fa-stamp" />
                   </span>
                   <div className="mgr-list-main">
                     <strong>
-                      {v.etape || v.typeValidation || `Validation #${v.id}`}
+                      {v.etape || `${v.roleRequis || "Validation"} — niveau ${v.niveau ?? "—"}`}
                     </strong>
                     <small>
                       Valideur : {v.valideurId || "À attribuer"} ·{" "}
-                      {date(v.dateDecision || v.dateCreation)}
+                      {date(v.dateValidation || v.dateSoumission)}
                     </small>
                     <p>
                       {v.commentaire || v.decision || "En attente de décision"}
                     </p>
                   </div>
                   <span
-                    className={`mgr-status ${statusClass(v.statut || v.decision)}`}
+                    className={`mgr-status ${statusClass(v.decision)}`}
                   >
-                    {statusLabel(v.statut || v.decision || "EN_ATTENTE")}
+                    {statusLabel(v.decision || "EN_ATTENTE")}
                   </span>
                 </div>
               ))}
             </div>
+              )}
+            </Pagination>
           )}
         </section>
       )}
@@ -1182,7 +1316,6 @@ export function ContractFormPage() {
     dateFin: "",
     dureeMois: "",
     statut: "BROUILLON",
-    service: user?.service || "",
     renouvellementAutomatique: false,
     joursPreavis: 30,
     responsableId: user?.id || "",
@@ -1204,7 +1337,6 @@ export function ContractFormPage() {
             dateDebut: c.dateDebut || "",
             dateFin: c.dateFin || "",
             dureeMois: c.dureeMois ?? "",
-            service: c.service || "",
             typeId: c.typeId ?? "",
             responsableId: c.responsableId ?? user?.id ?? "",
           }));
@@ -1422,10 +1554,11 @@ export function ContractFormPage() {
             />
           </label>
           <label className="mgr-field">
-            <span>Service</span>
+            <span>Service du responsable</span>
             <input
-              value={form.service || ""}
-              onChange={(e) => change("service", e.target.value)}
+              value={user?.service || ""}
+              readOnly
+              placeholder="À renseigner dans votre profil"
             />
           </label>
           <label className="mgr-field">
@@ -1471,21 +1604,26 @@ export function ContractFormPage() {
 export function ManagerValidationsPage() {
   const [items, setItems] = useState([]),
     [contracts, setContracts] = useState([]),
+    [users, setUsers] = useState([]),
     [q, setQ] = useState(""),
     [filter, setFilter] = useState(""),
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const targetContractId = searchParams.get("contratId");
   const [busyDecision, setBusyDecision] = useState(null);
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [v, c] = await Promise.all([
+      const [v, c, directory] = await Promise.all([
         svc.getValidations(),
         svc.getContracts(),
+        api.get("/utilisateurs").then(response => response.data),
       ]);
       setItems(v || []);
       setContracts(c || []);
+      setUsers(directory || []);
       setError("");
     } catch (e) {
       setError(errMessage(e));
@@ -1506,8 +1644,9 @@ export function ManagerValidationsPage() {
     const c = contracts.find((x) => String(x.id) === String(v.contratId));
     return (
       (!filter ||
-        String(v.decision || v.statut || "EN_ATTENTE").toUpperCase() ===
+        String(v.decision || "EN_ATTENTE").toUpperCase() ===
           filter) &&
+      (!targetContractId || String(v.contratId) === targetContractId) &&
       (!q ||
         `${c?.reference || ""} ${c?.objet || ""} ${v.commentaire || ""} ${v.id || ""}`
           .toLowerCase()
@@ -1558,6 +1697,11 @@ export function ManagerValidationsPage() {
           empty={!loading && !data.length}
         />
         {!loading && data.length > 0 && (
+          <Pagination
+            items={data}
+            resetKey={`${q}:${filter}:${targetContractId || ""}`}
+          >
+            {(visibleRows) => (
           <div className="mgr-table-wrap">
             <table className="mgr-table">
               <thead>
@@ -1571,12 +1715,12 @@ export function ManagerValidationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((v) => {
+                {visibleRows.map((v) => {
                   const c = contracts.find(
                     (x) => String(x.id) === String(v.contratId),
                   );
                   return (
-                    <tr key={v.id}>
+                    <tr key={v.id} className={String(v.contratId) === targetContractId ? "notification-target" : ""}>
                       <td>
                         <strong>
                           {c?.reference || `Contrat #${v.contratId || "—"}`}
@@ -1584,26 +1728,26 @@ export function ManagerValidationsPage() {
                         <small>{c?.objet || "Objet indisponible"}</small>
                       </td>
                       <td>
-                        {v.etape || `Validation #${v.id}`}
+                        {v.etape || `${v.roleRequis || "Validation"} — niveau ${v.niveau ?? "—"}`}
                         <small>
                           {v.valideurId
-                            ? `Valideur #${v.valideurId}`
+                            ? `Matricule ${users.find(person => String(person.id) === String(v.valideurId))?.matricule || "—"}`
                             : "Valideur à attribuer"}
                         </small>
                       </td>
                       <td>
                         <span
-                          className={`mgr-status ${statusClass(String(v.decision || v.statut || "EN_ATTENTE").toUpperCase())}`}
+                          className={`mgr-status ${statusClass(String(v.decision || "EN_ATTENTE").toUpperCase())}`}
                         >
                           {statusLabel(
                             String(
-                              v.decision || v.statut || "EN_ATTENTE",
+                              v.decision || "EN_ATTENTE",
                             ).toUpperCase(),
                           )}
                         </span>
                       </td>
                       <td>{v.commentaire || "—"}</td>
-                      <td>{date(v.dateDecision || v.dateCreation)}</td>
+                      <td>{date(v.dateValidation || v.dateSoumission)}</td>
                       <td>{v.decision === "EN_ATTENTE" && v.valideurId == null && user?.role === v.roleRequis ? <div className="mgr-row-actions"><button title="Approuver" disabled={busyDecision === v.id} onClick={() => decide(v, "APPROUVE")}><i className="fa-solid fa-check"/></button><button title="Demander une modification" disabled={busyDecision === v.id} onClick={() => decide(v, "MODIFICATION_DEMANDEE")}><i className="fa-solid fa-pen"/></button><button title="Rejeter" className="danger" disabled={busyDecision === v.id} onClick={() => decide(v, "REJETE")}><i className="fa-solid fa-xmark"/></button></div> : "—"}</td>
                     </tr>
                   );
@@ -1611,6 +1755,8 @@ export function ManagerValidationsPage() {
               </tbody>
             </table>
           </div>
+            )}
+          </Pagination>
         )}
       </section>
     </div>
@@ -1681,6 +1827,8 @@ export function ManagerAmendmentsPage() {
           empty={!loading && !data.length}
         />
         {data.length > 0 && (
+          <Pagination items={data} resetKey={q}>
+            {(visibleRows) => (
           <div className="mgr-table-wrap">
             <table className="mgr-table">
               <thead>
@@ -1693,7 +1841,7 @@ export function ManagerAmendmentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((a) => {
+                {visibleRows.map((a) => {
                   const c = contracts.find(
                     (x) => String(x.id) === String(a.contratId),
                   );
@@ -1721,6 +1869,8 @@ export function ManagerAmendmentsPage() {
               </tbody>
             </table>
           </div>
+            )}
+          </Pagination>
         )}
       </section>
     </div>
@@ -1822,6 +1972,8 @@ export function ManagerDocumentsPage() {
           empty={!loading && !data.length}
         />
         {data.length > 0 && (
+          <Pagination items={data} resetKey={`${q}:${type}`}>
+            {(visibleRows) => (
           <div className="mgr-table-wrap">
             <table className="mgr-table">
               <thead>
@@ -1834,7 +1986,7 @@ export function ManagerDocumentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((d) => {
+                {visibleRows.map((d) => {
                   const c = contracts.find(
                     (x) => String(x.id) === String(d.contratId),
                   );
@@ -1868,6 +2020,8 @@ export function ManagerDocumentsPage() {
               </tbody>
             </table>
           </div>
+            )}
+          </Pagination>
         )}
       </section>
     </div>
@@ -2001,8 +2155,10 @@ export function ManagerNotificationsPage() {
           error={error}
           empty={!loading && !data.length}
         />
+        <Pagination items={data} resetKey={`${q}:${filter}`}>
+          {(visibleItems) => (
         <div className="mgr-notifications">
-          {data.map((n) => (
+          {visibleItems.map((n) => (
             <article
               key={n.id}
               className={`mgr-notification ${n.lu ? "read" : ""}`}
@@ -2028,7 +2184,7 @@ export function ManagerNotificationsPage() {
                 </small>
                 {n.contratId && (
                   <Link
-                    to={user?.role === "VALIDEUR" ? `/valideur/validations?contratId=${n.contratId}` : user?.role === "ADMIN" ? "/admin/contrats" : user?.role === "JURIDIQUE" ? "/juridique/contrats" : `/gestionnaire/contrats/${n.contratId}`}
+                    to={user?.role === "VALIDEUR" ? `/valideur/contrats?contratId=${n.contratId}` : user?.role === "ADMIN" ? "/admin/contrats" : user?.role === "JURIDIQUE" ? "/juridique/contrats" : `/gestionnaire/contrats/${n.contratId}`}
                     className="mgr-contract-link"
                   >
                     Ouvrir le contrat{" "}
@@ -2049,6 +2205,8 @@ export function ManagerNotificationsPage() {
             </article>
           ))}
         </div>
+          )}
+        </Pagination>
       </section>
     </div>
   );
@@ -2165,9 +2323,7 @@ export function ManagerProfilePage() {
         </form>
         <p className="mgr-profile-note">
           <i className="fa-solid fa-shield-halved" /> Le mot de passe n’est pas
-          modifiable depuis cette page. Une fonctionnalité dédiée de changement
-          de mot de passe doit être reliée au mécanisme d’authentification du
-          backend.
+          modifiable depuis cette page. 
         </p>
       </section>
     </div>

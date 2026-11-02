@@ -1,10 +1,143 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
 import "./DashboardAdmin.css";
-const date = value => value ? new Date(`${String(value).slice(0,10)}T00:00:00`).toLocaleDateString("fr-FR") : "—";
+const date = (value) =>
+  value
+    ? new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString(
+        "fr-FR",
+      )
+    : "—";
+const normalizeSearch = (value) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[_-]+/g, " ")
+    .toLocaleLowerCase("fr");
 export default function ContractsReadOnly() {
-  const [rows,setRows]=useState([]),[query,setQuery]=useState(""),[error,setError]=useState("");
-  useEffect(()=>{api.get("/contrats").then(({data})=>setRows(Array.isArray(data)?data:[])).catch(()=>setError("Impossible de charger les contrats."));},[]);
-  const filtered=useMemo(()=>{const q=query.trim().toLowerCase();return rows.filter(c=>!q||[c.reference,c.objet,c.service,c.statut].filter(Boolean).join(" ").toLowerCase().includes(q));},[rows,query]);
-  return <div className="admin-data-page"><div className="admin-data-toolbar"><div><h2>Référentiel des contrats</h2><p>Consultation globale en lecture seule.</p></div><span>{filtered.length} contrat(s)</span></div><label className="audit-search">Rechercher<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Référence, objet, service, statut…"/></label>{error&&<p role="alert">{error}</p>}<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Référence</th><th>Objet</th><th>Service</th><th>Responsable</th><th>Montant</th><th>Statut</th><th>Fin</th></tr></thead><tbody>{filtered.map(c=><tr key={c.id}><td>{c.reference}</td><td>{c.objet}</td><td>{c.service||"—"}</td><td>{c.responsableNom||`#${c.responsableId}`}</td><td>{Number(c.montant||0).toLocaleString("fr-FR")} {c.devise||"Ar"}</td><td>{c.statut}</td><td>{date(c.dateFin)}</td></tr>)}{filtered.length===0&&!error&&<tr><td colSpan="7" className="admin-empty">Aucun contrat correspondant.</td></tr>}</tbody></table></div></div>;
+  const [rows, setRows] = useState([]),
+    [users, setUsers] = useState([]),
+    [query, setQuery] = useState(""),
+    [error, setError] = useState("");
+  useEffect(() => {
+    Promise.all([api.get("/contrats"), api.get("/utilisateurs")])
+      .then(([contracts, directory]) => {
+        setRows(Array.isArray(contracts.data) ? contracts.data : []);
+        setUsers(Array.isArray(directory.data) ? directory.data : []);
+      })
+      .catch(() => setError("Impossible de charger les contrats."));
+  }, []);
+  const targetContractId = new URLSearchParams(window.location.search).get(
+    "contratId",
+  );
+  const filtered = useMemo(() => {
+    const q = normalizeSearch(query.trim());
+    return rows.filter(
+      (c) =>
+        (!targetContractId || String(c.id) === targetContractId) &&
+        (!q ||
+          [c.reference, c.objet, c.service, c.statut]
+            .filter(Boolean)
+            .join(" ")
+            .replace(/[_-]+/g, " ")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLocaleLowerCase("fr")
+            .includes(q)),
+    );
+  }, [rows, query, targetContractId]);
+  const statusClass = (status) =>
+    ["ACTIF", "APPROUVE", "VALIDE", "SIGNE"].includes(
+      String(status).toUpperCase(),
+    )
+      ? "good"
+      : ["EN_ATTENTE", "EN_VALIDATION"].includes(String(status).toUpperCase())
+        ? "pending"
+        : ["REJETE", "EXPIRE"].includes(String(status).toUpperCase())
+          ? "bad"
+          : "neutral";
+  return (
+    <div className="admin-data-page">
+      <div className="admin-data-toolbar">
+        <div>
+          <h2>
+            <i
+              className="fa-solid fa-file-contract page-title-icon"
+              aria-hidden="true"
+            />
+            Référentiel des contrats
+          </h2>
+          <p>Consultation globale en lecture seule.</p>
+        </div>
+        <span>{filtered.length} contrat(s)</span>
+      </div>
+      <label className="audit-search">
+        Rechercher
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Référence, objet, service, statut…"
+        />
+      </label>
+      {error && <p role="alert">{error}</p>}
+      {targetContractId && filtered[0] && (
+        <p className="admin-info-panel">
+          <i className="fa-solid fa-bell" />
+          <span>
+            Contrat signalé par la notification :{" "}
+            <strong>{filtered[0].reference || `#${filtered[0].id}`}</strong>
+          </span>
+        </p>
+      )}
+      <Pagination
+        items={filtered}
+        resetKey={`${query}:${targetContractId || ""}`}
+      >
+        {(visibleContracts) => (
+          <div className="admin-contract-grid">
+            {visibleContracts.map((c) => (
+          <article
+            className={`admin-contract-card ${String(c.id) === targetContractId ? "notification-target" : ""}`}
+            key={c.id}
+          >
+            <header>
+              <span className="admin-contract-icon">
+                <i className="fa-solid fa-file-contract" />
+              </span>
+              <span className={`admin-decision ${statusClass(c.statut)}`}>
+                {c.statut || "Non défini"}
+              </span>
+            </header>
+            <strong>{c.reference || `Contrat #${c.id}`}</strong>
+            <p>{c.objet || "Objet non renseigné"}</p>
+            <div className="admin-contract-meta">
+              <span>
+                <small>Service</small>
+                {c.service || "—"}
+              </span>
+              <span>
+                <small>Responsable (matricule)</small>
+                {users.find((u) => String(u.id) === String(c.responsableId))
+                  ?.matricule || "—"}
+              </span>
+              <span>
+                <small>Montant</small>
+                {Number(c.montant || 0).toLocaleString("fr-FR")}{" "}
+                {c.devise || "Ar"}
+              </span>
+              <span>
+                <small>Fin prévue</small>
+                {date(c.dateFin)}
+              </span>
+            </div>
+            </article>
+            ))}
+          </div>
+        )}
+      </Pagination>
+      {filtered.length === 0 && !error && (
+        <p className="admin-empty">Aucun contrat correspondant.</p>
+      )}
+    </div>
+  );
 }

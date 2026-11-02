@@ -5,14 +5,14 @@
   --spat-blue: #53677e;
   --spat-blue-dark: #3d5067;
   --spat-red: #a45c5c;
-  --clm-bg: #f8fafc;
+  --clm-bg: #dce8f8;
   --clm-text: #202a36;
   --clm-muted: #697586;
-  --clm-border: #e5e8ed;
+  --clm-border: #d6e2f1;
   --clm-card: #ffffff;
   --clm-radius: 14px;
-  --clm-shadow: 0 12px 28px rgba(27, 39, 54, .075), 0 2px 6px rgba(27, 39, 54, .035);
-  --clm-shadow-soft: 0 2px 8px rgba(27, 39, 54, .035), 0 10px 24px rgba(27, 39, 54, .025);
+  --clm-shadow: 0 10px 24px rgba(32, 63, 105, .12), 0 3px 8px rgba(32, 63, 105, .06);
+  --clm-shadow-soft: 0 4px 12px rgba(32, 63, 105, .075), 0 12px 26px rgba(32, 63, 105, .055);
   --clm-surface-subtle: #fbfcfd;
   --clm-accent-soft: #edf5fa;
 }
@@ -37,9 +37,12 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", mon
 /* Shared polish for every workspace and role-specific screen. */
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 button { touch-action: manipulation; }
+button:not(:disabled) { transition: outline-color .16s ease, box-shadow .16s ease; }
+button:not(:disabled):hover { outline: 2px solid rgba(37, 99, 235, .2); outline-offset: 1px; }
 :focus-visible { outline: 3px solid rgba(22, 139, 210, .28); outline-offset: 2px; }
 .clm-content { animation: page-enter .38s cubic-bezier(.2,.75,.25,1) both; }
 .clm-page-heading, .mgr-page-head, .workspace-welcome, .role-welcome { animation: page-enter .42s cubic-bezier(.2,.75,.25,1) both; }
+.page-title-icon { margin-right: 0.55em; color: var(--spat-blue, #168bd2); }
 .mgr-panel, .mgr-kpis > div, .users-table-card, .workspace-card, .role-action-card, .workspace-security, .role-security-note {
   box-shadow: var(--clm-shadow-soft);
   transition: box-shadow .22s ease, border-color .22s ease, transform .22s ease;
@@ -81,6 +84,9 @@ input, select, textarea { max-width: 100%; }
 .mgr-kpis > div:hover { transform: translateY(-1px); }
 .mgr-kpis strong { letter-spacing: -.4px; }
 .clm-notification-popover { box-shadow: 0 18px 44px rgba(27,39,54,.14); }
+table thead th { background: linear-gradient(180deg, #edf6f5, #e4f0ef) !important; color: #315d60 !important; border-bottom-color: #cbdedb !important; }
+.admin-contract-card.notification-target { border: 2px solid #16847e; box-shadow: 0 0 0 4px #16847e24; }
+tr.notification-target td { background: #eaf7f4 !important; }
 
 /* Contrôles de formulaire cohérents dans les espaces connectés. */
 .clm-content .mgr-field > span {
@@ -214,4 +220,174 @@ input, select, textarea { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+
+/* Tables harmonisées pour les écrans de gestion CLM. */
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap, .admin-panel, .legal-panel) {
+  min-width: 0;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) {
+  overflow: auto; border: 1px solid #dfe7ef; border-radius: 13px; background: #fff;
+  box-shadow: 0 5px 18px rgba(18, 38, 63, .045); scrollbar-width: thin;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) table {
+  width: 100%; border-collapse: separate; border-spacing: 0; color: #26364b;
+  font-size: 12px; line-height: 1.5;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) thead th {
+  position: sticky; top: 0; z-index: 1; padding: 14px 15px;
+  color: #52647a; background: #f3f6fa; border-bottom: 1px solid #dfe7ef;
+  font-size: 10px; font-weight: 850; letter-spacing: .055em; text-align: left;
+  text-transform: uppercase; white-space: nowrap;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) tbody td {
+  padding: 13px 15px; border-bottom: 1px solid #edf1f5; vertical-align: middle;
+  background: #fff; transition: background .15s ease;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) tbody tr:last-child td { border-bottom: 0; }
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) tbody tr:hover td { background: #f6f9fc; }
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) td strong { color: #172b45; font-weight: 800; }
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) td small {
+  display: block; margin-top: 4px; color: #78889b; font-size: 11px; line-height: 1.45;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) details summary {
+  color: #176b83; font-weight: 750; cursor: pointer;
+}
+:where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) details pre {
+  max-width: 460px; max-height: 280px; overflow: auto; padding: 12px;
+  border: 1px solid #e2e9f0; border-radius: 9px; background: #f7f9fc;
+  color: #34465d; font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+@media (max-width: 650px) {
+  :where(.admin-table-wrap, .legal-table-wrap, .legal-contract-list-wrap) table { min-width: 720px; }
+}
+
+/* Bleu clair derrière les espaces connectés, avec des surfaces blanches qui ressortent. */
+body,
+.clm-layout,
+.admin-layout,
+.clm-main,
+.clm-content {
+  background: var(--clm-bg);
+}
+.clm-content .mgr-kpis > div,
+.clm-content .mgr-panel,
+.clm-content .mgr-contract-card,
+.clm-content .mgr-quick-card,
+.clm-content .mgr-profile-panel,
+.clm-content .users-table-card,
+.clm-content .admin-table-wrap,
+.clm-content .stat-card,
+.clm-content .alert-setting-form,
+.clm-content .admin-panel,
+.clm-content .admin-kpis article,
+.clm-content .admin-contract-card,
+.clm-content .workspace-card,
+.clm-content .role-action-card,
+.clm-content .engagement-metrics article,
+.clm-content .engagement-panel,
+.clm-content .legal-stats article,
+.clm-content .legal-panel,
+.clm-content .legal-contract-card,
+.clm-content .validation-card,
+.clm-content .validation-panel,
+.clm-content .validation-kpis article,
+.clm-content .role-welcome,
+.clm-content .role-security-note {
+  border-color: #d4e1f2;
+  box-shadow: var(--clm-shadow-soft);
+}
+.clm-content .mgr-table-wrap,
+.clm-content .admin-table-wrap,
+.clm-content .legal-table-wrap,
+.clm-content .engagement-table-wrap {
+  background: #fff;
+  box-shadow: var(--clm-shadow);
+}
+
+/* Même contraste et mêmes surfaces pour tous les tableaux des espaces connectés. */
+.clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) {
+  overflow-x: auto;
+  border: 1px solid #c6d6ea;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 26px rgba(32, 63, 105, 0.14);
+}
+.clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+}
+.clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) thead th {
+  padding: 14px 16px;
+  color: #fff !important;
+  background: #25496f !important;
+  border-bottom: 1px solid #1b3b60 !important;
+  font-weight: 800;
+}
+.clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) tbody td {
+  padding: 13px 16px;
+  color: #24364d;
+  background: #fff;
+  border-bottom: 1px solid #e1e9f3;
+}
+.clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) tbody tr:nth-child(even) td {
+  background: #f2f6fc;
+}
+.clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) tbody tr:hover td {
+  background: #e2edfc !important;
+}
+.clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) tbody tr:last-child td {
+  border-bottom: 0;
 }

@@ -1,6 +1,7 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { API_BASE_URL } from "../../services/api.js";
+import Pagination from "../../composants/Pagination.jsx";
+import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
 import "./Users.css";
 
@@ -60,6 +61,7 @@ async function readError(response) {
 }
 
 export default function Users() {
+  const { confirm } = useFeedback();
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -93,7 +95,7 @@ export default function Users() {
     } catch (error) {
       showNotification(
         "error",
-        `Impossible de charger les utilisateurs : ${error.message}`
+        `Impossible de charger les utilisateurs : ${error.message}`,
       );
       throw error;
     } finally {
@@ -109,7 +111,10 @@ export default function Users() {
     setForm({ ...initialFormState });
     setEditingId(null);
     setIsEditing(false);
-    showNotification("info", "Création utilisateur : renseignez les informations du compte.");
+    showNotification(
+      "info",
+      "Création utilisateur : renseignez les informations du compte.",
+    );
     setShowModal(true);
   };
 
@@ -128,7 +133,10 @@ export default function Users() {
     });
 
     setIsEditing(true);
-    showNotification("info", "Modification utilisateur : vérifiez les informations avant d’enregistrer.");
+    showNotification(
+      "info",
+      "Modification utilisateur : vérifiez les informations avant d’enregistrer.",
+    );
     setShowModal(true);
   };
 
@@ -153,16 +161,12 @@ export default function Users() {
       const motDePasse = form.motDePasse;
 
       if (!matriculeText || !nom || !prenom || !email) {
-        throw new Error(
-          "Veuillez remplir tous les champs obligatoires."
-        );
+        throw new Error("Veuillez remplir tous les champs obligatoires.");
       }
 
       // L'entité Java attend un Integer pour le matricule.
       if (!/^\d+$/.test(matriculeText)) {
-        throw new Error(
-          "Le matricule doit contenir uniquement des chiffres."
-        );
+        throw new Error("Le matricule doit contenir uniquement des chiffres.");
       }
 
       const matricule = Number(matriculeText);
@@ -172,9 +176,7 @@ export default function Users() {
         matricule <= 0 ||
         matricule > 2147483647
       ) {
-        throw new Error(
-          "Le matricule doit être un entier positif valide."
-        );
+        throw new Error("Le matricule doit être un entier positif valide.");
       }
 
       const payload = {
@@ -217,7 +219,7 @@ export default function Users() {
         "success",
         isEditing
           ? "Utilisateur modifié. La notification e-mail est envoyée si le serveur mail est disponible."
-          : "Utilisateur créé. L’e-mail de bienvenue est envoyé si le serveur mail est disponible."
+          : "Utilisateur créé. L’e-mail de bienvenue est envoyé si le serveur mail est disponible.",
       );
 
       try {
@@ -226,10 +228,7 @@ export default function Users() {
         // L'erreur de rechargement est déjà affichée.
       }
     } catch (error) {
-      showNotification(
-        "error",
-        error.message || "Échec de l'enregistrement."
-      );
+      showNotification("error", error.message || "Échec de l'enregistrement.");
     } finally {
       setSaving(false);
     }
@@ -238,10 +237,12 @@ export default function Users() {
   const handleDelete = async (id, matricule) => {
     if (deletingId !== null || saving) return;
 
-    const confirmation = window.confirm(
-      `Voulez-vous vraiment supprimer l'utilisateur de matricule ${matricule} ?`
-    );
-
+    const confirmation = await confirm({
+      title: "Supprimer cet utilisateur ?",
+      message: `Le compte de matricule ${matricule} sera supprimé.`,
+      confirmLabel: "Supprimer",
+      danger: true,
+    });
     if (!confirmation) return;
 
     setDeletingId(id);
@@ -251,27 +252,22 @@ export default function Users() {
     });
 
     try {
-      const response = await fetch(
-        `${API_URL}/${encodeURIComponent(id)}`,
-        {
-          method: "DELETE",
-          headers: getHeaders(),
-        }
-      );
+      const response = await fetch(`${API_URL}/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: getHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error(await readError(response));
       }
 
       setUsers((currentUsers) =>
-        currentUsers.filter(
-          (user) => String(user.id) !== String(id)
-        )
+        currentUsers.filter((user) => String(user.id) !== String(id)),
       );
 
       showNotification(
         "success",
-        "Utilisateur supprimé et e-mail de notification envoyé."
+        "Utilisateur supprimé et e-mail de notification envoyé.",
       );
 
       try {
@@ -282,7 +278,7 @@ export default function Users() {
     } catch (error) {
       showNotification(
         "error",
-        error.message || "Erreur lors de la suppression."
+        error.message || "Erreur lors de la suppression.",
       );
     } finally {
       setDeletingId(null);
@@ -300,8 +296,10 @@ export default function Users() {
       user.service,
       user.role,
     ].some((value) =>
-      String(value ?? "").toLowerCase().includes(query)
-    )
+      String(value ?? "")
+        .toLowerCase()
+        .includes(query),
+    ),
   );
 
   return (
@@ -316,7 +314,11 @@ export default function Users() {
         }}
       >
         <h2>
-          <i className="fa-solid fa-users" /> Gestion des utilisateurs
+          <i
+            className="fa-solid fa-users page-title-icon"
+            aria-hidden="true"
+          />
+          Gestion des utilisateurs
         </h2>
 
         <button
@@ -337,10 +339,7 @@ export default function Users() {
       </div>
 
       {feedback.message && (
-        <div
-          role="status"
-          className={`users-feedback ${feedback.type}`}
-        >
+        <div role="status" className={`users-feedback ${feedback.type}`}>
           <i
             className={`fa-solid ${
               feedback.type === "success"
@@ -355,7 +354,7 @@ export default function Users() {
         </div>
       )}
 
-        <div className="users-search">
+      <div className="users-search">
         <i
           className="fa-solid fa-magnifying-glass"
           style={{ color: "#94a3b8" }}
@@ -392,12 +391,10 @@ export default function Users() {
         )}
       </div>
 
-      <div
-          className="stat-card users-table-card"
-      >
-        <table
-          className="users-table"
-        >
+      <div className="stat-card users-table-card">
+        <Pagination items={filteredUsers} resetKey={searchTerm}>
+          {(visibleUsers) => (
+        <table className="users-table">
           <thead>
             <tr style={{ background: "#f8fafc", textAlign: "left" }}>
               <th style={{ padding: "12px" }}>Matricule</th>
@@ -406,9 +403,7 @@ export default function Users() {
               <th style={{ padding: "12px" }}>Rôle</th>
               <th style={{ padding: "12px" }}>Service</th>
               <th style={{ padding: "12px" }}>Statut</th>
-              <th style={{ padding: "12px", textAlign: "center" }}>
-                Actions
-              </th>
+              <th style={{ padding: "12px", textAlign: "center" }}>Actions</th>
             </tr>
           </thead>
 
@@ -436,11 +431,8 @@ export default function Users() {
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  style={{ borderTop: "1px solid #eee" }}
-                >
+              visibleUsers.map((user) => (
+                <tr key={user.id} style={{ borderTop: "1px solid #eee" }}>
                   <td style={{ padding: "12px", fontWeight: "bold" }}>
                     {user.matricule}
                   </td>
@@ -480,9 +472,7 @@ export default function Users() {
                     </span>
                   </td>
 
-                  <td style={{ padding: "12px" }}>
-                    {user.service || "-"}
-                  </td>
+                  <td style={{ padding: "12px" }}>{user.service || "-"}</td>
 
                   <td style={{ padding: "12px" }}>
                     <span
@@ -524,17 +514,14 @@ export default function Users() {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        handleDelete(user.id, user.matricule)
-                      }
+                      onClick={() => handleDelete(user.id, user.matricule)}
                       disabled={deletingId !== null || saving}
                       title="Supprimer"
                       style={{
                         color: "#dc2626",
                         background: "none",
                         border: "none",
-                        cursor:
-                          deletingId === user.id ? "wait" : "pointer",
+                        cursor: deletingId === user.id ? "wait" : "pointer",
                         fontSize: "16px",
                       }}
                     >
@@ -552,20 +539,15 @@ export default function Users() {
             )}
           </tbody>
         </table>
+          )}
+        </Pagination>
       </div>
 
       {showModal && (
-        <div
-          className="users-modal-backdrop"
-        >
-          <form
-            onSubmit={handleSubmit}
-            className="users-modal"
-          >
+        <div className="users-modal-backdrop">
+          <form onSubmit={handleSubmit} className="users-modal">
             <h3 style={{ marginBottom: "16px" }}>
-              {isEditing
-                ? "Modifier l'utilisateur"
-                : "Créer un utilisateur"}
+              {isEditing ? "Modifier l'utilisateur" : "Créer un utilisateur"}
             </h3>
 
             <label style={labelStyle}>Matricule *</label>
@@ -626,13 +608,26 @@ export default function Users() {
                 <input
                   type="checkbox"
                   checked={Boolean(form.motDePasse)}
-                  onChange={(event) => setForm({ ...form, motDePasse: event.target.checked ? "reset" : "" })}
+                  onChange={(event) =>
+                    setForm({
+                      ...form,
+                      motDePasse: event.target.checked ? "reset" : "",
+                    })
+                  }
                   disabled={saving}
                   style={{ ...inputStyle, width: "18px" }}
                 />
-                <small style={{ display: "block", marginBottom: 12 }}>Un mot de passe provisoire de 8 caractères sera envoyé par e-mail.</small>
+                <small style={{ display: "block", marginBottom: 12 }}>
+                  Un mot de passe provisoire de 8 caractères sera envoyé par
+                  e-mail.
+                </small>
               </>
-            ) : <p>Un mot de passe provisoire de 8 caractères sera généré et envoyé par e-mail.</p>}
+            ) : (
+              <p>
+                Un mot de passe provisoire de 8 caractères sera généré et envoyé
+                par e-mail.
+              </p>
+            )}
 
             <label style={labelStyle}>Rôle *</label>
             <select
@@ -647,12 +642,8 @@ export default function Users() {
               <option value="GESTIONNAIRE">
                 GESTIONNAIRE - Crée les contrats
               </option>
-              <option value="VALIDEUR">
-                VALIDEUR - Approuve / Rejette
-              </option>
-              <option value="JURIDIQUE">
-                JURIDIQUE - Service juridique
-              </option>
+              <option value="VALIDEUR">VALIDEUR - Approuve / Rejette</option>
+              <option value="JURIDIQUE">JURIDIQUE - Service juridique</option>
             </select>
 
             <label style={labelStyle}>Service</label>

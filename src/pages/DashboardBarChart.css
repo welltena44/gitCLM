@@ -1,0 +1,108 @@
+.dashboard-chart {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #e1e9ed;
+  border-radius: 9px;
+  background: #fff;
+}
+.dashboard-chart h3 {
+  margin: 0;
+  color: #244253;
+  font-size: 14px;
+}
+.dashboard-chart-content {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  margin-top: 16px;
+}
+.dashboard-chart-ring {
+  display: grid;
+  place-items: center;
+  width: 170px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: rotate(-90deg);
+}
+.dashboard-chart-ring.is-pie {
+  transform: none;
+}
+.dashboard-chart-total {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+  transform: rotate(90deg);
+}
+.dashboard-chart-total strong {
+  color: #244253;
+  font-size: 25px;
+  font-variant-numeric: tabular-nums;
+}
+.dashboard-chart-total span {
+  color: #718490;
+  font-size: 10px;
+}
+.dashboard-chart-legend {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.dashboard-chart-content > .dashboard-chart-legend {
+  margin-top: 0;
+}
+.dashboard-chart-legend li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  color: #536b79;
+  font-size: 11px;
+}
+.dashboard-chart-label {
+  overflow-wrap: anywhere;
+}
+.dashboard-chart-swatch {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--chart-color);
+}
+.dashboard-chart-legend li strong {
+  color: #176e6b;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.dashboard-chart > p {
+  margin: 16px 0 0;
+  color: #718490;
+  font-size: 12px;
+}
+.dashboard-chart-summary {
+  grid-column: 1;
+  margin: -14px 0 0 !important;
+  color: #536b79 !important;
+  font-size: 11px !important;
+  text-align: center;
+}
+@media (max-width: 420px) {
+  .dashboard-chart-content {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 14px;
+  }
+  .dashboard-chart-ring {
+    width: 150px;
+  }
+  .dashboard-chart-legend {
+    width: 100%;
+  }
+}
