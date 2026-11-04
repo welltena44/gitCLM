@@ -1175,3 +1175,19 @@
 .mgr-contract-row .mgr-row-actions {
   white-space: nowrap;
 }
+
+/* Statut et cycle propres au workflow des avenants. */
+.mgr-amendment-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  padding: 4px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 750;
+}
+.mgr-amendment-status.good { background: #e7f7ee; color: #176b3a; }
+.mgr-amendment-status.pending { background: #fff4d8; color: #8a5b00; }
+.mgr-amendment-status.bad { background: #fdecec; color: #a12626; }
+.mgr-link-button { display: block; margin-top: 6px; padding: 0; border: 0; background: transparent; color: #1459a8; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }

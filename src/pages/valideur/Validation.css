@@ -277,3 +277,16 @@
 .validation-dashboard .validation-kpis strong {
   color: var(--kpi-accent);
 }
+
+/* Présentation spécifique des validations d’avenants. */
+.validation-amendment-detail {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid #c9d9ef;
+  border-left: 4px solid #1459a8;
+  border-radius: 10px;
+  background: #f5f8fd;
+  color: #243b5a;
+  font-size: 13px;
+}
+.validation-amendment-detail p { margin: 7px 0 0; line-height: 1.55; }

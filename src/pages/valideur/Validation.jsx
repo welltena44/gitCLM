@@ -6,6 +6,7 @@ import Pagination from "../../composants/Pagination.jsx";
 
 const label = {
   EN_ATTENTE: "En attente",
+  EN_VALIDATION: "En validation",
   APPROUVE: "Approuvé",
   REJETE: "Rejeté",
   MODIFICATION_DEMANDEE: "Modification demandée",
@@ -30,6 +31,7 @@ export default function Validation() {
   const selectedContractId = searchParams.get("contratId");
   const [validations, setValidations] = useState([]),
     [contracts, setContracts] = useState([]),
+    [amendments, setAmendments] = useState([]),
     [documents, setDocuments] = useState({});
   const [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
@@ -40,13 +42,15 @@ export default function Validation() {
     setLoading(true);
     setError("");
     try {
-      const [v, c] = await Promise.all([
+      const [v, c, a] = await Promise.all([
         api.get("/validations"),
         api.get("/contrats"),
+        api.get("/avenants"),
       ]);
       const rows = Array.isArray(v.data) ? v.data : [];
       setValidations(rows);
       setContracts(Array.isArray(c.data) ? c.data : []);
+      setAmendments(Array.isArray(a.data) ? a.data : []);
       const ids = [
         ...new Set(
           rows
@@ -90,6 +94,8 @@ export default function Validation() {
   );
   const contractFor = (id) =>
     contracts.find((c) => String(c.id) === String(id));
+  const amendmentFor = (id) =>
+    amendments.find((a) => String(a.id) === String(id));
   const filteredInbox = useMemo(() => {
     const search = normalizeSearch(query.trim());
     if (!search) return inbox;
@@ -97,9 +103,14 @@ export default function Validation() {
       const contract = contracts.find(
         (item) => String(item.id) === String(validation.contratId),
       );
+      const amendment = amendmentFor(validation.avenantId);
       return normalizeSearch(
         [
           contract?.reference,
+          amendment?.numero,
+          amendment?.description,
+          amendment?.modifications,
+          amendment?.statut,
           contract?.objet,
           contract?.service,
           contract?.statut,
@@ -112,7 +123,7 @@ export default function Validation() {
           .join(" "),
       ).includes(search);
     });
-  }, [inbox, contracts, query]);
+  }, [inbox, contracts, amendments, query]);
   const download = async (doc) => {
     try {
       const response = await api.get(`/documents/${doc.id}/download`, {
@@ -215,6 +226,7 @@ export default function Validation() {
         >
           {(visibleInbox) => visibleInbox.map((v) => {
           const c = contractFor(v.contratId);
+          const amendment = v.avenantId ? amendmentFor(v.avenantId) : null;
           return (
             <article
               className={`validation-card ${String(v.contratId) === selectedContractId ? "notification-target" : ""}`}
@@ -226,12 +238,27 @@ export default function Validation() {
                     Niveau {v.niveau} · Cycle {v.cycle}
                   </span>
                   <h3>
-                    {c?.reference || `Contrat #${v.contratId}`} —{" "}
-                    {c?.objet || "Dossier contractuel"}
+                    {amendment
+                      ? `Avenant n°${amendment.numero} — ${amendment.description}`
+                      : `${c?.reference || `Contrat #${v.contratId}`} — ${c?.objet || "Dossier contractuel"}`}
                   </h3>
                 </div>
                 <span className="validation-state">{label[v.decision]}</span>
               </header>
+              {amendment && (
+                <div className="validation-amendment-detail">
+                  <strong>Examen d’un avenant</strong>
+                  <p>{amendment.modifications || amendment.description || "Aucun détail complémentaire."}</p>
+                  <p>
+                    <span>Statut de l’avenant : {label[amendment.statut] || amendment.statut || "En validation"}</span>
+                    {amendment.cycleValidation ? ` · Cycle ${amendment.cycleValidation}` : ""}
+                  </p>
+                  <p>
+                    Montant : {amendment.montantAvant ?? "—"} → {amendment.montantApres ?? "—"} {c?.devise || "Ar"}
+                    {amendment.dateFinApres ? ` · Nouvelle échéance : ${amendment.dateFinApres}` : ""}
+                  </p>
+                </div>
+              )}
               {c && (
                 <dl className="validation-details">
                   <div>
@@ -257,7 +284,7 @@ export default function Validation() {
               )}
               {c && !isHistory && (
                 <details className="validation-contract-detail">
-                  <summary>Consulter le dossier contractuel</summary>
+                  <summary>{amendment ? "Consulter le contrat d’origine et ses pièces" : "Consulter le dossier contractuel"}</summary>
                   <div>
                     <p>
                       <strong>Description :</strong>{" "}

@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import './workspace-theme.css';
+import './shell-theme.css';
+// Finition commune : typographie, tableaux et états visuels sur toutes les pages.
+import './typography-table-theme.css';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

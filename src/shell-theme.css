@@ -1,0 +1,628 @@
+/* ==========================================================================
+   Thème « shell » : bandeau supérieur pleine largeur, menu latéral à plat,
+   panneau de contenu clair, cartes blanches et titres en bandeau bleu.
+   Chargé en dernier : il remplace les styles de workspace-theme.css.
+   ========================================================================== */
+
+:root {
+  --spat-blue: #0a78c9;
+  --spat-blue-dark: #075a9c;
+  --spat-cyan: #00b4d8;
+  --clm-bg: #f3f7fb;
+  --clm-text: #111c2d;
+  --clm-muted: #5d6b7e;
+  --clm-border: #e1e8f0;
+  --clm-radius: 18px;
+  --clm-shadow: 0 2px 4px rgba(16, 42, 67, 0.04), 0 10px 26px rgba(16, 42, 67, 0.08);
+  --clm-shadow-soft: 0 1px 3px rgba(16, 42, 67, 0.05), 0 6px 18px rgba(16, 42, 67, 0.055);
+  --clm-accent-soft: #e8f3fd;
+  --clm-topbar-h: 68px;
+  --clm-banner: linear-gradient(100deg, #0a7bd0 0%, #00a8d8 62%, #00bde0 100%);
+}
+
+body {
+  background: var(--clm-bg);
+}
+
+/* ---------- Structure : bandeau en haut, menu + contenu dessous ---------- */
+.clm-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: transparent;
+}
+.clm-shell {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+.clm-main {
+  min-width: 0;
+  flex: 1;
+  padding: 28px 28px 0;
+  background: transparent;
+}
+
+/* ---------- Bandeau supérieur ---------- */
+.clm-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  height: var(--clm-topbar-h);
+  min-height: var(--clm-topbar-h);
+  padding: 0 28px 0 20px;
+  gap: 14px;
+  border-bottom: 1px solid var(--clm-border);
+  background: #fff;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.clm-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--spat-blue-dark);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+}
+.clm-brand img {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  object-fit: contain;
+}
+.clm-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+}
+.clm-menu-toggle {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  color: #3b4b60;
+  background: transparent;
+}
+.clm-menu-toggle:hover {
+  color: var(--spat-blue-dark);
+  background: var(--clm-accent-soft);
+  transform: none;
+}
+.clm-notification-bell {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--clm-border);
+  border-radius: 50%;
+  color: #3b4b60;
+  background: #fff;
+}
+.clm-notification-bell:hover {
+  color: var(--spat-blue-dark);
+  background: var(--clm-accent-soft);
+  transform: none;
+}
+.clm-notification-bell > span {
+  top: -6px;
+  right: -4px;
+  background: #e5202e;
+}
+.clm-greeting {
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 8px;
+  color: #1c2a3d;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  max-width: 34ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.clm-greeting:hover {
+  color: var(--spat-blue-dark);
+}
+.clm-notification-popover {
+  top: 52px;
+  right: -8px;
+  border-radius: 16px;
+}
+
+/* ---------- Menu latéral ---------- */
+.modernSidebar-nav {
+  position: sticky;
+  top: var(--clm-topbar-h);
+  width: 304px;
+  min-width: 304px;
+  height: calc(100dvh - var(--clm-topbar-h));
+  padding: 20px 20px 22px;
+  border-right: 1px solid var(--clm-border);
+  background: #fff;
+  box-shadow: none;
+  z-index: 20;
+}
+.modernSidebar-nav.closed {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar-account {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--clm-border);
+  border-radius: 14px;
+  background: #f7fafd;
+}
+.sidebar-account-label {
+  color: var(--clm-muted);
+  font-size: 12px;
+}
+.sidebar-account-name {
+  color: #0f1b2d;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.sidebar-account-meta {
+  color: var(--clm-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.modernSidebar-nav nav {
+  margin: 14px -8px 0;
+  padding: 0 8px;
+}
+.menu-categories {
+  padding: 0;
+}
+.sidebar-group {
+  margin: 0 0 14px;
+}
+.sidebar-group-title {
+  padding: 6px 14px;
+  color: #8190a3;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.sidebar-group-links .menu {
+  margin: 2px 0;
+}
+.menu-categories a {
+  min-height: 42px;
+  padding: 9px 14px;
+  gap: 14px;
+  border: 0;
+  border-radius: 10px;
+  color: #1c2a3d;
+  font-size: 14px;
+  font-weight: 600;
+}
+.menu-categories a > i {
+  color: #2a3a50;
+  font-size: 15px;
+}
+.menu-categories a:hover {
+  color: var(--spat-blue-dark);
+  background: #f1f7fc;
+  box-shadow: none;
+}
+.menu-categories a:hover > i {
+  color: var(--spat-blue-dark);
+}
+.menu-categories a.active,
+.menu-categories a.active:hover {
+  color: var(--spat-blue);
+  background: var(--clm-accent-soft);
+  box-shadow: none;
+  font-weight: 700;
+}
+.menu-categories a.active > i,
+.menu-categories a.active:hover > i {
+  color: var(--spat-blue);
+}
+
+.sidebar-bottom {
+  display: block;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--clm-border);
+}
+.sidebar-logout {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #f1c3c3;
+  border-radius: 10px;
+  color: #d3141f;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sidebar-logout:hover:not(:disabled) {
+  border-color: #e58f95;
+  background: #fff5f5;
+  outline: 0;
+}
+
+/* ---------- Panneau de contenu ---------- */
+.clm-content {
+  width: 100%;
+  max-width: 1800px;
+  padding: clamp(18px, 2.4vw, 32px);
+  border-radius: 22px;
+  background: linear-gradient(135deg, #fff 0%, #f1f8fe 55%, #fff 100%);
+}
+.clm-footer {
+  padding: 18px 4px 22px;
+  border: 0;
+  background: transparent;
+  color: #7b8798;
+}
+
+/* ---------- Titres de page : bandeau bleu ---------- */
+.clm-layout :is(
+  .mgr-page-head h2,
+  .legal-page-head h2,
+  .engagement-heading h2,
+  .validation-dashboard-heading h2,
+  .validation-inbox-toolbar h2,
+  .admin-data-toolbar h2,
+  .admin-page-header h2,
+  .page-header h2,
+  .role-welcome h2,
+  .admin-welcome-banner h2,
+  .admin-data-toolbar > div > h2,
+  .clm-content > h2,
+  .admin-page > h2,
+  :is(.admin-home, .admin-data-page, .admin-page, .users-page) > :first-child:has(> h1, > h2) > :is(h1, h2)
+) {
+  min-height: 64px;
+  padding: 16px 28px;
+  border: 0;
+  border-radius: 18px;
+  color: #fff;
+  background: var(--clm-banner);
+  box-shadow: 0 12px 28px rgba(0, 140, 210, 0.2);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+.clm-layout .clm-content h2 .page-title-icon {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* ---------- Cartes ---------- */
+.clm-layout .clm-content :is(
+  .role-action-card,
+  .admin-quick-card,
+  .mgr-panel,
+  .mgr-kpis > div,
+  .mgr-contract-card,
+  .workspace-card,
+  .workspace-security,
+  .role-security-note,
+  .admin-content .card,
+  .users-table-card,
+  .admin-panel,
+  .admin-kpis article,
+  .admin-contract-card,
+  .stat-card,
+  .alert-setting-form,
+  .legal-panel,
+  .legal-stats article,
+  .legal-contract-card,
+  .validation-panel,
+  .validation-card,
+  .validation-kpis article,
+  .engagement-panel,
+  .engagement-metrics article
+) {
+  border: 1px solid var(--clm-border);
+  border-radius: var(--clm-radius);
+  background: #fff;
+  box-shadow: var(--clm-shadow-soft);
+}
+.clm-layout .clm-content :is(
+  .mgr-table-wrap,
+  .admin-table-wrap,
+  .admin-table-surface,
+  .legal-table-wrap,
+  .engagement-table-wrap,
+  .users-table-card
+) {
+  border: 1px solid var(--clm-border);
+  border-radius: 16px;
+  box-shadow: var(--clm-shadow-soft);
+}
+.clm-layout .clm-content :is(.mgr-table th, .users-table th) {
+  background: #f4f8fc !important;
+}
+
+/* ---------- Boutons principaux ---------- */
+.mgr-btn.primary,
+.validation-inbox-toolbar > button,
+.validation-actions button,
+.engagement-heading button {
+  border-color: var(--spat-blue);
+  background: var(--spat-blue);
+}
+.mgr-btn.primary:hover:not(:disabled),
+.validation-inbox-toolbar > button:hover:not(:disabled),
+.validation-actions button:hover:not(:disabled) {
+  border-color: var(--spat-blue-dark);
+  background: var(--spat-blue-dark);
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 800px) {
+  :root {
+    --clm-topbar-h: 60px;
+  }
+  .clm-topbar {
+    padding: 0 14px 0 10px;
+    gap: 8px;
+  }
+  .clm-brand {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+  }
+  .clm-topbar-actions {
+    gap: 8px;
+  }
+  .clm-greeting {
+    display: none;
+  }
+  .clm-main {
+    padding: 14px 12px 0;
+  }
+  .clm-content {
+    padding: 16px 12px 20px;
+    border-radius: 18px;
+  }
+  .modernSidebar-nav,
+  .modernSidebar-nav.closed {
+    position: fixed;
+    inset: var(--clm-topbar-h) auto 0 0;
+    width: 304px;
+    min-width: 304px;
+    height: auto;
+    padding: 20px;
+    z-index: 1000;
+    box-shadow: 8px 0 32px rgba(15, 23, 42, 0.16);
+  }
+  .modernSidebar-nav.closed {
+    transform: translateX(-100%);
+  }
+  .sidebar-mobile-backdrop {
+    inset: var(--clm-topbar-h) 0 0 0;
+  }
+}
+@media (max-width: 380px) {
+  .clm-brand span {
+    display: none;
+  }
+}
+
+/* ---------- En-tête SPAT : profil et déconnexion à droite ---------- */
+.clm-topbar {
+  box-shadow: 0 2px 12px rgba(20, 57, 99, .035);
+}
+.clm-profile-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 4px 10px 4px 5px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #334155;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.clm-profile-button:hover {
+  border-color: #dceaf8;
+  color: #07549b;
+  background: #f1f7fd;
+  transform: translateY(-1px);
+}
+.clm-user-avatar {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, #0875bd, #06447e);
+  font-size: 12px;
+  font-weight: 850;
+}
+.clm-profile-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.clm-profile-copy strong {
+  max-width: 180px;
+  overflow: hidden;
+  color: #18324e;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.clm-profile-copy small {
+  color: #8494a8;
+  font-size: 10px;
+  font-weight: 600;
+}
+.clm-profile-button > .fa-chevron-down {
+  margin-left: 2px;
+  color: #8a9bb0;
+  font-size: 10px;
+}
+.clm-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid #dce8f4;
+  border-radius: 10px;
+  color: #07549b;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.clm-logout:hover {
+  border-color: #c93645;
+  color: #fff;
+  background: #c93645;
+  transform: translateY(-1px);
+}
+.clm-notification-bell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(7, 84, 155, .12);
+}
+
+/* ---------- Carte de contexte de l'espace métier ---------- */
+.sidebar-workspace-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 70px;
+  margin: 4px 0 16px;
+  padding: 11px 12px;
+  border: 1px solid #dce9f6;
+  border-radius: 13px;
+  background: linear-gradient(110deg, #f2f8fe 0%, #fff 100%);
+  box-shadow: 0 3px 12px rgba(17, 76, 130, .045);
+}
+.sidebar-workspace-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 11px;
+  color: #0875bd;
+  background: #e2f0fc;
+  font-size: 16px;
+}
+.sidebar-workspace-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.sidebar-workspace-copy strong {
+  overflow: hidden;
+  color: #163b61;
+  font-size: 11px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-workspace-copy small {
+  color: #7b8da3;
+  font-size: 9px;
+  line-height: 1.3;
+}
+.sidebar-workspace-status {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #16a36a;
+  box-shadow: 0 0 0 3px #e0f6ec;
+}
+.sidebar-bottom {
+  min-height: 48px;
+  padding: 12px 0 4px;
+  border-top: 1px solid #edf2f8;
+}
+.sidebar-bottom small {
+  color: #94a3b8;
+  font-size: 9px;
+  letter-spacing: .15px;
+}
+.menu-categories a {
+  transition: color .2s ease, background .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.menu-categories a:hover { transform: translateX(2px); }
+.clm-content { animation: clm-content-enter .38s ease both; }
+@keyframes clm-content-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 800px) {
+  .clm-profile-copy, .clm-profile-button > .fa-chevron-down { display: none; }
+  .clm-profile-button { width: 42px; min-width: 42px; padding: 3px; }
+  .clm-logout { width: 42px; min-width: 42px; padding: 0; }
+  .clm-logout span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clm-content { animation: none; }
+  .clm-profile-button, .clm-logout, .clm-notification-bell, .menu-categories a { transition: none; }
+  .menu-categories a:hover { transform: none; }
+}
+
+/* ---------- Filigrane du logo dans le menu, photo du port dans le bandeau ---------- */
+.modernSidebar-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--sidebar-watermark) no-repeat center 58% / 250px auto;
+  mix-blend-mode: multiply;
+  opacity: 0.1;
+  pointer-events: none;
+}
+.modernSidebar-nav > * {
+  position: relative;
+  z-index: 1;
+}
+
+.clm-topbar > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Image du port entre « SPAT · CLM » et la cloche (ne passe jamais derrière les boutons) */
+.clm-topbar-photo {
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-width: 0;
+  margin: 0 12px;
+  background: var(--port-photo) no-repeat center 80% / cover;
+  /* Monochrome bleu : supprime le rouge des conteneurs et harmonise avec l'application */
+  filter: grayscale(1) sepia(1) hue-rotate(180deg) saturate(1.6) contrast(1.15) brightness(0.92);
+  opacity: 0.2;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 28%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 28%, #000 85%, transparent 100%);
+  pointer-events: none;
+}
+@media (max-width: 1100px) {
+  .clm-topbar-photo {
+    display: none;
+  }
+}

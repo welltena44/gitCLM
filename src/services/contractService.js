@@ -51,6 +51,9 @@ export const createAmendment = (payload) =>
   api.post("/avenants", payload).then(unwrap);
 export const updateAmendment = (id, payload) =>
   api.put(`/avenants/${id}`, payload).then(unwrap);
+/** Relance le circuit après correction d’un avenant dont les modifications ont été demandées. */
+export const resubmitAmendment = (id) =>
+  api.post(`/avenants/${id}/resoumettre`).then(unwrap);
 export const deleteAmendment = (id) => api.delete(`/avenants/${id}`);
 export const getValidations = (contratId) =>
   contratId

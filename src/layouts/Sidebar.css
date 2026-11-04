@@ -109,13 +109,13 @@
   letter-spacing: 2.5px;
 }
 .brand-text strong {
-  color: #111c35;
+  color: #03060e;
   font-size: 15px;
   font-weight: 850;
   line-height: 1.25;
 }
 .brand-subtitle {
-  color: #8a96aa;
+  color: #020202;
   font-size: 9px;
   line-height: 1.35;
 }
@@ -151,7 +151,7 @@
   padding: 11px 13px;
   border: 1px solid transparent;
   border-radius: 10px;
-  color: #475569;
+  color: #0a0c0e;
   background: transparent;
   text-decoration: none;
   font-size: 13px;
@@ -165,7 +165,7 @@
   width: 20px;
   min-width: 20px;
   text-align: center;
-  color: #91a0b7;
+  color: #1f2329;
   font-size: 15px;
 }
 .menu-categories a:hover {
@@ -449,4 +449,244 @@
 .sidebar-brand:focus-visible {
   outline: 3px solid rgba(22, 139, 210, 0.25);
   outline-offset: 2px;
+}
+
+
+/* =========================================================
+   MENU ADMINISTRATEUR : CONFIGURATION ET CONSULTATION
+   ========================================================= */
+
+.sidebar-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 16px);
+  min-height: 34px;
+  margin: 0 8px 5px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #98a3b5;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.sidebar-group-toggle:hover {
+  color: #53677e;
+  background: #f3f6fa;
+}
+
+.sidebar-group-toggle:focus-visible {
+  outline: 3px solid rgba(22, 139, 210, 0.25);
+  outline-offset: 2px;
+}
+
+.sidebar-group-toggle .sidebar-group-title {
+  padding: 0;
+}
+
+.sidebar-group-chevron {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #91a0b7;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-group-chevron.is-expanded {
+  transform: rotate(180deg);
+}
+
+.sidebar-group-links[hidden] {
+  display: none !important;
+}
+
+/* ==========================================================
+   SPAT CLM — DESIGN PREMIUM DES MENUS ADMINISTRATEUR
+   Configuration et Consultation / Audit
+   ========================================================== */
+
+/* Espacement entre les groupes */
+.modernSidebar-nav .sidebar-group {
+  margin-bottom: 13px;
+}
+
+/* Titres des groupes non rétractables */
+.modernSidebar-nav .sidebar-group-title:not(button .sidebar-group-title) {
+  display: block;
+  padding: 11px 14px 8px;
+  color: #8a9bb0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+}
+
+/* Boutons des menus rétractables */
+.modernSidebar-nav .sidebar-group-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 16px);
+  min-height: 45px;
+  margin: 0 8px 6px;
+  padding: 0 13px;
+  border: 1px solid #e4ebf4;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f8fbff, #edf3fa);
+  color: #24466e;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+/* Texte des rubriques */
+.modernSidebar-nav .sidebar-group-toggle .sidebar-group-title {
+  padding: 0;
+  color: inherit;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+/* Survol */
+.modernSidebar-nav .sidebar-group-toggle:hover {
+  background: linear-gradient(135deg, #eaf2ff, #dceaff);
+  border-color: #b9cfee;
+  color: #7090fa;
+  box-shadow: 0 4px 12px rgba(0, 35, 149, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Rubrique ouverte */
+.modernSidebar-nav .sidebar-group-toggle.is-expanded {
+  background: linear-gradient(135deg, #839ef5, #5186f0);
+  border-color: #7f9cfa;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 35, 149, 0.18);
+}
+
+/* Petite barre tricolore pour la rubrique ouverte */
+.modernSidebar-nav .sidebar-group-toggle.is-expanded::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0 33%,
+    #5677e2 33% 66%,
+    #ed2939 66% 100%
+  );
+}
+
+/* Flèche */
+.modernSidebar-nav .sidebar-group-chevron {
+  font-size: 11px;
+  color: #8296b2;
+  transition: transform 0.25s ease, color 0.2s ease;
+}
+
+.modernSidebar-nav .sidebar-group-toggle.is-expanded
+.sidebar-group-chevron {
+  color: #ffffff;
+}
+
+/* Sous-menus */
+.modernSidebar-nav .sidebar-group-links {
+  padding: 3px 0 4px 9px;
+  margin: 0 0 0 13px;
+  border-left: 2px solid #e5edf7;
+}
+
+/* Liens des sous-menus */
+.modernSidebar-nav .sidebar-group-links .menu {
+  margin: 4px 0;
+}
+
+/* Style des liens */
+.modernSidebar-nav .sidebar-group-links .menu a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 39px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Icônes des sous-menus */
+.modernSidebar-nav .sidebar-group-links .menu a i {
+  width: 17px;
+  color: #91a2b9;
+  font-size: 13px;
+  text-align: center;
+  transition: color 0.2s ease;
+}
+
+/* Survol des liens */
+.modernSidebar-nav .sidebar-group-links .menu a:hover {
+  background: #eef4ff;
+  color: #5077f7;
+  transform: translateX(3px);
+}
+
+.modernSidebar-nav .sidebar-group-links .menu a:hover i {
+  color: #597ffa;
+}
+
+/* Lien de la page active */
+.modernSidebar-nav .sidebar-group-links .menu a.active {
+  background: linear-gradient(90deg, #e6efff, #f3f7ff);
+  color: #5e80f0;
+  font-weight: 800;
+  box-shadow: inset 3px 0 0 #6f85ca;
+}
+
+.modernSidebar-nav .sidebar-group-links .menu a.active i {
+  color: #5875d4;
+}
+
+/* Animation d'apparition des sous-menus */
+.modernSidebar-nav .sidebar-group-links:not([hidden]) {
+  animation: spatMenuReveal 0.23s ease both;
+}
+
+@keyframes spatMenuReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  .modernSidebar-nav .sidebar-group-toggle,
+  .modernSidebar-nav .sidebar-group-chevron,
+  .modernSidebar-nav .sidebar-group-links .menu a {
+    transition: none;
+  }
+
+  .modernSidebar-nav .sidebar-group-links:not([hidden]) {
+    animation: none;
+  }
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./WorkspaceLayout.css";
@@ -38,6 +38,25 @@ export default function WorkspaceLayout() {
         : role === "VALIDEUR"
           ? "/valideur/profil"
           : "/juridique/profil";
+
+  const homePath =
+    role === "GESTIONNAIRE"
+      ? "/gestionnaire"
+      : role === "ADMIN"
+        ? "/admin"
+        : role === "VALIDEUR"
+          ? "/valideur"
+          : "/juridique";
+  const displayName =
+    [activeUser?.nom, activeUser?.prenom].filter(Boolean).join(" ") ||
+    activeUser?.email ||
+    "Utilisateur";
+  const roleLabel = {
+    ADMIN: "Administrateur",
+    JURIDIQUE: "Responsable juridique",
+    VALIDEUR: "Valideur",
+    GESTIONNAIRE: "Gestionnaire",
+  }[role] || "Utilisateur";
 
   const handleLogout = async () => {
     const ok = await confirm({
@@ -166,163 +185,186 @@ export default function WorkspaceLayout() {
     if (!notificationOpen) loadNotifications();
   };
 
+  const totalAlerts = unreadCount + (role === "ADMIN" ? passwordResetCount : 0);
+
   return (
     <div className="clm-layout">
-      {!menuClosed && window.innerWidth <= 800 && (
+      <header
+        className="clm-topbar"
+        style={{
+          "--port-photo": `url(${process.env.PUBLIC_URL}/header-port-spat.jpg)`,
+        }}
+      >
         <button
           type="button"
-          className="sidebar-mobile-backdrop"
-          aria-label="Fermer le menu"
-          onClick={() => setMenuClosed(true)}
-        />
-      )}
-      <Sidebar
-        isClosed={menuClosed}
-        onNavigate={() => {
-          if (window.innerWidth <= 800) setMenuClosed(true);
-        }}
-      />
-      <main className="clm-main">
-        {role === "ADMIN" && (
-          <PasswordResetRequestsPopup
-            adminId={activeUser?.id}
-            open={passwordResetOpen}
-            onClose={() => setPasswordResetOpen(false)}
-            onCountChange={updatePasswordResetCount}
+          className="clm-menu-toggle"
+          onClick={() => setMenuClosed((v) => !v)}
+          aria-label={menuClosed ? "Ouvrir le menu" : "Fermer le menu"}
+        >
+          <i
+            className={`fa-solid ${menuClosed ? "fa-bars" : "fa-bars-staggered"}`}
+            aria-hidden="true"
           />
-        )}
-        <header className="clm-topbar">
-          <button
-            type="button"
-            className="clm-menu-toggle"
-            onClick={() => setMenuClosed((v) => !v)}
-            aria-label={menuClosed ? "Ouvrir le menu" : "Fermer le menu"}
-          >
-            <i
-              className={`fa-solid ${menuClosed ? "fa-bars" : "fa-bars-staggered"}`}
-              aria-hidden="true"
-            />
-          </button>
-          <div className="clm-topbar-context">
-            <span className="clm-topbar-eyebrow">PLATEFORME CLM · SPAT</span>
-          </div>
-          <div className="clm-topbar-actions">
-            <div className="clm-notification-wrap">
-              <button
-                type="button"
-                className="clm-notification-bell"
-                onClick={openNotifications}
-                aria-label="Afficher les notifications"
-              >
-                <i className="fa-regular fa-bell" />
-                {unreadCount + (role === "ADMIN" ? passwordResetCount : 0) >
-                  0 && (
-                  <span>
-                    {unreadCount + (role === "ADMIN" ? passwordResetCount : 0) >
-                    99
-                      ? "99+"
-                      : unreadCount +
-                        (role === "ADMIN" ? passwordResetCount : 0)}
-                  </span>
-                )}
-              </button>
-              {notificationOpen && (
-                <div className="clm-notification-popover">
-                  <div className="clm-notification-popover-head">
-                    <strong>Notifications non lues</strong>
-                    <button
-                      onClick={() => setNotificationOpen(false)}
-                      aria-label="Fermer"
-                    >
-                      ×
-                    </button>
-                  </div>
-                  {role === "ADMIN" && passwordResetCount > 0 && (
-                    <button
-                      className="clm-notification-item"
-                      onClick={() => {
-                        setNotificationOpen(false);
-                        setPasswordResetOpen(true);
-                      }}
-                    >
-                      <i className="fa-solid fa-key" />
-                      <span>
-                        <strong>Demandes de réinitialisation</strong>
-                        <small>
-                          {passwordResetCount} demande(s) de mot de passe oublié
-                          en attente. Cliquez pour examiner.
-                        </small>
-                      </span>
-                    </button>
-                  )}
-                  {latestNotifications.length
-                    ? latestNotifications.map((n) => (
-                        <button
-                          className="clm-notification-item"
-                          key={n.id}
-                          onClick={() => openNotification(n)}
-                        >
-                          <i className="fa-solid fa-bell" />
-                          <span>
-                            <strong>{n.titre || "Notification CLM"}</strong>
-                            <small>
-                              {n.message ||
-                                "Une nouvelle notification est disponible."}
-                            </small>
-                          </span>
-                        </button>
-                      ))
-                    : passwordResetCount === 0 && (
-                        <p className="clm-notification-empty">
-                          Aucune notification non lue.
-                        </p>
-                      )}
-                  <button
-                    className="clm-notification-all"
-                    onClick={() => {
-                      setNotificationOpen(false);
-                      navigate(
-                        role === "GESTIONNAIRE"
-                          ? "/gestionnaire/notifications"
-                          : role === "ADMIN"
-                            ? "/admin/notifications"
-                            : role === "VALIDEUR"
-                              ? "/valideur/notifications"
-                              : "/juridique/notifications",
-                      );
-                    }}
-                  >
-                    Voir le centre de notifications{" "}
-                    <i className="fa-solid fa-arrow-right" />
-                  </button>
-                </div>
-              )}
-            </div>
+        </button>
+        <NavLink to={homePath} className="clm-brand">
+          <img src="/LogoSPAT.jpeg" alt="" />
+          <span>SPAT · CLM</span>
+        </NavLink>
+        {/* Image du port : occupe seulement l'espace libre entre le logo et la cloche */}
+        <div className="clm-topbar-photo" aria-hidden="true" />
+
+        <div className="clm-topbar-actions">
+          <div className="clm-notification-wrap">
             <button
               type="button"
-              className="clm-profile-button"
-              onClick={() => navigate(profilePath)}
-              aria-label="Accéder à mon profil"
+              className="clm-notification-bell"
+              onClick={openNotifications}
+              aria-label="Afficher les notifications"
             >
-              <i className="fa-solid fa-circle-user" aria-hidden="true" />
-              <span>Mon profil</span>
+              <i className="fa-regular fa-bell" />
+              {totalAlerts > 0 && (
+                <span>{totalAlerts > 99 ? "99+" : totalAlerts}</span>
+              )}
             </button>
-            <button type="button" className="clm-logout" onClick={handleLogout}>
-              <i className="fa-solid fa-right-from-bracket" />{" "}
-              <span>Déconnexion</span>
-            </button>
+            {notificationOpen && (
+              <div className="clm-notification-popover">
+                <div className="clm-notification-popover-head">
+                  <strong>Notifications non lues</strong>
+                  <button
+                    onClick={() => setNotificationOpen(false)}
+                    aria-label="Fermer"
+                  >
+                    ×
+                  </button>
+                </div>
+                {role === "ADMIN" && passwordResetCount > 0 && (
+                  <button
+                    className="clm-notification-item"
+                    onClick={() => {
+                      setNotificationOpen(false);
+                      setPasswordResetOpen(true);
+                    }}
+                  >
+                    <i className="fa-solid fa-key" />
+                    <span>
+                      <strong>Demandes de réinitialisation</strong>
+                      <small>
+                        {passwordResetCount} demande(s) de mot de passe oublié
+                        en attente. Cliquez pour examiner.
+                      </small>
+                    </span>
+                  </button>
+                )}
+                {latestNotifications.length
+                  ? latestNotifications.map((n) => (
+                      <button
+                        className="clm-notification-item"
+                        key={n.id}
+                        onClick={() => openNotification(n)}
+                      >
+                        <i className="fa-solid fa-bell" />
+                        <span>
+                          <strong>{n.titre || "Notification CLM"}</strong>
+                          <small>
+                            {n.message ||
+                              "Une nouvelle notification est disponible."}
+                          </small>
+                        </span>
+                      </button>
+                    ))
+                  : passwordResetCount === 0 && (
+                      <p className="clm-notification-empty">
+                        Aucune notification non lue.
+                      </p>
+                    )}
+                <button
+                  className="clm-notification-all"
+                  onClick={() => {
+                    setNotificationOpen(false);
+                    navigate(
+                      role === "GESTIONNAIRE"
+                        ? "/gestionnaire/notifications"
+                        : role === "ADMIN"
+                          ? "/admin/notifications"
+                          : role === "VALIDEUR"
+                            ? "/valideur/notifications"
+                            : "/juridique/notifications",
+                    );
+                  }}
+                >
+                  Voir le centre de notifications{" "}
+                  <i className="fa-solid fa-arrow-right" />
+                </button>
+              </div>
+            )}
           </div>
-        </header>
-        <section className="clm-content">
-          <Outlet />
-        </section>
-        <footer className="clm-footer">
-          <span>
-            <b>SPAT</b> · Gestion du cycle de vie des contrats
-          </span>
-          <span>Plateforme interne sécurisée</span>
-        </footer>
-      </main>
+          <button
+            type="button"
+            className="clm-profile-button"
+            onClick={() => navigate(profilePath)}
+            aria-label="Accéder à mon profil"
+            title="Consulter mon profil"
+          >
+            <span className="clm-user-avatar" aria-hidden="true">
+              {displayName
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part) => part.charAt(0).toUpperCase())
+                .join("")}
+            </span>
+            <span className="clm-profile-copy">
+              <strong>{displayName}</strong>
+              <small>{roleLabel}</small>
+            </span>
+            <i className="fa-solid fa-chevron-down" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="clm-logout"
+            onClick={handleLogout}
+            title="Se déconnecter"
+          >
+            <i className="fa-solid fa-right-from-bracket" aria-hidden="true" />
+            <span>Déconnexion</span>
+          </button>
+        </div>
+      </header>
+      <div className="clm-shell">
+        {!menuClosed && window.innerWidth <= 800 && (
+          <button
+            type="button"
+            className="sidebar-mobile-backdrop"
+            aria-label="Fermer le menu"
+            onClick={() => setMenuClosed(true)}
+          />
+        )}
+        <Sidebar
+          isClosed={menuClosed}
+          onNavigate={() => {
+            if (window.innerWidth <= 800) setMenuClosed(true);
+          }}
+        />
+        <main className="clm-main">
+          {role === "ADMIN" && (
+            <PasswordResetRequestsPopup
+              adminId={activeUser?.id}
+              open={passwordResetOpen}
+              onClose={() => setPasswordResetOpen(false)}
+              onCountChange={updatePasswordResetCount}
+            />
+          )}
+          <section className="clm-content">
+            <Outlet />
+          </section>
+          <footer className="clm-footer">
+            <span>
+              <b>SPAT</b> · Gestion du cycle de vie des contrats
+            </span>
+            <span>Plateforme interne sécurisée</span>
+          </footer>
+        </main>
+      </div>
     </div>
   );
 }

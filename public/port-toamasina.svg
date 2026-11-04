@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 68" width="760" height="68" role="img" aria-label="Schéma simplifié du port de Toamasina">
+  <defs>
+    <pattern id="hach" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="5" stroke="#7d9bbb" stroke-width="1" opacity=".55"/>
+    </pattern>
+  </defs>
+  <!-- Océan -->
+  <g fill="none" stroke="#8fb2d3" stroke-width="1" opacity=".7" stroke-linecap="round">
+    <path d="M18 12q6-5 12 0t12 0t12 0"/>
+    <path d="M60 22q6-5 12 0t12 0t12 0"/>
+    <path d="M26 31q6-5 12 0t12 0t12 0"/>
+    <path d="M690 14q6-5 12 0t12 0t12 0"/>
+  </g>
+  <text x="14" y="8" font-size="7.5" font-style="italic" fill="#7d9bbb" font-family="Inter,Arial,sans-serif">Océan Indien</text>
+  <!-- Terre -->
+  <path d="M0 47H760V68H0Z" fill="#e3ecf5"/>
+  <path d="M0 47H760" stroke="#9db8d2" stroke-width="1.2"/>
+  <!-- Terre-plein (10 ha) derrière C4 -->
+  <rect x="404" y="52" width="140" height="12" rx="2" fill="url(#hach)" stroke="#7d9bbb" stroke-width=".8"/>
+  <text x="474" y="61.2" text-anchor="middle" font-size="6.5" fill="#6b86a3" font-family="Inter,Arial,sans-serif">terre-plein</text>
+  <!-- Quais existants C1 C2 C3 -->
+  <g fill="#b9cfe4" stroke="#7d9bbb" stroke-width=".8">
+    <rect x="150" y="38" width="62" height="9"/>
+    <rect x="216" y="38" width="62" height="9"/>
+    <rect x="282" y="38" width="100" height="9"/>
+  </g>
+  <g font-size="7" fill="#58728f" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="600">
+    <text x="181" y="45">C1</text><text x="247" y="45">C2</text><text x="332" y="45">C3</text>
+  </g>
+  <!-- Nouveau quai C4 -->
+  <rect x="404" y="38" width="140" height="9" fill="#0a78c9" fill-opacity=".45" stroke="#0a78c9" stroke-width=".9"/>
+  <text x="474" y="45" text-anchor="middle" font-size="7" fill="#0a5e9f" font-family="Inter,Arial,sans-serif" font-weight="700">C4</text>
+  <!-- Navires -->
+  <g fill="#6b8fb3" fill-opacity=".55">
+    <path d="M222 36l-3-8h40l4 8z"/>
+    <path d="M300 36l-3-8h70l4 8z"/>
+    <path d="M430 36l-3-8h90l4 8z"/>
+  </g>
+  <!-- Digue / brise-lames -->
+  <path d="M742 47C738 30 720 14 690 10C666 7 640 9 612 16" fill="none" stroke="#5f84a8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M612 16C596 20 584 26 574 34" fill="none" stroke="#5f84a8" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 7"/>
+  <text x="652" y="30" font-size="7" fill="#58728f" font-family="Inter,Arial,sans-serif" font-weight="600">digue</text>
+  <!-- Bassin -->
+  <text x="560" y="28" font-size="6.5" font-style="italic" fill="#7d9bbb" font-family="Inter,Arial,sans-serif" text-anchor="end">bassin</text>
+</svg>

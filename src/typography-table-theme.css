@@ -1,0 +1,183 @@
+/* ==========================================================================\n   SPAT-CLM — Finition typographique et tableaux\n   Feuille chargée après les thèmes généraux pour uniformiser les pages\n   sans modifier les composants métier ni les données affichées.\n   ========================================================================== */
+
+:root {
+  --spat-ink: #172b45;
+  --spat-body: #34465d;
+  --spat-muted: #718198;
+  --spat-line: #e3ebf4;
+  --spat-table-head: #edf5fc;
+  --spat-table-hover: #f1f8fe;
+}
+
+/* Hiérarchie des textes : titre, section, contenu et aide. */
+body {
+  color: var(--spat-body);
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+
+.clm-content {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.clm-content :is(h1, h2, h3, h4, h5) {
+  color: var(--spat-ink);
+  font-family: inherit;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.clm-content h1 { font-size: clamp(24px, 2.2vw, 30px); font-weight: 800; }
+.clm-content h2 { font-size: clamp(20px, 1.8vw, 25px); font-weight: 750; }
+.clm-content h3 { font-size: 17px; font-weight: 750; }
+.clm-content h4 { font-size: 15px; font-weight: 700; }
+.clm-content p { color: var(--spat-body); line-height: 1.65; }
+.clm-content small,
+.clm-content .text-muted,
+.clm-content .text-secondary,
+.clm-content .muted { color: var(--spat-muted); }
+
+/* Libellés lisibles et cohérents dans les formulaires et filtres. */
+.clm-content label,
+.clm-content .form-label,
+.clm-content .mgr-field > span {
+  color: #425670;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.clm-content :is(input, select, textarea) {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.clm-content :is(input, select, textarea)::placeholder {
+  color: #9aa8b8;
+  opacity: 1;
+}
+
+/* Tableaux : surface blanche, en-tête bleu pâle, lignes aérées. */
+.clm-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--spat-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.clm-content table thead th {
+  padding: 13px 16px !important;
+  color: #38536f !important;
+  background: var(--spat-table-head) !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid #dce8f3 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: .045em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.clm-content table thead th:first-child { border-top-left-radius: 10px; }
+.clm-content table thead th:last-child { border-top-right-radius: 10px; }
+
+.clm-content table tbody td {
+  padding: 13px 16px !important;
+  color: #34465d;
+  background: #fff;
+  border-bottom: 1px solid #edf1f6 !important;
+  vertical-align: middle;
+  transition: background-color .16s ease;
+}
+
+.clm-content table tbody tr:nth-child(even) td { background: #fbfdff; }
+.clm-content table tbody tr:hover td { background: var(--spat-table-hover) !important; }
+.clm-content table tbody tr:last-child td { border-bottom: 0 !important; }
+.clm-content table td :is(a, button) { font-weight: 650; }
+.clm-content table td a { color: var(--spat-blue-dark); text-decoration: none; }
+.clm-content table td a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Conteneurs de tableaux : coins arrondis et défilement horizontal maîtrisé. */
+.clm-content :is(
+  .mgr-table-wrap, .admin-table-wrap, .admin-table-surface,
+  .legal-table-wrap, .engagement-table-wrap, .users-table-card,
+  .table-responsive, .table-wrap
+) {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--spat-line);
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(25, 55, 87, .045);
+  scrollbar-color: #c5d8e9 transparent;
+  scrollbar-width: thin;
+}
+
+/* Garder les colonnes exploitables sur ordinateur et autoriser le scroll sur mobile. */
+.clm-content table th,
+.clm-content table td { min-width: 88px; }
+.clm-content table th:last-child,
+.clm-content table td:last-child { min-width: 104px; }
+
+/* Pastilles d'état homogènes, sans imposer une couleur à tous les statuts. */
+.clm-content :is(
+  .mgr-status, .legal-tag, .validation-state, .status-badge,
+  .badge, .status, [class*="badge-"]
+) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Boutons et actions : cohérence des tailles et des interactions. */
+.clm-content :is(button, .btn, [role="button"]) {
+  font-family: inherit;
+  font-weight: 650;
+}
+
+.clm-content :is(button, .btn):not(:disabled) {
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+.clm-content :is(button, .btn):not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.clm-content :is(button, .btn):focus-visible {
+  outline: 3px solid rgba(10, 120, 201, .2);
+  outline-offset: 2px;
+}
+
+/* Tableaux et formulaires : confort sur les écrans étroits. */
+@media (max-width: 760px) {
+  .clm-content { padding-left: 14px; padding-right: 14px; }
+  .clm-content :is(h1, h2) { max-width: 100%; }
+  .clm-content table { min-width: 680px; }
+  .clm-content table thead th,
+  .clm-content table tbody td { padding: 11px 12px !important; }
+}
+
+/* Respecte les préférences d'accessibilité des personnes sensibles aux animations. */
+@media (prefers-reduced-motion: reduce) {
+  .clm-content *,
+  .clm-content *::before,
+  .clm-content *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

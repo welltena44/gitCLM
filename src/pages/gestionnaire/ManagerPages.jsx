@@ -22,6 +22,7 @@ const statusLabel = (s) =>
     BROUILLON: "Brouillon",
     EN_ATTENTE: "En attente",
     EN_VALIDATION: "En validation",
+    MODIFICATION_DEMANDEE: "Modifications demandées",
     VALIDE: "Validé",
     APPROUVE: "Approuvé",
     ACTIF: "Actif",
@@ -38,7 +39,7 @@ const statusLabel = (s) =>
 const statusClass = (s) =>
   ["ACTIF", "VALIDE", "APPROUVE"].includes(s)
     ? "good"
-    : ["EN_ATTENTE", "EN_VALIDATION"].includes(s)
+    : ["EN_ATTENTE", "EN_VALIDATION", "MODIFICATION_DEMANDEE"].includes(s)
       ? "pending"
       : ["REJETE", "EXPIRE", "RESILIE"].includes(s)
         ? "bad"
@@ -695,7 +696,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     e.preventDefault();
     toast("Création de l’avenant en cours…", "info");
     try {
-      await svc.createAmendment({
+      const created = await svc.createAmendment({
         ...amendForm,
         contratId: c.id,
         creePar: user?.id,
@@ -705,8 +706,19 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
         montantApres:
           amendForm.montantApres === "" ? null : Number(amendForm.montantApres),
       });
-      toast("Avenant créé.");
-      load();
+      // Le backend soumet automatiquement l’avenant au circuit configuré.
+      toast(created?.statut === "EN_VALIDATION"
+        ? "Avenant créé et transmis au circuit de validation. Le contrat reste inchangé dans l’attente des approbations."
+        : "Avenant créé. Vérifiez son statut avant toute modification du contrat.");
+      setAmendForm((previous) => ({
+        ...previous,
+        numero: Number(previous.numero) + 1,
+        description: "",
+        modifications: "",
+        montantApres: "",
+        dateFinApres: "",
+      }));
+      await load();
       await onRefresh();
     } catch (e) {
       toast(errMessage(e), "error");
@@ -1113,7 +1125,33 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                 {date(a.dateAvenant)} · Montant après :{" "}
                 {money(a.montantApres, c.devise)}
               </small>
+              <p className={`mgr-amendment-status ${statusClass(a.statut)}`}>
+                Statut : <strong>{statusLabel(a.statut || "EN_ATTENTE")}</strong>
+                {a.cycleValidation ? ` · Cycle ${a.cycleValidation}` : ""}
+              </p>
               <p>{a.modifications}</p>
+              {a.statut === "MODIFICATION_DEMANDEE" && String(a.creePar) === String(user?.id) && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={async () => {
+                    if (!(await confirm({
+                      title: "Resoumettre cet avenant ?",
+                      message: "Après vos corrections, l’avenant sera soumis à un nouveau cycle de validation.",
+                      confirmLabel: "Resoumettre",
+                    }))) return;
+                    try {
+                      await svc.resubmitAmendment(a.id);
+                      toast("Avenant resoumis au circuit de validation.");
+                      await load();
+                    } catch (error) {
+                      toast(errMessage(error), "error");
+                    }
+                  }}
+                >
+                  <i className="fa-solid fa-rotate-right" /> Resoumettre après correction
+                </Button>
+              )}
             </div>
             ))}
           </Pagination>
@@ -1837,6 +1875,7 @@ export function ManagerAmendmentsPage() {
                   <th>Contrat d’origine</th>
                   <th>Date</th>
                   <th>Montant après</th>
+                  <th>Statut / cycle</th>
                   <th>Modifications</th>
                 </tr>
               </thead>
@@ -1862,6 +1901,26 @@ export function ManagerAmendmentsPage() {
                       </td>
                       <td>{date(a.dateAvenant)}</td>
                       <td>{money(a.montantApres, c?.devise)}</td>
+                      <td>
+                        <span className={`mgr-amendment-status ${statusClass(a.statut)}`}>
+                          {statusLabel(a.statut || "EN_ATTENTE")}
+                        </span>
+                        <small>Cycle {a.cycleValidation || 1}</small>
+                        {a.statut === "MODIFICATION_DEMANDEE" && (
+                          <button
+                            type="button"
+                            className="mgr-link-button"
+                            onClick={async () => {
+                              try {
+                                await svc.resubmitAmendment(a.id);
+                                await load();
+                              } catch (error) {
+                                setError(errMessage(error));
+                              }
+                            }}
+                          >Resoumettre</button>
+                        )}
+                      </td>
                       <td>{a.modifications || a.description || "—"}</td>
                     </tr>
                   );
