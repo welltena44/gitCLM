@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import * as svc from "../../services/contractService.js";
+import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import Pagination from "../../composants/Pagination.jsx";
 import DashboardBarChart from "../DashboardBarChart.jsx";
 import "../role-dashboard.css";
@@ -41,6 +42,7 @@ const statusClass = (status) =>
 
 export default function DashboardGestionnaire() {
   const { user } = useAuth();
+  const { toast } = useFeedback();
   const [contracts, setContracts] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -223,7 +225,28 @@ export default function DashboardGestionnaire() {
                   </span>
                 </div>
                 <footer>
-                  <small>Ouvrir le dossier</small>
+                  {contract.renouvellementAutomatique && ["ACTIF", "APPROUVE"].includes(contract.statut) ? (
+                    <button
+                      className="mgr-btn secondary"
+                      style={{ padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
+                      onClick={async () => {
+                        try {
+                          const baseDate = contract.dateFin ? new Date(contract.dateFin) : new Date();
+                          baseDate.setMonth(baseDate.getMonth() + (contract.dureeMois || 12));
+                          const nextDate = baseDate.toISOString().slice(0, 10);
+                          await svc.quickRenewContract(contract.id, nextDate);
+                          toast("Contrat renouvelé automatiquement avec succès.");
+                          load();
+                        } catch (e) {
+                          toast("Erreur lors du renouvellement rapide.", "error");
+                        }
+                      }}
+                    >
+                      <i className="fa-solid fa-bolt" /> Renouveler 1 an
+                    </button>
+                  ) : (
+                    <small>Ouvrir le dossier</small>
+                  )}
                   <Link
                     className="mgr-contract-link"
                     to={`/gestionnaire/contrats/${contract.id}`}

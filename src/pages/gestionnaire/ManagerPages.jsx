@@ -1333,6 +1333,31 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
 }
 
 export function ContractFormPage() {
+  const [analyzing, setAnalyzing] = useState(false);
+  const handleAutoFill = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAnalyzing(true);
+    toast("Analyse automatique du document en cours (OCR / IA)...", "info");
+    try {
+      const extracted = await svc.autoAnalyzeDocument(file);
+      setForm((prev) => ({
+        ...prev,
+        reference: extracted.reference || prev.reference,
+        objet: extracted.objet || prev.objet,
+        montant: extracted.montant || prev.montant,
+        devise: extracted.devise || prev.devise,
+        dureeMois: extracted.dureeMois || prev.dureeMois,
+        joursPreavis: extracted.joursPreavis || prev.joursPreavis,
+        renouvellementAutomatique: extracted.renouvellementAutomatique
+      }));
+      toast("Champs pré-remplis automatiquement avec " + extracted.confiance + "% de confiance !");
+    } catch (err) {
+      toast("Erreur lors de l’analyse du document.", "error");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
   const { id } = useParams();
   const editing = Boolean(id);
   const nav = useNavigate();
@@ -1465,6 +1490,16 @@ export function ContractFormPage() {
             <i className="fa-regular fa-file-lines" /> Informations générales
           </h3>
           <span className="mgr-required">* Champs obligatoires</span>
+        </div>
+        <div style={{ background: "rgba(59, 130, 246, 0.08)", padding: "1rem", borderRadius: "8px", marginBottom: "1.5rem", border: "1px dashed #3b82f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <strong style={{ color: "#1e40af", display: "block", marginBottom: "0.25rem" }}><i className="fa-solid fa-wand-magic-sparkles" /> Assistant IA / OCR de Pré-remplissage</strong>
+            <span style={{ fontSize: "0.85rem", color: "#4b5563" }}>Importez le PDF du contrat pour extraire automatiquement la référence, l’objet, le montant et les conditions.</span>
+          </div>
+          <label className="mgr-btn secondary" style={{ cursor: "pointer", margin: 0 }}>
+            {analyzing ? <><i className="fa-solid fa-spinner fa-spin" /> Analyse...</> : <><i className="fa-solid fa-file-import" /> Importer PDF & Auto-remplir</>}
+            <input type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleAutoFill} disabled={analyzing} />
+          </label>
         </div>
         <div className="mgr-form-grid">
           <label className="mgr-field">
@@ -1646,8 +1681,11 @@ export function ManagerValidationsPage() {
     [q, setQ] = useState(""),
     [filter, setFilter] = useState(""),
     [loading, setLoading] = useState(true),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [autoRefresh, setAutoRefresh] = useState(false),
+    [bulkProcessing, setBulkProcessing] = useState(false);
   const { user } = useAuth();
+  const { toast, confirm } = useFeedback();
   const [searchParams] = useSearchParams();
   const targetContractId = searchParams.get("contratId");
   const [busyDecision, setBusyDecision] = useState(null);
@@ -1672,6 +1710,24 @@ export function ManagerValidationsPage() {
   useEffect(() => {
     load();
   }, [load]);
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => load(), 30000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, load]);
+  const bulkApproveAll = async () => {
+    if (!(await confirm({ title: "Approuver en masse ?", message: "Approuver toutes les validations en attente de vos contrats ?", confirmLabel: "Approuver" }))) return;
+    setBulkProcessing(true);
+    try {
+      const mine = items.filter((v) => v.decision === "EN_ATTENTE" && v.valideurId == null && user?.role === v.roleRequis);
+      for (const v of mine) {
+        try { await api.post(`/validations/${v.id}/decider`, { decision: "APPROUVE", commentaire: "Approbation automatique en masse" }); } catch (e) {}
+      }
+      await load();
+      toast("Approbation en masse terminée.", "success");
+    } catch (e) { toast(errMessage(e), "error"); }
+    finally { setBulkProcessing(false); }
+  };
   const decide = async (item, decision) => {
     setBusyDecision(item.id);
     try { await api.post(`/validations/${item.id}/decider`, { decision, commentaire: "" }); await load(); }
@@ -1703,6 +1759,13 @@ export function ManagerValidationsPage() {
         </div>
         <Button variant="secondary" onClick={load}>
           <i className="fa-solid fa-rotate" /> Actualiser
+        </Button>
+        <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
+          <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
+          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+        </label>
+        <Button variant="primary" onClick={bulkApproveAll} disabled={bulkProcessing}>
+          <i className="fa-solid fa-check-double" /> Approuver en masse
         </Button>
       </div>
       <section className="mgr-panel">
@@ -1806,7 +1869,10 @@ export function ManagerAmendmentsPage() {
     [contracts, setContracts] = useState([]),
     [q, setQ] = useState(""),
     [loading, setLoading] = useState(true),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [autoRefresh, setAutoRefresh] = useState(false),
+    [bulkResubmitting, setBulkResubmitting] = useState(false);
+  const { toast, confirm } = useFeedback();
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -1826,6 +1892,25 @@ export function ManagerAmendmentsPage() {
   useEffect(() => {
     load();
   }, [load]);
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => load(), 30000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, load]);
+  const bulkResubmit = async () => {
+    const toResubmit = items.filter((a) => a.statut === "MODIFICATION_DEMANDEE");
+    if (!toResubmit.length) { toast("Aucun avenant à corriger.", "info"); return; }
+    if (!(await confirm({ title: "Resoumettre en masse ?", message: "Resoumettre tous les avenants en demande de modification ?", confirmLabel: "Resoumettre" }))) return;
+    setBulkResubmitting(true);
+    try {
+      for (const a of toResubmit) {
+        try { await svc.resubmitAmendment(a.id); } catch (e) {}
+      }
+      await load();
+      toast(toResubmit.length + " avenant(s) resoumis.", "success");
+    } catch (e) { toast(errMessage(e), "error"); }
+    finally { setBulkResubmitting(false); }
+  };
   const data = items.filter(
     (a) =>
       !q ||
@@ -1845,6 +1930,13 @@ export function ManagerAmendmentsPage() {
         </div>
         <Button variant="secondary" onClick={load}>
           <i className="fa-solid fa-rotate" /> Actualiser
+        </Button>
+        <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
+          <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
+          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+        </label>
+        <Button variant="primary" onClick={bulkResubmit} disabled={bulkResubmitting}>
+          <i className="fa-solid fa-arrows-rotate" /> Resoumettre tout
         </Button>
       </div>
       <section className="mgr-panel">
@@ -1942,8 +2034,10 @@ export function ManagerDocumentsPage() {
     [q, setQ] = useState(""),
     [type, setType] = useState(""),
     [loading, setLoading] = useState(true),
-    [error, setError] = useState("");
-  const { toast } = useFeedback();
+    [error, setError] = useState(""),
+    [autoRefresh, setAutoRefresh] = useState(false),
+    [bulkDeleting, setBulkDeleting] = useState(false);
+  const { toast, confirm } = useFeedback();
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -1963,6 +2057,25 @@ export function ManagerDocumentsPage() {
   useEffect(() => {
     load();
   }, [load]);
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => load(), 30000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, load]);
+  const bulkDeleteSelected = async () => {
+    const selected = items.filter((d) => d._selected);
+    if (!selected.length) { toast("Aucun document sélectionné.", "info"); return; }
+    if (!(await confirm({ title: "Suppression en masse ?", message: "Supprimer les documents sélectionnés ?", confirmLabel: "Supprimer", danger: true }))) return;
+    setBulkDeleting(true);
+    try {
+      for (const d of selected) {
+        try { await svc.deleteDocument(d.id); } catch (e) {}
+      }
+      await load();
+      toast("Documents supprimés.", "success");
+    } catch (e) { toast(errMessage(e), "error"); }
+    finally { setBulkDeleting(false); }
+  };
   const data = items.filter((d) => {
     const c = contracts.find((x) => String(x.id) === String(d.contratId));
     return (
@@ -1998,6 +2111,13 @@ export function ManagerDocumentsPage() {
         </div>
         <Button variant="secondary" onClick={load}>
           <i className="fa-solid fa-rotate" /> Actualiser
+        </Button>
+        <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
+          <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
+          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+        </label>
+        <Button variant="danger" onClick={bulkDeleteSelected} disabled={bulkDeleting}>
+          <i className="fa-solid fa-trash" /> Supprimer la sélection
         </Button>
       </div>
       <section className="mgr-panel">
@@ -2052,6 +2172,7 @@ export function ManagerDocumentsPage() {
                   return (
                     <tr key={d.id}>
                       <td>
+                        <input type="checkbox" checked={!!d._selected} onChange={(e) => setItems((old) => old.map((x) => x.id === d.id ? { ...x, _selected: e.target.checked } : x))} style={{ marginRight: "0.5rem" }} />
                         <strong>{d.nomFichier}</strong>
                       </td>
                       <td>
@@ -2094,7 +2215,9 @@ export function ManagerNotificationsPage() {
     [filter, setFilter] = useState("all"),
     [q, setQ] = useState(""),
     [loading, setLoading] = useState(true),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [autoRefresh, setAutoRefresh] = useState(false),
+    [bulkMarking, setBulkMarking] = useState(false);
   const load = useCallback(async () => {
     if (!user?.id) {
       setError("Identifiant utilisateur indisponible.");
@@ -2115,6 +2238,24 @@ export function ManagerNotificationsPage() {
   useEffect(() => {
     load();
   }, [load]);
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => load(), 30000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, load]);
+  const bulkMarkRead = async () => {
+    const unread = items.filter((n) => !n.lu);
+    if (!unread.length) { toast("Toutes les notifications sont lues.", "info"); return; }
+    setBulkMarking(true);
+    try {
+      for (const n of unread) {
+        try { await svc.markNotificationRead(n.id); } catch (e) {}
+      }
+      setItems((old) => old.map((x) => ({ ...x, lu: true })));
+      toast(unread.length + " notification(s) marquée(s) comme lue(s).", "success");
+    } catch (e) { toast(errMessage(e), "error"); }
+    finally { setBulkMarking(false); }
+  };
   const data = items.filter(
     (n) =>
       (filter === "all" ||
@@ -2168,6 +2309,13 @@ export function ManagerNotificationsPage() {
         </div>
         <Button variant="secondary" onClick={load}>
           <i className="fa-solid fa-rotate" /> Actualiser
+        </Button>
+        <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
+          <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
+          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+        </label>
+        <Button variant="primary" onClick={bulkMarkRead} disabled={bulkMarking}>
+          <i className="fa-solid fa-check-double" /> Tout marquer comme lu
         </Button>
       </div>
       <div className="mgr-kpis">
