@@ -1,143 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api.js";
 import Pagination from "../../composants/Pagination.jsx";
+import { getApiErrorMessage } from "../../services/apiError.js";
 import "./DashboardAdmin.css";
-const date = (value) =>
-  value
-    ? new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString(
-        "fr-FR",
-      )
-    : "—";
-const normalizeSearch = (value) =>
-  String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[_-]+/g, " ")
-    .toLocaleLowerCase("fr");
+import "./AdminDataPages.css";
+
+const fmtDate = (v) => v ? new Date(`${String(v).slice(0,10)}T00:00:00`).toLocaleDateString("fr-FR") : "—";
+const fmtMoney = (v, currency) => v == null ? "—" : `${Number(v).toLocaleString("fr-FR")} ${currency || "Ar"}`;
+const norm = (v) => String(v ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[_-]+/g," ").toLowerCase();
+const statusClass = (s) => ["ACTIF","APPROUVE","APPROUVÉ","VALIDE","SIGNE","SIGNÉ"].includes(String(s||"").toUpperCase()) ? "good" : ["EN_ATTENTE","EN_VALIDATION"].includes(String(s||"").toUpperCase()) ? "pending" : ["REJETE","REJETÉ","EXPIRE","EXPIRÉ","RESILIE","RÉSILIÉ"].includes(String(s||"").toUpperCase()) ? "bad" : "neutral";
+const contractTypeId = (contract) => contract.typeId ?? contract.typeContratId ?? contract.typeContrat?.id;
 export default function ContractsReadOnly() {
-  const [rows, setRows] = useState([]),
-    [users, setUsers] = useState([]),
-    [query, setQuery] = useState(""),
-    [error, setError] = useState("");
-  useEffect(() => {
-    Promise.all([api.get("/contrats"), api.get("/utilisateurs")])
-      .then(([contracts, directory]) => {
-        setRows(Array.isArray(contracts.data) ? contracts.data : []);
-        setUsers(Array.isArray(directory.data) ? directory.data : []);
-      })
-      .catch(() => setError("Impossible de charger les contrats."));
-  }, []);
-  const targetContractId = new URLSearchParams(window.location.search).get(
-    "contratId",
-  );
-  const filtered = useMemo(() => {
-    const q = normalizeSearch(query.trim());
-    return rows.filter(
-      (c) =>
-        (!targetContractId || String(c.id) === targetContractId) &&
-        (!q ||
-          [c.reference, c.objet, c.service, c.statut]
-            .filter(Boolean)
-            .join(" ")
-            .replace(/[_-]+/g, " ")
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .toLocaleLowerCase("fr")
-            .includes(q)),
-    );
-  }, [rows, query, targetContractId]);
-  const statusClass = (status) =>
-    ["ACTIF", "APPROUVE", "VALIDE", "SIGNE"].includes(
-      String(status).toUpperCase(),
-    )
-      ? "good"
-      : ["EN_ATTENTE", "EN_VALIDATION"].includes(String(status).toUpperCase())
-        ? "pending"
-        : ["REJETE", "EXPIRE"].includes(String(status).toUpperCase())
-          ? "bad"
-          : "neutral";
-  return (
-    <div className="admin-data-page">
-      <div className="admin-data-toolbar">
-        <div>
-          <h2>
-            <i
-              className="fa-solid fa-file-contract page-title-icon"
-              aria-hidden="true"
-            />
-            Référentiel des contrats
-          </h2>
-          <p>Consultation globale en lecture seule.</p>
-        </div>
-        <span>{filtered.length} contrat(s)</span>
-      </div>
-      <label className="audit-search">
-        Rechercher
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Référence, objet, service, statut…"
-        />
-      </label>
-      {error && <p role="alert">{error}</p>}
-      {targetContractId && filtered[0] && (
-        <p className="admin-info-panel">
-          <i className="fa-solid fa-bell" />
-          <span>
-            Contrat signalé par la notification :{" "}
-            <strong>{filtered[0].reference || `#${filtered[0].id}`}</strong>
-          </span>
-        </p>
-      )}
-      <Pagination
-        items={filtered}
-        resetKey={`${query}:${targetContractId || ""}`}
-      >
-        {(visibleContracts) => (
-          <div className="admin-contract-grid">
-            {visibleContracts.map((c) => (
-          <article
-            className={`admin-contract-card ${String(c.id) === targetContractId ? "notification-target" : ""}`}
-            key={c.id}
-          >
-            <header>
-              <span className="admin-contract-icon">
-                <i className="fa-solid fa-file-contract" />
-              </span>
-              <span className={`admin-decision ${statusClass(c.statut)}`}>
-                {c.statut || "Non défini"}
-              </span>
-            </header>
-            <strong>{c.reference || `Contrat #${c.id}`}</strong>
-            <p>{c.objet || "Objet non renseigné"}</p>
-            <div className="admin-contract-meta">
-              <span>
-                <small>Service</small>
-                {c.service || "—"}
-              </span>
-              <span>
-                <small>Responsable (matricule)</small>
-                {users.find((u) => String(u.id) === String(c.responsableId))
-                  ?.matricule || "—"}
-              </span>
-              <span>
-                <small>Montant</small>
-                {Number(c.montant || 0).toLocaleString("fr-FR")}{" "}
-                {c.devise || "Ar"}
-              </span>
-              <span>
-                <small>Fin prévue</small>
-                {date(c.dateFin)}
-              </span>
-            </div>
-            </article>
-            ))}
-          </div>
-        )}
-      </Pagination>
-      {filtered.length === 0 && !error && (
-        <p className="admin-empty">Aucun contrat correspondant.</p>
-      )}
-    </div>
-  );
+ const [rows,setRows]=useState([]),[users,setUsers]=useState([]),[types,setTypes]=useState([]),[query,setQuery]=useState(""),[status,setStatus]=useState(""),[service,setService]=useState(""),[type,setType]=useState(""),[selected,setSelected]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState("");
+ useEffect(()=>{let alive=true;(async()=>{setLoading(true);setError("");try{const results=await Promise.all([api.get("/contrats"),api.get("/utilisateurs"),api.get("/types-contrat")]);if(!alive)return;setRows(Array.isArray(results[0].data)?results[0].data:[]);setUsers(Array.isArray(results[1].data)?results[1].data:[]);setTypes(Array.isArray(results[2].data)?results[2].data:[]);}catch(e){if(alive)setError(getApiErrorMessage(e,"Impossible de charger les contrats."));}finally{if(alive)setLoading(false);}})();return()=>{alive=false};},[]);
+ const targetId=new URLSearchParams(window.location.search).get("contratId");
+ const services=[...new Set(rows.map(x=>x.service).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+ const filtered=useMemo(()=>rows.filter(c=>{const q=norm(query);const text=norm([c.reference,c.objet,c.service,c.statut,c.matricule,c.description].filter(Boolean).join(" "));return(!q||text.includes(q))&&(!status||String(c.statut||"").toUpperCase()===status)&&(!service||c.service===service)&&(!type||String(contractTypeId(c)??"")===type)}),[rows,query,status,service,type]);
+ const userFor=(c)=>users.find(u=>String(u.id)===String(c.responsableId??c.responsable?.id));
+ const typeFor=(c)=>types.find(t=>String(t.id)===String(contractTypeId(c)));
+ useEffect(()=>{if(targetId&&rows.length){const found=rows.find(c=>String(c.id)===targetId);if(found)setSelected(found)}},[targetId,rows]);
+ return <div className="admin-data-page"><div className="admin-data-toolbar"><div><h2><i className="fa-solid fa-file-contract page-title-icon" aria-hidden="true"/> Référentiel des contrats</h2><p>Consultation globale en lecture seule : aucune modification n’est possible depuis cet écran.</p></div><span>{filtered.length} / {rows.length} contrat(s)</span></div>
+ <div className="mgr-filter-grid"><label className="mgr-field wide"><span>Recherche</span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Référence, objet, service, statut…"/></label><label className="mgr-field"><span>Statut</span><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">Tous les statuts</option>{[...new Set(rows.map(x=>x.statut).filter(Boolean))].sort().map(x=><option key={x} value={String(x).toUpperCase()}>{x}</option>)}</select></label><label className="mgr-field"><span>Service</span><select value={service} onChange={e=>setService(e.target.value)}><option value="">Tous les services</option>{services.map(x=><option key={x}>{x}</option>)}</select></label><label className="mgr-field"><span>Type de contrat</span><select value={type} onChange={e=>setType(e.target.value)}><option value="">Tous les types</option>{types.map(x=><option key={x.id} value={x.id}>{x.nom||x.libelle||`Type #${x.id}`}</option>)}</select></label></div>
+ {error&&<p role="alert" className="admin-error">{error}</p>}{loading?<p className="admin-empty">Chargement des contrats…</p>:<Pagination items={filtered} resetKey={`${query}:${status}:${service}:${type}`}>{items=><div className="admin-contract-grid">{items.map(c=><article key={c.id} className={`admin-contract-card ${String(c.id)===targetId?"notification-target":""}`}><header><span className="admin-contract-icon"><i className="fa-solid fa-file-contract"/></span><span className={`admin-decision ${statusClass(c.statut)}`}>{c.statut||"Non défini"}</span></header><strong>{c.reference||`Contrat #${c.id}`}</strong><p>{c.objet||"Objet non renseigné"}</p><div className="admin-contract-meta"><span><small>Type</small>{typeFor(c)?.nom||typeFor(c)?.libelle||c.typeContrat?.nom||"—"}</span><span><small>Service</small>{c.service||"—"}</span><span><small>Responsable</small>{userFor(c)?.matricule||userFor(c)?.nom||"—"}</span><span><small>Montant</small>{fmtMoney(c.montant,c.devise)}</span><span><small>Début</small>{fmtDate(c.dateDebut)}</span><span><small>Fin prévue</small>{fmtDate(c.dateFin)}</span></div><button type="button" onClick={()=>setSelected(c)}>Consulter les détails</button></article>)}</div>}</Pagination>}
+ {!loading&&!filtered.length&&!error&&<p className="admin-empty">Aucun contrat correspondant aux filtres.</p>}
+ {selected&&<div role="presentation" className="admin-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}><section role="dialog" aria-modal="true" aria-labelledby="contract-detail-title" className="admin-detail-modal"><header><div><h3 id="contract-detail-title">{selected.reference||`Contrat #${selected.id}`}</h3><p>{selected.objet||"Objet non renseigné"}</p></div><button type="button" onClick={()=>setSelected(null)} aria-label="Fermer">✕</button></header><dl className="admin-detail-grid">{[["Statut",selected.statut],["Type",typeFor(selected)?.nom||typeFor(selected)?.libelle||selected.typeContrat?.nom],["Service",selected.service],["Responsable",userFor(selected)?.matricule],["Montant",fmtMoney(selected.montant,selected.devise)],["Date de début",fmtDate(selected.dateDebut)],["Date de fin",fmtDate(selected.dateFin)],["Créé le",fmtDate(selected.dateCreation)],["Description",selected.description],["Conditions",selected.conditions],["Observations",selected.observations]].filter(([,v])=>v!=null&&v!=="").map(([k,v])=><div key={k}><dt>{k}</dt><dd>{String(v)}</dd></div>)}</dl><p className="admin-muted">Les pièces jointes ne sont pas affichées ici : aucun lien documentaire fiable n’est exposé par les données actuellement chargées par cette page.</p></section></div>}
+ </div>;
 }

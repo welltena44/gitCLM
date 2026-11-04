@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { API_BASE_URL } from "../../services/api.js";
+import api from "../../services/api.js";
+import { getApiErrorMessage } from "../../services/apiError.js";
 import Pagination from "../../composants/Pagination.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
@@ -29,36 +30,15 @@ export default function ReglesValidation() {
   useEffect(() => {
     fetchRegles();
     fetchTypesContrat();
-    fetch(`${API_BASE_URL}/utilisateurs`, {
-      headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
-    })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) =>
-        setUtilisateurs(
-          Array.isArray(data)
-            ? data.filter(
-                (u) =>
-                  ["VALIDEUR", "JURIDIQUE"].includes(u.role) &&
-                  u.actif !== false,
-              )
-            : [],
-        ),
-      )
+    api.get("/utilisateurs")
+      .then(({ data }) => setUtilisateurs(Array.isArray(data) ? data.filter((u) => ["VALIDEUR", "JURIDIQUE"].includes(u.role) && u.actif !== false) : []))
       .catch(() => setUtilisateurs([]));
   }, []);
 
   const fetchRegles = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/regles-validation`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-      if (!res.ok)
-        throw new Error("Échec du chargement des règles de validation");
-      const data = await res.json();
-      setRegles(data);
+      const { data } = await api.get("/regles-validation");
+      setRegles(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Erreur chargement règles :", e);
     }
@@ -66,16 +46,8 @@ export default function ReglesValidation() {
 
   const fetchTypesContrat = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/types-contrat`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTypesContrat(data);
-      }
+      const { data } = await api.get("/types-contrat");
+      setTypesContrat(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Erreur chargement types de contrat :", e);
     }
@@ -102,12 +74,6 @@ export default function ReglesValidation() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = isEditing
-        ? `${API_BASE_URL}/regles-validation/${form.id}`
-        : `${API_BASE_URL}/regles-validation`;
-
-      const method = isEditing ? "PUT" : "POST";
-
       const payload = {
         ...form,
         niveau: Number(form.niveau),
@@ -117,26 +83,15 @@ export default function ReglesValidation() {
         valideurId: form.valideurId === "" ? null : Number(form.valideurId),
       };
 
-      const res = await fetch(url, {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "Échec de l'enregistrement");
-      }
+      if (isEditing) await api.put(`/regles-validation/${form.id}`, payload);
+      else await api.post("/regles-validation", payload);
 
       setShowModal(false);
       setForm(initialFormState);
       await fetchRegles();
       toast(isEditing ? "Règle mise à jour." : "Règle créée.");
     } catch (err) {
-      toast(err.message || "Échec de l’enregistrement de la règle.", "error");
+      toast(getApiErrorMessage(err, "Échec de l’enregistrement de la règle."), "error");
     }
   };
 
@@ -150,23 +105,11 @@ export default function ReglesValidation() {
     if (!accepted) return;
     setConfirmingId(id);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/regles-validation/${id}/confirmer`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-          },
-        },
-      );
-      if (!res.ok) {
-        const message = await res.text();
-        throw new Error(message || "Impossible de confirmer ce seuil.");
-      }
+      await api.post(`/regles-validation/${id}/confirmer`);
       await fetchRegles();
       toast("Le seuil est confirmé et la règle est active.");
     } catch (err) {
-      toast(err.message || "Impossible de confirmer ce seuil.", "error");
+      toast(getApiErrorMessage(err, "Impossible de confirmer ce seuil."), "error");
     } finally {
       setConfirmingId(null);
     }
@@ -181,17 +124,11 @@ export default function ReglesValidation() {
     });
     if (!accepted) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/regles-validation/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-        },
-      });
-      if (!res.ok) throw new Error("Échec de la suppression");
+      await api.delete(`/regles-validation/${id}`);
       await fetchRegles();
       toast("Règle de validation supprimée.");
     } catch (err) {
-      toast(err.message || "Échec de la suppression de la règle.", "error");
+      toast(getApiErrorMessage(err, "Échec de la suppression de la règle."), "error");
     }
   };
 
@@ -457,7 +394,6 @@ export default function ReglesValidation() {
                 Type de contrat
               </label>
               <select
-                required
                 value={form.typeContratId}
                 onChange={(e) =>
                   setForm({ ...form, typeContratId: e.target.value })
@@ -471,7 +407,7 @@ export default function ReglesValidation() {
                   background: "white",
                 }}
               >
-                <option value="">Choisir un type de contrat…</option>
+                <option value="">🌍 Global (Tous types)</option>
                 {typesContrat.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.nom}
@@ -540,11 +476,7 @@ export default function ReglesValidation() {
                   <option value="VALIDEUR_ET_JURIDIQUE">
                     VALIDEUR + JURIDIQUE (les deux accords)
                   </option>
-                  {isEditing && form.roleRequis === "JURIDIQUE" && (
-                    <option value="JURIDIQUE">
-                      JURIDIQUE (règle existante)
-                    </option>
-                  )}
+                  <option value="JURIDIQUE">JURIDIQUE</option>
                 </select>
               </div>
             </div>

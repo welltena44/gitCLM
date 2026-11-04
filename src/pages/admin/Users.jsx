@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "../../services/api.js";
+import api from "../../services/api.js";
+import { getApiErrorMessage } from "../../services/apiError.js";
 import Pagination from "../../composants/Pagination.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
 import "./Users.css";
 
-const API_URL = `${API_BASE_URL}/utilisateurs`;
 
 const initialFormState = {
   matricule: "",
@@ -33,33 +33,6 @@ const labelStyle = {
   color: "#475569",
 };
 
-function getHeaders(json = false) {
-  const headers = {
-    Authorization: `Bearer ${sessionStorage.getItem("token") || ""}`,
-  };
-
-  if (json) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  return headers;
-}
-
-async function readError(response) {
-  const text = await response.text();
-
-  if (!text) {
-    return `Erreur HTTP ${response.status}`;
-  }
-
-  try {
-    const data = JSON.parse(text);
-    return data.message || data.detail || data.error || text;
-  } catch {
-    return text;
-  }
-}
-
 export default function Users() {
   const { confirm } = useFeedback();
   const [users, setUsers] = useState([]);
@@ -81,21 +54,12 @@ export default function Users() {
     setLoadingUsers(true);
 
     try {
-      const response = await fetch(API_URL, {
-        method: "GET",
-        headers: getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(await readError(response));
-      }
-
-      const data = await response.json();
+      const { data } = await api.get("/utilisateurs");
       setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       showNotification(
         "error",
-        `Impossible de charger les utilisateurs : ${error.message}`,
+        `Impossible de charger les utilisateurs : ${getApiErrorMessage(error)}`,
       );
       throw error;
     } finally {
@@ -197,19 +161,8 @@ export default function Users() {
       // IMPORTANT :
       // - POST : l'id est généré par la base de données.
       // - PUT : l'id technique est transmis dans l'URL.
-      const url = isEditing
-        ? `${API_URL}/${encodeURIComponent(editingId)}`
-        : API_URL;
-
-      const response = await fetch(url, {
-        method: isEditing ? "PUT" : "POST",
-        headers: getHeaders(true),
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(await readError(response));
-      }
+      if (isEditing) await api.put(`/utilisateurs/${encodeURIComponent(editingId)}`, payload);
+      else await api.post("/utilisateurs", payload);
 
       setShowModal(false);
       setForm({ ...initialFormState });
@@ -228,7 +181,7 @@ export default function Users() {
         // L'erreur de rechargement est déjà affichée.
       }
     } catch (error) {
-      showNotification("error", error.message || "Échec de l'enregistrement.");
+      showNotification("error", getApiErrorMessage(error, "Échec de l'enregistrement."));
     } finally {
       setSaving(false);
     }
@@ -252,14 +205,7 @@ export default function Users() {
     });
 
     try {
-      const response = await fetch(`${API_URL}/${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        headers: getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(await readError(response));
-      }
+      await api.delete(`/utilisateurs/${encodeURIComponent(id)}`);
 
       setUsers((currentUsers) =>
         currentUsers.filter((user) => String(user.id) !== String(id)),
@@ -278,7 +224,7 @@ export default function Users() {
     } catch (error) {
       showNotification(
         "error",
-        error.message || "Erreur lors de la suppression.",
+        getApiErrorMessage(error, "Erreur lors de la suppression."),
       );
     } finally {
       setDeletingId(null);

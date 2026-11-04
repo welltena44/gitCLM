@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api.js";
+import { getApiErrorMessage } from "../../services/apiError.js";
 import Pagination from "../../composants/Pagination.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
@@ -44,11 +45,7 @@ export default function ParametresAlertesPage() {
       await load();
       toast(editing ? "Délai d’alerte mis à jour." : "Délai d’alerte ajouté.");
     } catch (err) {
-      setError(
-        err.message ||
-          err.response?.data?.message ||
-          "Enregistrement impossible. Vérifiez que ce délai n’existe pas déjà.",
-      );
+      setError(getApiErrorMessage(err, "Enregistrement impossible. Vérifiez que ce délai n’existe pas déjà."));
     } finally {
       setSaving(false);
     }
@@ -70,8 +67,9 @@ export default function ParametresAlertesPage() {
       await load();
       toast("Délai d’alerte supprimé.");
     } catch (e) {
-      setError(e.response?.data?.message || "Suppression impossible.");
-      toast(e.response?.data?.message || "Suppression impossible.", "error");
+      const message = getApiErrorMessage(e, "Suppression impossible.");
+      setError(message);
+      toast(message, "error");
     }
   };
   return (
@@ -86,8 +84,7 @@ export default function ParametresAlertesPage() {
             Paramètres des alertes d’échéance
           </h2>
           <p>
-            Configurez à combien de jours avant l’échéance une alerte est
-            déclenchée.
+            Le délai est calculé avant la date limite de préavis (date de fin du contrat moins le nombre de jours de préavis). Les alertes d’échéance sont adressées au responsable du contrat ; les notifications de préavis suivent les destinataires définis par le backend.
           </p>
         </div>
       </div>
@@ -98,7 +95,7 @@ export default function ParametresAlertesPage() {
       )}
       <form className="alert-setting-form" onSubmit={submit}>
         <label>
-          Délai avant échéance (jours)
+          Délai avant la date limite de préavis (jours)
           <input
             type="number"
             min="1"

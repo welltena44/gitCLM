@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "../../services/api.js";
+import api from "../../services/api.js";
+import { getApiErrorMessage } from "../../services/apiError.js";
 import Pagination from "../../composants/Pagination.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
@@ -21,19 +22,8 @@ export default function TypesContrat() {
 
   const fetchTypes = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/types-contrat`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error(`Erreur HTTP : ${res.status}`);
-      }
-
-      const data = await res.json();
-      setTypes(data);
+      const { data } = await api.get("/types-contrat");
+      setTypes(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Erreur lors du chargement des types de contrats :", e);
       toast(
@@ -67,52 +57,34 @@ export default function TypesContrat() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = isEditing
-        ? `${API_BASE_URL}/types-contrat/${form.id}`
-        : `${API_BASE_URL}/types-contrat`;
-
-      const method = isEditing ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(form),
-      });
-
-      if (!res.ok) throw new Error("Échec de l'enregistrement");
+      if (!form.nom?.trim()) throw new Error("Le nom du type de contrat est obligatoire.");
+      const payload = { ...form, nom: form.nom.trim(), description: form.description?.trim() || "" };
+      if (isEditing) await api.put(`/types-contrat/${form.id}`, payload);
+      else await api.post("/types-contrat", payload);
 
       setShowModal(false);
       setForm(initialFormState);
       await fetchTypes();
       toast(isEditing ? "Type de contrat mis à jour." : "Type de contrat créé.");
     } catch (err) {
-      toast(err.message || "Échec de l’enregistrement du type de contrat.", "error");
+      toast(getApiErrorMessage(err, "Échec de l’enregistrement du type de contrat."), "error");
     }
   };
 
   const handleDelete = async (id) => {
     const accepted = await confirm({
       title: "Supprimer ce type de contrat ?",
-      message: "Les contrats existants ne seront pas supprimés.",
+      message: "La suppression peut être refusée si ce type est utilisé par des contrats ou des règles. Si possible, désactivez-le plutôt.",
       confirmLabel: "Supprimer",
       danger: true,
     });
     if (!accepted) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/types-contrat/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-        },
-      });
-      if (!res.ok) throw new Error("Échec de la suppression");
+      await api.delete(`/types-contrat/${id}`);
       await fetchTypes();
       toast("Type de contrat supprimé.");
     } catch (err) {
-      toast(err.message || "Échec de la suppression du type de contrat.", "error");
+      toast(getApiErrorMessage(err, "Échec de la suppression du type de contrat."), "error");
     }
   };
 
