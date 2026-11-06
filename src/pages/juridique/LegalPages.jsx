@@ -12,6 +12,7 @@ import {
   downloadDocument,
 } from "../../services/contractService.js";
 import Pagination from "../../composants/Pagination.jsx";
+import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import EngagementDashboard from "../EngagementDashboard.jsx";
 import "./LegalPages.css";
 
@@ -163,6 +164,7 @@ function LegalReviewDialog({
   typeName,
   onClose,
 }) {
+  const { confirm } = useFeedback();
   const [details, setDetails] = useState({
     parties: [],
     documents: [],
@@ -226,7 +228,7 @@ function LegalReviewDialog({
       setDownloadBusy(null);
     }
   };
-  const decide = (decision) => {
+  const decide = async (decision) => {
     if (decision === "MODIFICATION_DEMANDEE" && !comment.trim()) {
       setCommentError(
         "Le commentaire est obligatoire pour justifier la demande de modification.",
@@ -234,6 +236,23 @@ function LegalReviewDialog({
       return;
     }
     setCommentError("");
+    const decisionLabels = {
+      APPROUVE: "Approuver",
+      REJETE: "Rejeter",
+      MODIFICATION_DEMANDEE: "Demander une modification",
+    };
+    const messages = {
+      APPROUVE: "Confirmez-vous l’approbation de cette étape du contrat ?",
+      REJETE: "Confirmez-vous le rejet de ce contrat ? Cette décision sera enregistrée dans son historique.",
+      MODIFICATION_DEMANDEE: "Confirmez-vous la demande de modification ? Votre commentaire sera transmis au gestionnaire.",
+    };
+    const ok = await confirm({
+      title: `Confirmer : ${decisionLabels[decision].toLowerCase()} ?`,
+      message: messages[decision],
+      confirmLabel: decisionLabels[decision],
+      danger: decision !== "APPROUVE",
+    });
+    if (!ok) return;
     onDecide(validation, decision, comment.trim());
   };
   return (
@@ -699,6 +718,7 @@ function LegalRules({ data, loading, error, load }) {
 export default function LegalPages() {
   const { pathname, search } = useLocation();
   const { data, loading, error, load } = useLegalData();
+  const { toast, dismissToast } = useFeedback();
   const requestedContractId = new URLSearchParams(search).get("contratId");
   const { user } = useAuth();
   const [query, setQuery] = useState("");
@@ -726,10 +746,12 @@ export default function LegalPages() {
     const validation = data.validations.find(
       (item) =>
         String(item.contratId) === requestedContractId &&
-        item.decision === "EN_ATTENTE",
+        item.roleRequis === "JURIDIQUE" &&
+        item.decision === "EN_ATTENTE" &&
+        (item.valideurId == null || String(item.valideurId) === String(user?.id)),
     );
     if (validation) setSelectedValidation(validation);
-  }, [pathname, requestedContractId, loading, data.validations]);
+  }, [pathname, requestedContractId, loading, data.validations, user?.id]);
   // Ferme le panneau de détail avec Escape, comme les autres dialogues.
   useEffect(() => {
     if (!selectedContract) return undefined;
@@ -746,15 +768,26 @@ export default function LegalPages() {
   const decide = async (validation, decision, commentaire = "") => {
     setBusyDecision(validation.id);
     setDecisionError("");
+    const progressToast = toast("Enregistrement de votre décision…", "info", "Traitement en cours");
     try {
       await api.post(`/validations/${validation.id}/decider`, {
         decision,
         commentaire,
       });
+      dismissToast(progressToast);
       setSelectedValidation(null);
+      const successMessage = decision === "APPROUVE"
+        ? "Approbation enregistrée avec succès."
+        : decision === "REJETE"
+          ? "Rejet enregistré avec succès."
+          : "Demande de modification enregistrée avec succès.";
+      toast(successMessage, "success", "Décision confirmée");
       await load();
     } catch (e) {
-      setDecisionError(err(e));
+      const message = err(e);
+      dismissToast(progressToast);
+      setDecisionError(message);
+      toast(message, "error");
     } finally {
       setBusyDecision(null);
     }

@@ -81,21 +81,15 @@ export const quickRenewContract = async (contratId, newFinDate) => {
   });
 };
 
+// Lecture réelle du PDF côté serveur (POST /api/contrats/extraire-pdf).
+// Renvoie { champs, typeId, typeNom } ; les champs introuvables valent null.
 export const autoAnalyzeDocument = (file) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const fileName = file.name.toLowerCase();
-      let extracted = {
-        reference: "CTR-AUTO-" + Math.floor(1000 + Math.random() * 9000),
-        objet: file.name.replace(/\.[^/.]+$/, "").replaceAll("_", " "),
-        montant: Math.floor(5000 + Math.random() * 45000) * 1000,
-        devise: "Ar",
-        dureeMois: 12,
-        joursPreavis: 30,
-        renouvellementAutomatique: true,
-        confiance: 94
-      };
-      resolve(extracted);
-    }, 1200);
-  });
+  const form = new FormData();
+  form.append("file", file);
+  return api
+    .post("/contrats/extraire-pdf", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
+    })
+    .then(unwrap);
 };

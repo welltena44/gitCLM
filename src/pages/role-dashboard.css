@@ -25,7 +25,8 @@
   color: #fff;
   font-size: 23px;
 }
-.role-welcome span {
+.role-welcome span,
+.role-welcome-eyebrow {
   color: #168bd2;
   font-size: 10px;
   font-weight: 850;

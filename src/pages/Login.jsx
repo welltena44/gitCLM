@@ -123,16 +123,16 @@ export default function Login() {
               </span>
             </div>
 
-            <div className="auth-header-light">
-              <h2>
-                <i
-                  className="fa-solid fa-right-to-bracket"
-                  aria-hidden="true"
-                />{" "}
-                Connexion
-              </h2>
-              <p>Accédez à votre espace CLM</p>
-            </div>
+            <header className="auth-header-light">
+              <div>
+                <span className="auth-eyebrow">ESPACE CLM</span>
+                <h2>
+                  <i className="fa-solid fa-right-to-bracket" aria-hidden="true" />
+                  Connexion
+                </h2>
+                <p>Accédez à votre espace SPAT · Contract Lifecycle Management</p>
+              </div>
+            </header>
 
             <form className="auth-form-light" onSubmit={handleSubmit}>
               <label className="auth-field">

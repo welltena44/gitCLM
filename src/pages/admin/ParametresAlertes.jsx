@@ -4,6 +4,7 @@ import { getApiErrorMessage } from "../../services/apiError.js";
 import Pagination from "../../composants/Pagination.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
+import "./ParametresAlertes.css";
 
 const empty = { joursAvant: "", actif: true };
 export default function ParametresAlertesPage() {
@@ -76,16 +77,12 @@ export default function ParametresAlertesPage() {
     <div className="admin-data-page">
       <div className="admin-data-toolbar">
         <div>
+          <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i
-              className="fa-solid fa-bell page-title-icon"
-              aria-hidden="true"
-            />
+            <i className="fa-solid fa-bell page-title-icon" aria-hidden="true" />
             Paramètres des alertes d’échéance
           </h2>
-          <p>
-            Le délai est calculé avant la date limite de préavis (date de fin du contrat moins le nombre de jours de préavis). Les alertes d’échéance sont adressées au responsable du contrat ; les notifications de préavis suivent les destinataires définis par le backend.
-          </p>
+          <p>Le délai est calculé avant la date limite de préavis. Les alertes sont adressées au responsable du contrat.</p>
         </div>
       </div>
       {error && (

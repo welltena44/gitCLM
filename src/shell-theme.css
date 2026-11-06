@@ -302,6 +302,80 @@ body {
   color: rgba(255, 255, 255, 0.88);
 }
 
+/* En-têtes de page alignés sur le tableau de bord administrateur. */
+.clm-layout :is(
+  .mgr-page-head h2,
+  .legal-page-head h2,
+  .engagement-heading h2,
+  .validation-dashboard-heading h2,
+  .validation-inbox-toolbar h2,
+  .admin-data-toolbar h2,
+  .admin-page-header h2,
+  .page-header h2,
+  .role-welcome h2,
+  .admin-welcome-banner h2,
+  .clm-content > h2,
+  .admin-page > h2
+) {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #002395;
+  background: transparent;
+  box-shadow: none;
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.clm-layout :is(
+  .admin-home-eyebrow,
+  .mgr-page-eyebrow,
+  .role-welcome-eyebrow,
+  .role-welcome > div > span,
+  .legal-page-head .legal-eyebrow,
+  .engagement-heading > div > span
+) {
+  display: none;
+}
+
+.clm-layout :is(
+  .mgr-page-head,
+  .legal-page-head,
+  .engagement-heading,
+  .validation-dashboard-heading,
+  .validation-inbox-toolbar,
+  .admin-data-toolbar,
+  .admin-page-header,
+  .admin-home-heading
+) h2 i {
+  margin-right: 10px;
+}
+
+.clm-layout :is(
+  .mgr-page-head p,
+  .legal-page-head p:not(.legal-eyebrow),
+  .engagement-heading p,
+  .validation-dashboard-heading p,
+  .validation-inbox-toolbar p,
+  .admin-data-toolbar > div > p,
+  .admin-page-header p,
+  .admin-home-heading p
+) {
+  display: block;
+  margin: 7px 0 0;
+  color: #64748b;
+}
+
+.clm-layout .admin-home-heading h2 {
+  margin: 0;
+}
+
+.clm-layout .clm-content h2 .page-title-icon {
+  color: var(--spat-blue);
+}
+
 /* ---------- Cartes ---------- */
 .clm-layout .clm-content :is(
   .role-action-card,

@@ -51,6 +51,7 @@ export default function ForgotPassword() {
         <main className="auth-light-right">
           <div className="auth-card-light">
             <div className="auth-header-light">
+              <span className="auth-eyebrow">ESPACE CLM</span>
               <h2>
                 <i className="fa-solid fa-key" aria-hidden="true" /> Mot de
                 passe oublié

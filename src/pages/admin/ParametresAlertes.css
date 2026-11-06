@@ -1,0 +1,114 @@
+.alert-setting-form {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 22px 0;
+  padding: 20px;
+  border: 1px solid #dce6f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+}
+
+.alert-setting-form > label:not(.alert-checkbox) {
+  display: grid;
+  flex: 1 1 280px;
+  gap: 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.alert-setting-form input[type="number"] {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #cbd8e6;
+  border-radius: 9px;
+  outline: none;
+  background: #fbfdff;
+  color: #172033;
+  font: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.alert-setting-form input[type="number"]:hover {
+  border-color: #8fb8d9;
+}
+
+.alert-setting-form input[type="number"]:focus {
+  border-color: #168bd2;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(22, 139, 210, 0.14);
+}
+
+.alert-setting-form .alert-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.alert-setting-form .alert-checkbox input {
+  width: 17px;
+  height: 17px;
+  accent-color: #087bbd;
+}
+
+.alert-setting-form button {
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid #087bbd;
+  border-radius: 9px;
+  background: #087bbd;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.alert-setting-form button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #075a9c;
+  background: #075a9c;
+}
+
+.alert-setting-form button:focus-visible {
+  outline: 3px solid rgba(22, 139, 210, 0.25);
+  outline-offset: 2px;
+}
+
+.alert-setting-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.alert-setting-form button.secondary {
+  border-color: #d4deea;
+  background: #fff;
+  color: #475569;
+}
+
+.alert-setting-form button.secondary:hover:not(:disabled) {
+  border-color: #9db2c8;
+  background: #f4f8fc;
+}
+
+@media (max-width: 600px) {
+  .alert-setting-form {
+    align-items: stretch;
+    padding: 15px;
+  }
+
+  .alert-setting-form > label:not(.alert-checkbox) {
+    flex-basis: 100%;
+  }
+}

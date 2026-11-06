@@ -160,17 +160,12 @@ export default function ReglesValidation() {
     <div className="admin-home">
       <div className="admin-page-header">
         <div>
+          <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i
-              className="fa-solid fa-list-check page-title-icon"
-              aria-hidden="true"
-            />
+            <i className="fa-solid fa-list-check page-title-icon" aria-hidden="true" />
             Configuration des circuits de validation
           </h2>
-          <p className="subtitle">
-            Créez les étapes, niveaux et responsables du circuit. Le Juridique
-            définit ensuite les seuils; vous confirmez leur activation.
-          </p>
+          <p>Créez les étapes, niveaux et responsables du circuit. Le Juridique définit ensuite les seuils; vous confirmez leur activation.</p>
         </div>
         <div className="admin-page-actions">
           <button

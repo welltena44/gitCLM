@@ -18,6 +18,10 @@ export function FeedbackProvider({ children }) {
       () => setToasts((items) => items.filter((item) => item.id !== id)),
       4500,
     );
+    return id;
+  }, []);
+  const dismissToast = useCallback((id) => {
+    setToasts((items) => items.filter((item) => item.id !== id));
   }, []);
   const confirm = useCallback(
     ({
@@ -35,7 +39,10 @@ export function FeedbackProvider({ children }) {
     dialog?.resolve(result);
     setDialog(null);
   };
-  const value = useMemo(() => ({ toast, confirm }), [toast, confirm]);
+  const value = useMemo(
+    () => ({ toast, confirm, dismissToast }),
+    [toast, confirm, dismissToast],
+  );
   return (
     <FeedbackContext.Provider value={value}>
       {children}

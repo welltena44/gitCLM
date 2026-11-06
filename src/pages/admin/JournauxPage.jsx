@@ -228,17 +228,12 @@ export default function JournauxPage() {
     <div className="admin-data-page">
       <div className="admin-data-toolbar">
         <div>
+          <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i
-              className="fa-solid fa-clipboard-list page-title-icon"
-              aria-hidden="true"
-            />{" "}
+            <i className="fa-solid fa-clipboard-list page-title-icon" aria-hidden="true" />
             Journaux d’audit
           </h2>
-          <p>
-            Recherche multicritère et export des actions enregistrées sur la
-            plateforme.
-          </p>
+          <p>Recherche multicritère et export des actions enregistrées sur la plateforme.</p>
         </div>
         <div className="admin-page-actions">
           <button type="button" onClick={load} disabled={loading}>

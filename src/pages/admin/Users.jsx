@@ -259,13 +259,14 @@ export default function Users() {
           gap: "12px",
         }}
       >
-        <h2>
-          <i
-            className="fa-solid fa-users page-title-icon"
-            aria-hidden="true"
-          />
-          Gestion des utilisateurs
-        </h2>
+        <div>
+          <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
+          <h2>
+            <i className="fa-solid fa-users page-title-icon" aria-hidden="true" />
+            Gestion des utilisateurs
+          </h2>
+          <p>Créez, modifiez et supprimez les comptes utilisateurs de la plateforme.</p>
+        </div>
 
         <button
           type="button"

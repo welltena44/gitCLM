@@ -316,6 +316,70 @@
   font-size: 0.82rem;
 }
 
+/* Filtres et contrôles de sélection de l’historique des versions. */
+.admin-data-page .audit-search {
+  display: grid;
+  width: min(100%, 520px);
+  gap: 8px;
+  margin: 18px 0 12px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.admin-data-page .audit-search input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 13px;
+  border: 1px solid #cbd8e6;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-size: 14px;
+  box-shadow: 0 2px 7px rgba(15, 23, 42, 0.035);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.admin-data-page .audit-search input::placeholder {
+  color: #94a3b8;
+}
+
+.admin-data-page .audit-search input:hover {
+  border-color: #8fb8d9;
+}
+
+.admin-data-page .audit-search input:focus {
+  border-color: #168bd2;
+  box-shadow: 0 0 0 3px rgba(22, 139, 210, 0.14);
+}
+
+.admin-data-page .admin-table input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #087bbd;
+  cursor: pointer;
+}
+
+.admin-data-page .version-recap summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid #d5e5f2;
+  border-radius: 8px;
+  background: #f4faff;
+  color: #126fa9;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.admin-data-page .version-recap summary:hover {
+  border-color: #9cc8e6;
+  background: #eaf6ff;
+}
+
 .admin-data-page .notification-target td,
 .admin-data-page .notification-target {
   animation: admin-related-highlight 2.4s ease-out;

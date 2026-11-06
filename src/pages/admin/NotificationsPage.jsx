@@ -173,6 +173,7 @@ export default function NotificationsPage() {
     <div className="admin-data-page">
       <div className="admin-data-toolbar">
         <div>
+          <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2><i className="fa-solid fa-bell page-title-icon" aria-hidden="true" /> Historique des notifications</h2>
           <p>Notifications métier et demandes de réinitialisation. Les demandes en attente peuvent être traitées depuis cette page.</p>
         </div>

@@ -248,6 +248,7 @@ export function ContractsPage() {
     <div className="mgr-page">
       <div className="mgr-page-head">
         <div>
+          <span className="mgr-page-eyebrow">ESPACE GESTIONNAIRE</span>
           <h2>Mes contrats</h2>
           <p>Recherchez, filtrez et suivez les contrats de votre périmètre.</p>
         </div>
@@ -1334,26 +1335,48 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
 
 export function ContractFormPage() {
   const [analyzing, setAnalyzing] = useState(false);
-  const handleAutoFill = async (e) => {
-    const file = e.target.files?.[0];
+    const handleAutoFill = async (e) => {
+    const input = e.target;
+    const file = input.files?.[0];
+    input.value = ""; // permet de réimporter le même fichier
     if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      toast("Seuls les fichiers PDF sont pris en charge.", "warning");
+      return;
+    }
     setAnalyzing(true);
-    toast("Analyse automatique du document en cours (OCR / IA)...", "info");
+    toast("Lecture du PDF en cours…", "info");
     try {
-      const extracted = await svc.autoAnalyzeDocument(file);
-      setForm((prev) => ({
-        ...prev,
-        reference: extracted.reference || prev.reference,
-        objet: extracted.objet || prev.objet,
-        montant: extracted.montant || prev.montant,
-        devise: extracted.devise || prev.devise,
-        dureeMois: extracted.dureeMois || prev.dureeMois,
-        joursPreavis: extracted.joursPreavis || prev.joursPreavis,
-        renouvellementAutomatique: extracted.renouvellementAutomatique
-      }));
-      toast("Champs pré-remplis automatiquement avec " + extracted.confiance + "% de confiance !");
+      const { champs, typeId } = await svc.autoAnalyzeDocument(file);
+      const valeurs = {
+        reference: champs.reference,
+        objet: champs.objet,
+        description: champs.description,
+        montant: champs.montant,
+        devise: champs.devise,
+        dateDebut: champs.dateDebut,
+        dateFin: champs.dateFin,
+        dureeMois: champs.dureeMois,
+        joursPreavis: champs.joursPreavis,
+        renouvellementAutomatique: champs.renouvellementAutomatique,
+        clauses: champs.clauses,
+        typeId: typeId == null ? null : String(typeId),
+      };
+      const renseignes = Object.entries(valeurs).filter(
+        ([, v]) => v !== null && v !== undefined && v !== "",
+      );
+      // Seuls les champs réellement trouvés dans le PDF écrasent le formulaire.
+      setForm((prev) => ({ ...prev, ...Object.fromEntries(renseignes) }));
+      if (renseignes.length === 0) {
+        toast("Aucune information n'a pu être extraite de ce PDF.", "warning");
+      } else {
+        toast(
+          `${renseignes.length} champ(s) pré-rempli(s) : vérifiez-les avant d'enregistrer.`,
+        );
+      }
+      (champs.avertissements || []).slice(0, 3).forEach((m) => toast(m, "warning"));
     } catch (err) {
-      toast("Erreur lors de l’analyse du document.", "error");
+      toast(errMessage(err), "error");
     } finally {
       setAnalyzing(false);
     }
@@ -1498,7 +1521,7 @@ export function ContractFormPage() {
           </div>
           <label className="mgr-btn secondary" style={{ cursor: "pointer", margin: 0 }}>
             {analyzing ? <><i className="fa-solid fa-spinner fa-spin" /> Analyse...</> : <><i className="fa-solid fa-file-import" /> Importer PDF & Auto-remplir</>}
-            <input type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleAutoFill} disabled={analyzing} />
+            <input type="file" accept=".pdf,application/pdf" style={{ display: "none" }} onChange={handleAutoFill} disabled={analyzing} />
           </label>
         </div>
         <div className="mgr-form-grid">

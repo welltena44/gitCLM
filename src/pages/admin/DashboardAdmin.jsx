@@ -20,6 +20,7 @@ export default function DashboardAdmin() {
       api.get("/validations"),
       api.get("/types-contrat/actifs"),
       api.get("/admin/password-reset-requests"),
+      api.get("/contrats/sans-regles"),
     ]);
     const values = requests.map((result) =>
       result.status === "fulfilled" ? asArray(result.value.data) : null,
@@ -30,6 +31,7 @@ export default function DashboardAdmin() {
       validations: values[2] || [],
       types: values[3] || [],
       resetRequests: values[4] || [],
+      sansRegles: values[5] || [],
     });
     if (requests.some((result) => result.status === "rejected")) {
       setError("Certaines données n’ont pas pu être chargées. Vérifiez les autorisations ADMIN et la disponibilité de l’API.");
@@ -47,7 +49,8 @@ export default function DashboardAdmin() {
     const inactiveUsers = data.users.filter((item) => item.actif === false).length;
     const draftContracts = contracts.filter((item) => statusOf(item.statut) === "BROUILLON").length;
     const activeContracts = contracts.filter((item) => ["ACTIF", "APPROUVE", "VALIDE", "SIGNE"].includes(statusOf(item.statut))).length;
-    return { pendingValidations, inactiveUsers, draftContracts, activeContracts };
+    const sansRegles = data.sansRegles || [];
+    return { pendingValidations, inactiveUsers, draftContracts, activeContracts, sansRegles };
   }, [data]);
 
   return (
@@ -81,6 +84,7 @@ export default function DashboardAdmin() {
                 <li><span>{metrics.pendingValidations.length} validation(s) en attente</span><Link to="/admin/validations">Voir les validations</Link></li>
                 <li><span>{metrics.draftContracts} contrat(s) au statut brouillon</span><Link to="/admin/contrats">Consulter les contrats</Link></li>
                 <li><span>{metrics.inactiveUsers} compte(s) désactivé(s)</span><Link to="/admin/users">Gérer les utilisateurs</Link></li>
+                <li><span>{metrics.sansRegles.length} contrat(s) sans règles de validation</span><Link to="/admin/contrats">Configurer les seuils</Link></li>
               </ul>
             </div>
             <div className="admin-home-panel">
