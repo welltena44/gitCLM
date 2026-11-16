@@ -209,10 +209,14 @@
   font-size: 16px;
   cursor: pointer;
 }
+.clm-notification-label,
+.clm-menu-label {
+  display: none;
+}
 .clm-notification-bell:hover {
   background: #f3f6ff;
 }
-.clm-notification-bell > span {
+.clm-notification-bell > .clm-notification-count {
   position: absolute;
   top: -5px;
   right: -5px;

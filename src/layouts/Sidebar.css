@@ -1,5 +1,3 @@
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css");
-
 :root {
   --spat-blue: #53677e;
   --spat-blue-dark: #3d5067;
@@ -160,6 +158,17 @@
     background 0.18s ease,
     color 0.18s ease,
     box-shadow 0.18s ease;
+}
+.sidebar-inline-icon {
+  display: block;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+}
+.sidebar-workspace-icon .sidebar-inline-icon {
+  width: 19px;
+  height: 19px;
+  flex-basis: 19px;
 }
 .menu-categories a > i {
   width: 20px;
@@ -489,6 +498,8 @@
 
 .sidebar-group-chevron {
   flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
   font-size: 11px;
   color: #91a0b7;
   transition: transform 0.2s ease;
@@ -630,11 +641,11 @@
 }
 
 /* Icônes des sous-menus */
-.modernSidebar-nav .sidebar-group-links .menu a i {
+.modernSidebar-nav .sidebar-group-links .menu a .sidebar-inline-icon {
   width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
   color: #91a2b9;
-  font-size: 13px;
-  text-align: center;
   transition: color 0.2s ease;
 }
 
@@ -645,7 +656,7 @@
   transform: translateX(3px);
 }
 
-.modernSidebar-nav .sidebar-group-links .menu a:hover i {
+.modernSidebar-nav .sidebar-group-links .menu a:hover .sidebar-inline-icon {
   color: #597ffa;
 }
 
@@ -657,7 +668,7 @@
   box-shadow: inset 3px 0 0 #6f85ca;
 }
 
-.modernSidebar-nav .sidebar-group-links .menu a.active i {
+.modernSidebar-nav .sidebar-group-links .menu a.active .sidebar-inline-icon {
   color: #5875d4;
 }
 

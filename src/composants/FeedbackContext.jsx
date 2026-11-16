@@ -1,3 +1,4 @@
+import InlineIcon from "./InlineIcon.jsx";
 import React, {
   createContext,
   useCallback,
@@ -50,7 +51,7 @@ export function FeedbackProvider({ children }) {
         {toasts.map((item) => (
           <div className={`clm-toast ${item.type}`} key={item.id} role="status">
             <span className="clm-toast-symbol">
-              <i
+              <InlineIcon
                 className={`fa-solid ${item.type === "error" ? "fa-circle-exclamation" : item.type === "warning" ? "fa-triangle-exclamation" : item.type === "info" ? "fa-circle-info" : "fa-circle-check"}`}
               />
             </span>
@@ -93,7 +94,7 @@ export function FeedbackProvider({ children }) {
             aria-labelledby="clm-modal-title"
           >
             <div className={`clm-modal-icon ${dialog.danger ? "danger" : ""}`}>
-              <i
+              <InlineIcon
                 className={`fa-solid ${dialog.danger ? "fa-triangle-exclamation" : "fa-circle-question"}`}
               />
             </div>

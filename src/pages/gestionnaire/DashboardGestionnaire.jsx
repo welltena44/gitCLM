@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -26,6 +27,11 @@ const statusLabel = (status) =>
   })[status] ||
   status ||
   "Non défini";
+const isTerminated = (status) =>
+  String(status || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase() === "RESILIE";
 
 export default function DashboardGestionnaire() {
   const { user } = useAuth();
@@ -64,7 +70,7 @@ export default function DashboardGestionnaire() {
   );
   const drafts = contracts.filter((contract) => contract.statut === "BROUILLON");
   const due = contracts.filter((contract) => {
-    if (!contract.dateFin) return false;
+    if (isTerminated(contract.statut) || !contract.dateFin) return false;
     const endDate = new Date(`${contract.dateFin}T23:59:59`);
     const remaining = endDate - new Date();
     return remaining >= 0 && remaining <= 30 * 86400000;
@@ -88,7 +94,7 @@ export default function DashboardGestionnaire() {
     <div className="role-dashboard mgr-page">
       <section className="role-welcome">
         <div className="role-welcome-icon">
-          <i className="fa-solid fa-file-signature" />
+          <InlineIcon className="fa-solid fa-file-signature" />
         </div>
         <div>
           <span>ESPACE GESTIONNAIRE</span>
@@ -98,7 +104,7 @@ export default function DashboardGestionnaire() {
           </p>
         </div>
         <button className="mgr-btn secondary" onClick={load} disabled={loading}>
-          <i
+          <InlineIcon
             className={`fa-solid ${loading ? "fa-spinner fa-spin" : "fa-rotate"}`}
           />{" "}
           Actualiser
@@ -107,7 +113,7 @@ export default function DashboardGestionnaire() {
 
       {error && (
         <div className="mgr-inline-error">
-          <i className="fa-solid fa-circle-exclamation" />
+          <InlineIcon className="fa-solid fa-circle-exclamation" />
           {error}
         </div>
       )}
@@ -142,12 +148,12 @@ export default function DashboardGestionnaire() {
             <p>Validations, échéances proches et brouillons à compléter.</p>
           </div>
           <Link className="mgr-contract-link" to="/gestionnaire/contrats">
-            Ouvrir Mes contrats <i className="fa-solid fa-arrow-right" />
+            Ouvrir Mes contrats <InlineIcon className="fa-solid fa-arrow-right" />
           </Link>
         </div>
         {loading ? (
           <div className="mgr-state">
-            <i className="fa-solid fa-spinner fa-spin" /> Chargement…
+            <InlineIcon className="fa-solid fa-spinner fa-spin" /> Chargement…
           </div>
         ) : attention.length === 0 ? (
           <div className="mgr-state">
@@ -169,7 +175,7 @@ export default function DashboardGestionnaire() {
                     to={`/gestionnaire/contrats/${contract.id}`}
                   >
                     <span className="mgr-dashboard-attention-icon">
-                      <i className={`fa-solid ${isDueSoon ? "fa-calendar-days" : contract.statut === "BROUILLON" ? "fa-file-circle-exclamation" : "fa-hourglass-half"}`} />
+                      <InlineIcon className={`fa-solid ${isDueSoon ? "fa-calendar-days" : contract.statut === "BROUILLON" ? "fa-file-circle-exclamation" : "fa-hourglass-half"}`} />
                     </span>
                     <span className="mgr-dashboard-attention-copy">
                       <strong>{contract.reference || `CLM-${contract.id}`}</strong>
@@ -177,7 +183,7 @@ export default function DashboardGestionnaire() {
                     </span>
                     <span className="mgr-dashboard-attention-reason">{reason}</span>
                     <span className="mgr-dashboard-attention-date">{isDueSoon ? date(contract.dateFin) : statusLabel(contract.statut)}</span>
-                    <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                    <InlineIcon className="fa-solid fa-arrow-right" aria-hidden="true" />
                   </Link>
                   {contract.renouvellementAutomatique && ["ACTIF", "APPROUVE"].includes(contract.statut) && (
                     <button
@@ -195,7 +201,7 @@ export default function DashboardGestionnaire() {
                         }
                       }}
                     >
-                      <i className="fa-solid fa-bolt" /> Renouveler
+                      <InlineIcon className="fa-solid fa-bolt" /> Renouveler
                     </button>
                   )}
                 </div>
@@ -212,7 +218,7 @@ export default function DashboardGestionnaire() {
             <p>{unread} non lue(s)</p>
           </div>
           <Link className="mgr-contract-link" to="/gestionnaire/notifications">
-            Tout voir <i className="fa-solid fa-arrow-right" />
+            Tout voir <InlineIcon className="fa-solid fa-arrow-right" />
           </Link>
         </div>
         {notifications.length === 0 ? (
@@ -222,7 +228,7 @@ export default function DashboardGestionnaire() {
             {(visibleNotifications) => visibleNotifications.map((notification) => (
             <div className="mgr-notification" key={notification.id}>
               <span className="mgr-notif-icon">
-                <i className="fa-solid fa-bell" />
+                <InlineIcon className="fa-solid fa-bell" />
               </span>
               <div className="mgr-notif-body">
                 <div className="mgr-notif-head">

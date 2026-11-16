@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
@@ -162,7 +163,7 @@ export default function ReglesValidation() {
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i className="fa-solid fa-list-check page-title-icon" aria-hidden="true" />
+            <InlineIcon className="fa-solid fa-list-check page-title-icon" aria-hidden="true" />
             Configuration des circuits de validation
           </h2>
           <p>Créez les étapes, niveaux et responsables du circuit. Le Juridique définit ensuite les seuils; vous confirmez leur activation.</p>
@@ -182,7 +183,7 @@ export default function ReglesValidation() {
               gap: "8px",
             }}
           >
-            <i className="fa-solid fa-plus"></i> Ajouter une règle
+            <InlineIcon className="fa-solid fa-plus"></InlineIcon> Ajouter une règle
           </button>
         </div>
       </div>
@@ -309,7 +310,7 @@ export default function ReglesValidation() {
                         title="Confirmer le seuil"
                         aria-label={`Confirmer le seuil de la règle ${r.id}`}
                       >
-                        <i className="fa-solid fa-check" />
+                        <InlineIcon className="fa-solid fa-check" />
                       </button>
                     )}
                     <button
@@ -323,7 +324,7 @@ export default function ReglesValidation() {
                       }}
                       title="Modifier"
                     >
-                      <i className="fa-solid fa-pen-to-square"></i>
+                      <InlineIcon className="fa-solid fa-pen-to-square"></InlineIcon>
                     </button>
                     <button
                       onClick={() => handleDelete(r.id)}
@@ -336,7 +337,7 @@ export default function ReglesValidation() {
                       }}
                       title="Supprimer"
                     >
-                      <i className="fa-solid fa-trash"></i>
+                      <InlineIcon className="fa-solid fa-trash"></InlineIcon>
                     </button>
                   </td>
                 </tr>

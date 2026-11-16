@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
@@ -132,7 +133,7 @@ function LegalFrame({
         <div>
           <p className="legal-eyebrow">ESPACE JURIDIQUE · CONSULTATION</p>
           <h2>
-            <i
+            <InlineIcon
               className={`fa-solid ${titleIcon} page-title-icon`}
               aria-hidden="true"
             />
@@ -141,7 +142,7 @@ function LegalFrame({
           <p>{description}</p>
         </div>
         <button className="legal-refresh" onClick={onRefresh}>
-          <i className="fa-solid fa-rotate" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" /> Actualiser
         </button>
       </header>
       {loading ? (
@@ -273,7 +274,7 @@ function LegalReviewDialog({
           <div>
             <span className="legal-eyebrow">DOSSIER SOUMIS À VALIDATION</span>
             <h2 id="legal-review-title">
-              <i
+              <InlineIcon
                 className="fa-solid fa-scale-balanced page-title-icon"
                 aria-hidden="true"
               />
@@ -382,7 +383,7 @@ function LegalReviewDialog({
                 {visibleDocuments.map((d) => (
                   <li key={d.id}>
                     <span>
-                      <i className="fa-regular fa-file-pdf" />{" "}
+                      <InlineIcon className="fa-regular fa-file-pdf" />{" "}
                       {d.nomFichier || d.categorie || "Document"}
                       <small>{d.type || d.categorie || "Pièce jointe"}</small>
                     </span>
@@ -391,7 +392,7 @@ function LegalReviewDialog({
                       disabled={downloadBusy === d.id}
                       onClick={() => download(d)}
                     >
-                      <i className="fa-solid fa-download" />{" "}
+                      <InlineIcon className="fa-solid fa-download" />{" "}
                       {downloadBusy === d.id
                         ? "Téléchargement…"
                         : "Télécharger"}
@@ -441,21 +442,21 @@ function LegalReviewDialog({
                 disabled={busy}
                 onClick={() => decide("APPROUVE")}
               >
-                <i className="fa-solid fa-check" /> Approuver
+                <InlineIcon className="fa-solid fa-check" /> Approuver
               </button>
               <button
                 className="request"
                 disabled={busy}
                 onClick={() => decide("MODIFICATION_DEMANDEE")}
               >
-                <i className="fa-solid fa-pen" /> Demander correction
+                <InlineIcon className="fa-solid fa-pen" /> Demander correction
               </button>
               <button
                 className="reject"
                 disabled={busy}
                 onClick={() => decide("REJETE")}
               >
-                <i className="fa-solid fa-xmark" /> Rejeter
+                <InlineIcon className="fa-solid fa-xmark" /> Rejeter
               </button>
             </div>
           ) : (
@@ -629,7 +630,7 @@ function LegalRules({ data, loading, error, load }) {
                         onClick={() => openEdit(r)}
                         aria-label={`Définir ou modifier le seuil de la règle ${r.id}`}
                       >
-                        <i className="fa-solid fa-pen" />
+                        <InlineIcon className="fa-solid fa-pen" />
                       </button>
                     </div>
                   </td>
@@ -883,7 +884,7 @@ export default function LegalPages() {
                         setSelectedContract(c);
                       }}
                     >
-                      Détails <i className="fa-solid fa-arrow-right" />
+                      Détails <InlineIcon className="fa-solid fa-arrow-right" />
                     </button>
                   </td>
                 </tr>
@@ -917,7 +918,7 @@ export default function LegalPages() {
                 <div>
                   <span className="legal-eyebrow">DOSSIER CONTRACTUEL</span>
                   <h2>
-                    <i
+                    <InlineIcon
                       className="fa-solid fa-file-contract page-title-icon"
                       aria-hidden="true"
                     />

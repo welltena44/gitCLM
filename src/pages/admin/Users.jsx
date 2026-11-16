@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useState, useEffect, useCallback } from "react";
 import api from "../../services/api.js";
 import { getApiErrorMessage } from "../../services/apiError.js";
@@ -262,7 +263,7 @@ export default function Users() {
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i className="fa-solid fa-users page-title-icon" aria-hidden="true" />
+            <InlineIcon className="fa-solid fa-users page-title-icon" aria-hidden="true" />
             Gestion des utilisateurs
           </h2>
           <p>Créez, modifiez et supprimez les comptes utilisateurs de la plateforme.</p>
@@ -281,13 +282,13 @@ export default function Users() {
             cursor: "pointer",
           }}
         >
-          <i className="fa-solid fa-plus" /> Créer un utilisateur
+          <InlineIcon className="fa-solid fa-plus" /> Créer un utilisateur
         </button>
       </div>
 
       {feedback.message && (
         <div role="status" className={`users-feedback ${feedback.type}`}>
-          <i
+          <InlineIcon
             className={`fa-solid ${
               feedback.type === "success"
                 ? "fa-circle-check"
@@ -302,7 +303,7 @@ export default function Users() {
       )}
 
       <div className="users-search">
-        <i
+        <InlineIcon
           className="fa-solid fa-magnifying-glass"
           style={{ color: "#94a3b8" }}
         />
@@ -333,7 +334,7 @@ export default function Users() {
               color: "#94a3b8",
             }}
           >
-            <i className="fa-solid fa-xmark" />
+            <InlineIcon className="fa-solid fa-xmark" />
           </button>
         )}
       </div>
@@ -456,7 +457,7 @@ export default function Users() {
                         marginRight: "12px",
                       }}
                     >
-                      <i className="fa-solid fa-pen-to-square" />
+                      <InlineIcon className="fa-solid fa-pen-to-square" />
                     </button>
 
                     <button
@@ -472,7 +473,7 @@ export default function Users() {
                         fontSize: "16px",
                       }}
                     >
-                      <i
+                      <InlineIcon
                         className={
                           deletingId === user.id
                             ? "fa-solid fa-spinner fa-spin"

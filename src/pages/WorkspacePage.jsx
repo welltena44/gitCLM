@@ -1,3 +1,4 @@
+import InlineIcon from "../composants/InlineIcon.jsx";
 import { Link, useLocation } from "react-router-dom";
 import "./WorkspacePage.css";
 
@@ -201,7 +202,7 @@ export default function WorkspacePage() {
     <div className="workspace-page">
       <div className="workspace-welcome">
         <div className="workspace-welcome-icon">
-          <i className="fa-solid fa-anchor" />
+          <InlineIcon className="fa-solid fa-anchor" />
         </div>
         <div>
           <h2>Bienvenue dans votre espace CLM</h2>
@@ -210,7 +211,7 @@ export default function WorkspacePage() {
       </div>
       {page.notice && (
         <div className="workspace-notice">
-          <i className="fa-solid fa-circle-info" />
+          <InlineIcon className="fa-solid fa-circle-info" />
           <p>{page.notice}</p>
         </div>
       )}
@@ -219,13 +220,13 @@ export default function WorkspacePage() {
           {page.cards.map(([title, description, to, icon]) => (
             <Link className="workspace-card" to={to} key={to}>
               <span className="workspace-card-icon">
-                <i className={`fa-solid ${icon}`} />
+                <InlineIcon className={`fa-solid ${icon}`} />
               </span>
               <span className="workspace-card-copy">
                 <strong>{title}</strong>
                 <small>{description}</small>
                 <b>
-                  Accéder <i className="fa-solid fa-arrow-right" />
+                  Accéder <InlineIcon className="fa-solid fa-arrow-right" />
                 </b>
               </span>
             </Link>
@@ -233,7 +234,7 @@ export default function WorkspacePage() {
         </div>
       )}
       <div className="workspace-security">
-        <i className="fa-solid fa-shield-halved" />
+        <InlineIcon className="fa-solid fa-shield-halved" />
         <span>
           <strong>Accès par rôle</strong>
           <small>

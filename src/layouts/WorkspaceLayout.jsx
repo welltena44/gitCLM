@@ -1,3 +1,4 @@
+import InlineIcon from "../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
@@ -201,10 +202,10 @@ export default function WorkspaceLayout() {
           onClick={() => setMenuClosed((v) => !v)}
           aria-label={menuClosed ? "Ouvrir le menu" : "Fermer le menu"}
         >
-          <i
-            className={`fa-solid ${menuClosed ? "fa-bars" : "fa-bars-staggered"}`}
-            aria-hidden="true"
-          />
+          <svg className="clm-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <span className="clm-menu-label">Menu</span>
         </button>
         <NavLink to={homePath} className="clm-brand">
           <img src="/LogoSPAT.jpeg" alt="" />
@@ -221,9 +222,14 @@ export default function WorkspaceLayout() {
               onClick={openNotifications}
               aria-label="Afficher les notifications"
             >
-              <i className="fa-regular fa-bell" />
+              <svg className="clm-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
+              </svg>
+              <span className="clm-notification-label">Notifications</span>
               {totalAlerts > 0 && (
-                <span>{totalAlerts > 99 ? "99+" : totalAlerts}</span>
+                <span className="clm-notification-count">
+                  {totalAlerts > 99 ? "99+" : totalAlerts}
+                </span>
               )}
             </button>
             {notificationOpen && (
@@ -245,7 +251,7 @@ export default function WorkspaceLayout() {
                       setPasswordResetOpen(true);
                     }}
                   >
-                    <i className="fa-solid fa-key" />
+                    <InlineIcon className="fa-solid fa-key" />
                     <span>
                       <strong>Demandes de réinitialisation</strong>
                       <small>
@@ -262,7 +268,7 @@ export default function WorkspaceLayout() {
                         key={n.id}
                         onClick={() => openNotification(n)}
                       >
-                        <i className="fa-solid fa-bell" />
+                        <InlineIcon className="fa-solid fa-bell" />
                         <span>
                           <strong>{n.titre || "Notification CLM"}</strong>
                           <small>
@@ -293,7 +299,7 @@ export default function WorkspaceLayout() {
                   }}
                 >
                   Voir le centre de notifications{" "}
-                  <i className="fa-solid fa-arrow-right" />
+                  <InlineIcon className="fa-solid fa-arrow-right" />
                 </button>
               </div>
             )}
@@ -317,7 +323,7 @@ export default function WorkspaceLayout() {
               <strong>{displayName}</strong>
               <small>{roleLabel}</small>
             </span>
-            <i className="fa-solid fa-chevron-down" aria-hidden="true" />
+            <InlineIcon className="fa-solid fa-chevron-down" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -325,7 +331,9 @@ export default function WorkspaceLayout() {
             onClick={handleLogout}
             title="Se déconnecter"
           >
-            <i className="fa-solid fa-right-from-bracket" aria-hidden="true" />
+            <svg className="clm-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />
+            </svg>
             <span>Déconnexion</span>
           </button>
         </div>

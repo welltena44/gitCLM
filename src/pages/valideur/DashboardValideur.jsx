@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -56,7 +57,7 @@ export default function DashboardValideur() {
         <div>
           <span className="role-welcome-eyebrow">ESPACE VALIDEUR</span>
           <h2>
-            <i className="fa-solid fa-clipboard-check page-title-icon" />
+            <InlineIcon className="fa-solid fa-clipboard-check page-title-icon" />
             Tableau de bord
           </h2>
           <p>Vue d'ensemble de votre activité de validation.</p>
@@ -75,7 +76,7 @@ export default function DashboardValideur() {
             <h3>Demandes en attente</h3>
             <p>Les validations qui attendent votre décision.</p>
           </div>
-          <Link to="/valideur/contrats">Ouvrir la file <i className="fa-solid fa-arrow-right" /></Link>
+          <Link to="/valideur/contrats">Ouvrir la file <InlineIcon className="fa-solid fa-arrow-right" /></Link>
         </header>
         {loading ? <p className="validation-empty">Chargement des validations…</p> : pending.length ? (
           <Pagination items={pending}>
@@ -90,7 +91,7 @@ export default function DashboardValideur() {
                         <small>{c?.objet || "Dossier contractuel"}</small>
                       </span>
                       <span className="validation-pending-meta">{c ? `${Number(c.montant || 0).toLocaleString("fr-FR")} ${c.devise || "Ar"}` : `Niveau ${v.niveau}`}</span>
-                      <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                      <InlineIcon className="fa-solid fa-arrow-right" aria-hidden="true" />
                     </Link>
                   );
                 })}

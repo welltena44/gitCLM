@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api.js";
 import { getApiErrorMessage } from "../../services/apiError.js";
@@ -79,7 +80,7 @@ export default function ParametresAlertesPage() {
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i className="fa-solid fa-bell page-title-icon" aria-hidden="true" />
+            <InlineIcon className="fa-solid fa-bell page-title-icon" aria-hidden="true" />
             Paramètres des alertes d’échéance
           </h2>
           <p>Le délai est calculé avant la date limite de préavis. Les alertes sont adressées au responsable du contrat.</p>
@@ -146,8 +147,16 @@ export default function ParametresAlertesPage() {
                   <td>J-{row.joursAvant}</td>
                   <td>{row.actif ? "Actif" : "Désactivé"}</td>
                   <td>
-                    <button onClick={() => edit(row)}>Modifier</button>{" "}
-                    <button onClick={() => remove(row.id)}>Supprimer</button>
+                    <div className="alert-row-actions">
+                      <button type="button" className="alert-edit-action" onClick={() => edit(row)}>
+                        <InlineIcon className="fa-solid fa-pen-to-square" aria-hidden="true" />
+                        Modifier
+                      </button>
+                      <button type="button" className="alert-delete-action" onClick={() => remove(row.id)}>
+                        <InlineIcon className="fa-solid fa-trash-can" aria-hidden="true" />
+                        Supprimer
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

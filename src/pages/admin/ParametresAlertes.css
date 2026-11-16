@@ -102,6 +102,62 @@
   background: #f4f8fc;
 }
 
+.alert-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-row-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease,
+    transform 150ms ease, box-shadow 150ms ease;
+}
+
+.alert-row-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1);
+}
+
+.alert-row-actions button:focus-visible {
+  outline: 3px solid rgba(22, 139, 210, 0.25);
+  outline-offset: 2px;
+}
+
+.alert-row-actions .alert-edit-action {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.alert-row-actions .alert-edit-action:hover {
+  border-color: #93c5fd;
+  background: #dbeafe;
+}
+
+.alert-row-actions .alert-delete-action {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.alert-row-actions .alert-delete-action:hover {
+  border-color: #fda4af;
+  background: #ffe4e6;
+}
+
 @media (max-width: 600px) {
   .alert-setting-form {
     align-items: stretch;

@@ -107,7 +107,7 @@ body {
   background: var(--clm-accent-soft);
   transform: none;
 }
-.clm-notification-bell > span {
+.clm-notification-bell > .clm-notification-count {
   top: -6px;
   right: -4px;
   background: #e5202e;
@@ -660,6 +660,117 @@ body {
   .menu-categories a:hover { transform: none; }
 }
 
+@media (max-width: 800px) {
+  :root {
+    --clm-topbar-h: 116px;
+  }
+  .clm-topbar {
+    height: auto;
+    min-height: var(--clm-topbar-h);
+    flex-wrap: wrap;
+    align-content: center;
+    padding: 7px 12px;
+    gap: 5px 8px;
+  }
+  .clm-topbar-photo {
+    display: none;
+  }
+  .clm-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: auto;
+    min-width: 40px;
+    padding: 0 7px;
+    border: 1px solid var(--clm-border);
+    border-radius: 10px;
+    background: #fff;
+  }
+  .clm-menu-label {
+    display: inline;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .clm-topbar-actions {
+    flex: 0 0 100%;
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+    margin-left: 0;
+  }
+  .clm-notification-bell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: auto;
+    min-width: 36px;
+    padding: 0 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .clm-notification-label {
+    display: inline;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .clm-profile-button {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    justify-content: flex-start;
+    padding: 3px 6px;
+  }
+  .clm-profile-button > .clm-user-avatar {
+    display: grid;
+  }
+  .clm-profile-button > .clm-profile-copy,
+  .clm-profile-button > .fa-chevron-down {
+    display: flex;
+  }
+  .clm-profile-button > .clm-profile-copy {
+    max-width: 112px;
+  }
+  .clm-profile-button > .clm-profile-copy strong {
+    max-width: 112px;
+  }
+  .clm-logout {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    padding: 0 9px;
+  }
+  .clm-logout span {
+    display: inline;
+  }
+}
+
+@media (max-width: 380px) {
+  :root {
+    --clm-topbar-h: 122px;
+  }
+  .clm-brand span {
+    display: inline;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .clm-profile-button > .clm-profile-copy {
+    max-width: 82px;
+  }
+  .clm-profile-button > .clm-profile-copy strong {
+    max-width: 82px;
+  }
+  .clm-notification-label {
+    font-size: 9px;
+  }
+  .clm-logout {
+    gap: 5px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+}
+
 /* ---------- Filigrane du logo dans le menu, photo du port dans le bandeau ---------- */
 .modernSidebar-nav::before {
   content: "";
@@ -698,5 +809,101 @@ body {
 @media (max-width: 1100px) {
   .clm-topbar-photo {
     display: none;
+  }
+}
+
+.clm-control-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.inline-fa-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  line-height: 1;
+  vertical-align: -0.125em;
+}
+.inline-fa-icon > svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.inline-fa-icon > .inline-fa-icon-spin {
+  animation: inline-fa-icon-spin 1s linear infinite;
+}
+@keyframes inline-fa-icon-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 800px) {
+  :root {
+    --clm-topbar-h: 60px;
+  }
+  .clm-topbar {
+    height: var(--clm-topbar-h);
+    min-height: var(--clm-topbar-h);
+    flex-wrap: nowrap;
+    align-content: normal;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .clm-menu-toggle {
+    display: inline-flex;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--clm-border);
+    border-radius: 10px;
+    background: #fff;
+  }
+  .clm-menu-label,
+  .clm-notification-label,
+  .clm-profile-button {
+    display: none !important;
+  }
+  .clm-topbar-actions {
+    flex: 0 0 auto;
+    width: auto;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .clm-notification-bell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 10px;
+  }
+  .clm-logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 10px;
+  }
+  .clm-logout span {
+    display: none !important;
   }
 }

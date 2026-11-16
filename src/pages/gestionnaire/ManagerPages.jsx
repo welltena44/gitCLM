@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
@@ -44,6 +45,21 @@ const statusClass = (s) =>
       : ["REJETE", "EXPIRE", "RESILIE"].includes(s)
         ? "bad"
         : "neutral";
+const normalizedStatus = (status) =>
+  String(status || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase();
+const isTerminated = (contract) =>
+  normalizedStatus(contract.statut) === "RESILIE";
+const isActiveContract = (contract) => {
+  if (isTerminated(contract)) return false;
+  if (!["SIGNE", "ACTIF", "APPROUVE", "VALIDE"].includes(normalizedStatus(contract.statut)) || !contract.dateSignature || !contract.dateDebut)
+    return false;
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return String(contract.dateDebut).slice(0, 10) <= today;
+};
 const errMessage = (e) =>
   e?.response?.data?.message ||
   e?.response?.data?.error ||
@@ -63,19 +79,19 @@ function LoadingOrEmpty({ loading, empty, error }) {
   if (loading)
     return (
       <div className="mgr-state">
-        <i className="fa-solid fa-spinner fa-spin" /> Chargement des données…
+        <InlineIcon className="fa-solid fa-spinner fa-spin" /> Chargement des données…
       </div>
     );
   if (error)
     return (
       <div className="mgr-state error">
-        <i className="fa-solid fa-circle-exclamation" /> {error}
+        <InlineIcon className="fa-solid fa-circle-exclamation" /> {error}
       </div>
     );
   if (empty)
     return (
       <div className="mgr-state">
-        <i className="fa-regular fa-folder-open" /> Aucun résultat ne correspond
+        <InlineIcon className="fa-regular fa-folder-open" /> Aucun résultat ne correspond
         à vos critères.
       </div>
     );
@@ -254,13 +270,13 @@ export function ContractsPage() {
         </div>
         <PageActions>
           <Button onClick={() => nav("/gestionnaire/nouveau")}>
-            <i className="fa-solid fa-plus" /> Nouveau contrat
+            <InlineIcon className="fa-solid fa-plus" /> Nouveau contrat
           </Button>
           <Button variant="secondary" onClick={exportCsv}>
-            <i className="fa-solid fa-file-csv" /> Exporter CSV
+            <InlineIcon className="fa-solid fa-file-csv" /> Exporter CSV
           </Button>
           <Button variant="secondary" onClick={reload}>
-            <i className="fa-solid fa-rotate" /> Actualiser
+            <InlineIcon className="fa-solid fa-rotate" /> Actualiser
           </Button>
         </PageActions>
       </div>
@@ -274,9 +290,7 @@ export function ContractsPage() {
           <span>Actifs</span>
           <strong>
             {
-              filtered.filter((c) =>
-                ["ACTIF", "APPROUVE", "VALIDE"].includes(c.statut),
-              ).length
+              filtered.filter(isActiveContract).length
             }
           </strong>
           <small>en vigueur</small>
@@ -298,6 +312,7 @@ export function ContractsPage() {
             {
               filtered.filter(
                 (c) =>
+                  !isTerminated(c) &&
                   c.dateFin &&
                   new Date(`${c.dateFin}T00:00:00`) - new Date() <=
                     30 * 86400000 &&
@@ -312,7 +327,7 @@ export function ContractsPage() {
         <div className="mgr-panel-title">
           <div>
             <h3>
-              <i className="fa-solid fa-filter" /> Recherche et filtres
+              <InlineIcon className="fa-solid fa-filter" /> Recherche et filtres
             </h3>
             <p>Combinez plusieurs critères pour affiner les résultats.</p>
           </div>
@@ -324,7 +339,7 @@ export function ContractsPage() {
           <label className="mgr-field wide">
             <span>Recherche libre</span>
             <div className="mgr-search">
-              <i className="fa-solid fa-magnifying-glass" />
+              <InlineIcon className="fa-solid fa-magnifying-glass" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -408,7 +423,7 @@ export function ContractsPage() {
             </select>
           </label>
           <div className="mgr-filter-actions">
-            <Button onClick={applyFilters}><i className="fa-solid fa-filter" /> Appliquer</Button>
+            <Button onClick={applyFilters}><InlineIcon className="fa-solid fa-filter" /> Appliquer</Button>
           </div>
         </div>
       </section>
@@ -476,9 +491,9 @@ export function ContractsPage() {
                         <td>{date(c.dateSignature)}<small>Fin : {date(c.dateFin)}</small></td>
                         <td>
                           <div className="mgr-row-actions">
-                            <button type="button" title="Afficher le contrat" aria-label="Afficher le contrat" onClick={(event) => { event.stopPropagation(); openDetails(); }}><i className="fa-regular fa-eye"/></button>
-                            <button type="button" title="Modifier" aria-label="Modifier le contrat" onClick={(event) => { event.stopPropagation(); nav(`/gestionnaire/contrats/${c.id}/modifier`); }}><i className="fa-regular fa-pen-to-square"/></button>
-                            <button type="button" title="Supprimer" aria-label="Supprimer le contrat" className="danger" onClick={(event) => { event.stopPropagation(); remove(c); }}><i className="fa-regular fa-trash-can"/></button>
+                            <button type="button" title="Afficher le contrat" aria-label="Afficher le contrat" onClick={(event) => { event.stopPropagation(); openDetails(); }}><InlineIcon className="fa-regular fa-eye"/></button>
+                            <button type="button" title="Modifier" aria-label="Modifier le contrat" onClick={(event) => { event.stopPropagation(); nav(`/gestionnaire/contrats/${c.id}/modifier`); }}><InlineIcon className="fa-regular fa-pen-to-square"/></button>
+                            <button type="button" title="Supprimer" aria-label="Supprimer le contrat" className="danger" onClick={(event) => { event.stopPropagation(); remove(c); }}><InlineIcon className="fa-regular fa-trash-can"/></button>
                           </div>
                         </td>
                       </tr>
@@ -518,7 +533,7 @@ export function ContractsPage() {
       </section>
       {id && selected && <div className="mgr-detail-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) nav("/gestionnaire/contrats"); }}>
         <aside className="mgr-detail-drawer" role="dialog" aria-modal="true" aria-label={`Détail du contrat ${selected.reference || selected.id}`}>
-          {openedFromNotification && <p className="mgr-notification-target"><i className="fa-solid fa-bell"/> Contrat signalé par une notification</p>}
+          {openedFromNotification && <p className="mgr-notification-target"><InlineIcon className="fa-solid fa-bell"/> Contrat signalé par une notification</p>}
           <ContractDetails contract={selected} onRefresh={reload} types={types} users={users} />
         </aside>
       </div>}
@@ -799,7 +814,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
             className="mgr-back"
             onClick={() => nav("/gestionnaire/contrats")}
           >
-            <i className="fa-solid fa-arrow-left" /> Retour aux contrats
+            <InlineIcon className="fa-solid fa-arrow-left" /> Retour aux contrats
           </button>
           <h2>{c.reference || `Contrat #${c.id}`}</h2>
           <p>{c.objet}</p>
@@ -809,10 +824,10 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
             variant="secondary"
             onClick={() => nav(`/gestionnaire/contrats/${c.id}/modifier`)}
           >
-            <i className="fa-regular fa-pen-to-square" /> Modifier
+            <InlineIcon className="fa-regular fa-pen-to-square" /> Modifier
           </Button>
-          {c.statut === "APPROUVE" ? <Button onClick={sign}><i className="fa-solid fa-file-signature" /> Confirmer la signature externe</Button> : ["BROUILLON", "EN_ATTENTE", "REJETE"].includes(c.statut) ? <Button onClick={submitValidation}><i className="fa-solid fa-paper-plane" /> Soumettre en validation</Button> : null}
-          {["SIGNE", "ACTIF"].includes(c.statut) && <Button variant="danger-outline" onClick={terminate}><i className="fa-solid fa-ban" /> Résilier</Button>}
+          {c.statut === "APPROUVE" ? <Button onClick={sign}><InlineIcon className="fa-solid fa-file-signature" /> Confirmer la signature externe</Button> : ["BROUILLON", "EN_ATTENTE", "REJETE"].includes(c.statut) ? <Button onClick={submitValidation}><InlineIcon className="fa-solid fa-paper-plane" /> Soumettre en validation</Button> : null}
+          {["SIGNE", "ACTIF"].includes(c.statut) && <Button variant="danger-outline" onClick={terminate}><InlineIcon className="fa-solid fa-ban" /> Résilier</Button>}
         </PageActions>
       </div>
       <div className="mgr-detail-summary">
@@ -898,7 +913,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               <h3>Documents contractuels</h3>
               <p>Pièces justificatives et exemplaire signé (limite : 15 Mo).</p>
             </div>
-            <div><select aria-label="Catégorie du document" value={docCategory} onChange={e => setDocCategory(e.target.value)} disabled={busy} style={{ marginRight: 8, padding: 9, borderRadius: 8 }}><option value="JUSTIFICATIF">Pièce justificative</option>{c.statut === "APPROUVE" && <option value="CONTRAT_SIGNE">Contrat signé (PDF)</option>}</select><label className="mgr-btn primary file-upload"><i className="fa-solid fa-upload" />{busy ? "Envoi…" : "Ajouter un document"}<input type="file" accept={docCategory === "CONTRAT_SIGNE" ? ".pdf,application/pdf" : undefined} onChange={upload} disabled={busy} /></label></div>
+            <div><select aria-label="Catégorie du document" value={docCategory} onChange={e => setDocCategory(e.target.value)} disabled={busy} style={{ marginRight: 8, padding: 9, borderRadius: 8 }}><option value="JUSTIFICATIF">Pièce justificative</option>{c.statut === "APPROUVE" && <option value="CONTRAT_SIGNE">Contrat signé (PDF)</option>}</select><label className="mgr-btn primary file-upload"><InlineIcon className="fa-solid fa-upload" />{busy ? "Envoi…" : "Ajouter un document"}<input type="file" accept={docCategory === "CONTRAT_SIGNE" ? ".pdf,application/pdf" : undefined} onChange={upload} disabled={busy} /></label></div>
           </div>
           {docsLoading ? (
             <LoadingOrEmpty loading />
@@ -913,7 +928,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               {visibleDocuments.map((d) => (
                 <div className="mgr-list-row" key={d.id}>
                   <span className="mgr-file-icon">
-                    <i className="fa-regular fa-file-lines" />
+                    <InlineIcon className="fa-regular fa-file-lines" />
                   </span>
                   <div className="mgr-list-main">
                     <strong>{d.nomFichier}</strong>
@@ -924,16 +939,16 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                   </div>
                   <PageActions>
                     <Button variant="secondary" onClick={() => openDocument(d)}>
-                      <i className="fa-regular fa-eye" /> Ouvrir
+                      <InlineIcon className="fa-regular fa-eye" /> Ouvrir
                     </Button>
                     <Button variant="secondary" onClick={() => download(d)}>
-                      <i className="fa-solid fa-download" /> Télécharger
+                      <InlineIcon className="fa-solid fa-download" /> Télécharger
                     </Button>
                     <Button
                       variant="danger-outline"
                       onClick={() => removeDoc(d)}
                     >
-                      <i className="fa-regular fa-trash-can" />
+                      <InlineIcon className="fa-regular fa-trash-can" />
                     </Button>
                   </PageActions>
                 </div>
@@ -998,7 +1013,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               />
             </label>
             <Button type="submit">
-              <i className="fa-solid fa-plus" /> Ajouter
+              <InlineIcon className="fa-solid fa-plus" /> Ajouter
             </Button>
           </form>
           {parties.length === 0 ? (
@@ -1023,7 +1038,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                     variant="danger-outline"
                     onClick={() => removeParty(p)}
                   >
-                    <i className="fa-regular fa-trash-can" />
+                    <InlineIcon className="fa-regular fa-trash-can" />
                   </Button>
                 </div>
               ))}
@@ -1112,7 +1127,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
             </label>
             <div className="mgr-form-actions">
               <Button type="submit">
-                <i className="fa-solid fa-plus" /> Créer l’avenant
+                <InlineIcon className="fa-solid fa-plus" /> Créer l’avenant
               </Button>
             </div>
           </form>
@@ -1150,7 +1165,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                     }
                   }}
                 >
-                  <i className="fa-solid fa-rotate-right" /> Resoumettre après correction
+                  <InlineIcon className="fa-solid fa-rotate-right" /> Resoumettre après correction
                 </Button>
               )}
             </div>
@@ -1212,7 +1227,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
             </label>
             <div className="mgr-form-actions">
               <Button type="submit" disabled={busy}>
-                <i className="fa-solid fa-plus" /> Ajouter l’obligation
+                <InlineIcon className="fa-solid fa-plus" /> Ajouter l’obligation
               </Button>
             </div>
           </form>
@@ -1227,7 +1242,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                   {visibleObligations.map((obligation) => (
                     <div className="mgr-list-row" key={obligation.id}>
                       <span className="mgr-file-icon">
-                        <i className="fa-solid fa-list-check" />
+                        <InlineIcon className="fa-solid fa-list-check" />
                       </span>
                       <div className="mgr-list-main">
                         <strong>{obligation.titre}</strong>
@@ -1254,13 +1269,13 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                             variant="secondary"
                             onClick={() => updateObligation(obligation, "cloturer")}
                           >
-                            <i className="fa-solid fa-check" /> Clôturer
+                            <InlineIcon className="fa-solid fa-check" /> Clôturer
                           </Button>
                           <Button
                             variant="danger-outline"
                             onClick={() => updateObligation(obligation, "annuler")}
                           >
-                            <i className="fa-solid fa-ban" /> Annuler
+                            <InlineIcon className="fa-solid fa-ban" /> Annuler
                           </Button>
                         </PageActions>
                       )}
@@ -1280,7 +1295,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               <p>État et décisions connus pour ce contrat.</p>
             </div>
             <Button onClick={submitValidation}>
-              <i className="fa-solid fa-paper-plane" /> Générer le circuit
+              <InlineIcon className="fa-solid fa-paper-plane" /> Générer le circuit
             </Button>
           </div>
           {validations.length === 0 ? (
@@ -1292,7 +1307,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               {visibleValidations.map((v) => (
                 <div className="mgr-list-row" key={v.id}>
                   <span className="mgr-file-icon">
-                    <i className="fa-solid fa-stamp" />
+                    <InlineIcon className="fa-solid fa-stamp" />
                   </span>
                   <div className="mgr-list-main">
                     <strong>
@@ -1322,8 +1337,8 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
       {preview && <div className="mgr-preview-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) { URL.revokeObjectURL(preview.url); setPreview(null); } }}>
         <section className="mgr-preview-dialog" role="dialog" aria-modal="true" aria-label={`Aperçu : ${preview.name}`}>
           <header><strong>{preview.name}</strong><div className="mgr-actions">
-            <a className="mgr-btn secondary" href={preview.url} target="_blank" rel="noreferrer"><i className="fa-solid fa-arrow-up-right-from-square" /> Ouvrir dans un nouvel onglet</a>
-            <a className="mgr-btn secondary" href={preview.url} download={preview.name}><i className="fa-solid fa-download" /> Télécharger</a>
+            <a className="mgr-btn secondary" href={preview.url} target="_blank" rel="noreferrer"><InlineIcon className="fa-solid fa-arrow-up-right-from-square" /> Ouvrir dans un nouvel onglet</a>
+            <a className="mgr-btn secondary" href={preview.url} download={preview.name}><InlineIcon className="fa-solid fa-download" /> Télécharger</a>
             <button className="mgr-preview-close" onClick={() => { URL.revokeObjectURL(preview.url); setPreview(null); }} aria-label="Fermer l’aperçu">×</button>
           </div></header>
           {preview.mime === "application/pdf" ? <iframe title={`Aperçu ${preview.name}`} src={preview.url} /> : preview.mime.startsWith("image/") ? <img src={preview.url} alt={preview.name} /> : <div className="mgr-state">L’aperçu intégré est disponible pour les PDF et les images.</div>}
@@ -1487,7 +1502,7 @@ export function ContractFormPage() {
   if (loading)
     return (
       <div className="mgr-state">
-        <i className="fa-solid fa-spinner fa-spin" /> Chargement du formulaire…
+        <InlineIcon className="fa-solid fa-spinner fa-spin" /> Chargement du formulaire…
       </div>
     );
   return (
@@ -1495,7 +1510,7 @@ export function ContractFormPage() {
       <div className="mgr-page-head">
         <div>
           <button className="mgr-back" onClick={() => nav(-1)}>
-            <i className="fa-solid fa-arrow-left" /> Retour
+            <InlineIcon className="fa-solid fa-arrow-left" /> Retour
           </button>
           <h2>{editing ? "Modifier le contrat" : "Nouveau contrat"}</h2>
           <p>Renseignez les informations contractuelles requises.</p>
@@ -1503,24 +1518,24 @@ export function ContractFormPage() {
       </div>
       {error && (
         <div className="mgr-inline-error">
-          <i className="fa-solid fa-circle-exclamation" />
+          <InlineIcon className="fa-solid fa-circle-exclamation" />
           {error}
         </div>
       )}
       <form className="mgr-panel mgr-contract-form" onSubmit={submit}>
         <div className="mgr-panel-title">
           <h3>
-            <i className="fa-regular fa-file-lines" /> Informations générales
+            <InlineIcon className="fa-regular fa-file-lines" /> Informations générales
           </h3>
           <span className="mgr-required">* Champs obligatoires</span>
         </div>
         <div style={{ background: "rgba(59, 130, 246, 0.08)", padding: "1rem", borderRadius: "8px", marginBottom: "1.5rem", border: "1px dashed #3b82f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <strong style={{ color: "#1e40af", display: "block", marginBottom: "0.25rem" }}><i className="fa-solid fa-wand-magic-sparkles" /> Assistant IA / OCR de Pré-remplissage</strong>
+            <strong style={{ color: "#1e40af", display: "block", marginBottom: "0.25rem" }}><InlineIcon className="fa-solid fa-wand-magic-sparkles" /> Assistant IA / OCR de Pré-remplissage</strong>
             <span style={{ fontSize: "0.85rem", color: "#4b5563" }}>Importez le PDF du contrat pour extraire automatiquement la référence, l’objet, le montant et les conditions.</span>
           </div>
           <label className="mgr-btn secondary" style={{ cursor: "pointer", margin: 0 }}>
-            {analyzing ? <><i className="fa-solid fa-spinner fa-spin" /> Analyse...</> : <><i className="fa-solid fa-file-import" /> Importer PDF & Auto-remplir</>}
+            {analyzing ? <><InlineIcon className="fa-solid fa-spinner fa-spin" /> Analyse...</> : <><InlineIcon className="fa-solid fa-file-import" /> Importer PDF & Auto-remplir</>}
             <input type="file" accept=".pdf,application/pdf" style={{ display: "none" }} onChange={handleAutoFill} disabled={analyzing} />
           </label>
         </div>
@@ -1571,7 +1586,7 @@ export function ContractFormPage() {
         </div>
         <div className="mgr-panel-title">
           <h3>
-            <i className="fa-solid fa-coins" /> Conditions financières
+            <InlineIcon className="fa-solid fa-coins" /> Conditions financières
           </h3>
         </div>
         <div className="mgr-form-grid">
@@ -1609,7 +1624,7 @@ export function ContractFormPage() {
         </div>
         <div className="mgr-panel-title">
           <h3>
-            <i className="fa-regular fa-calendar" /> Dates du contrat
+            <InlineIcon className="fa-regular fa-calendar" /> Dates du contrat
           </h3>
         </div>
         <div className="mgr-form-grid">
@@ -1682,7 +1697,7 @@ export function ContractFormPage() {
             Annuler
           </Button>
           <Button type="submit" disabled={saving}>
-            <i
+            <InlineIcon
               className={`fa-solid ${saving ? "fa-spinner fa-spin" : "fa-floppy-disk"}`}
             />
             {saving
@@ -1705,10 +1720,8 @@ export function ManagerValidationsPage() {
     [filter, setFilter] = useState(""),
     [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
-    [autoRefresh, setAutoRefresh] = useState(false),
-    [bulkProcessing, setBulkProcessing] = useState(false);
+    [autoRefresh, setAutoRefresh] = useState(false);
   const { user } = useAuth();
-  const { toast, confirm } = useFeedback();
   const [searchParams] = useSearchParams();
   const targetContractId = searchParams.get("contratId");
   const [busyDecision, setBusyDecision] = useState(null);
@@ -1738,19 +1751,6 @@ export function ManagerValidationsPage() {
     const interval = setInterval(() => load(), 30000);
     return () => clearInterval(interval);
   }, [autoRefresh, load]);
-  const bulkApproveAll = async () => {
-    if (!(await confirm({ title: "Approuver en masse ?", message: "Approuver toutes les validations en attente de vos contrats ?", confirmLabel: "Approuver" }))) return;
-    setBulkProcessing(true);
-    try {
-      const mine = items.filter((v) => v.decision === "EN_ATTENTE" && v.valideurId == null && user?.role === v.roleRequis);
-      for (const v of mine) {
-        try { await api.post(`/validations/${v.id}/decider`, { decision: "APPROUVE", commentaire: "Approbation automatique en masse" }); } catch (e) {}
-      }
-      await load();
-      toast("Approbation en masse terminée.", "success");
-    } catch (e) { toast(errMessage(e), "error"); }
-    finally { setBulkProcessing(false); }
-  };
   const decide = async (item, decision) => {
     setBusyDecision(item.id);
     try { await api.post(`/validations/${item.id}/decider`, { decision, commentaire: "" }); await load(); }
@@ -1781,22 +1781,19 @@ export function ManagerValidationsPage() {
           </p>
         </div>
         <Button variant="secondary" onClick={load}>
-          <i className="fa-solid fa-rotate" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" /> Actualiser
         </Button>
         <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
           <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
-          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+          <InlineIcon className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
         </label>
-        <Button variant="primary" onClick={bulkApproveAll} disabled={bulkProcessing}>
-          <i className="fa-solid fa-check-double" /> Approuver en masse
-        </Button>
       </div>
       <section className="mgr-panel">
         <div className="mgr-filter-grid">
           <label className="mgr-field wide">
             <span>Recherche</span>
             <div className="mgr-search">
-              <i className="fa-solid fa-magnifying-glass" />
+              <InlineIcon className="fa-solid fa-magnifying-glass" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -1843,6 +1840,16 @@ export function ManagerValidationsPage() {
                   const c = contracts.find(
                     (x) => String(x.id) === String(v.contratId),
                   );
+                  const validator = users.find(
+                    (person) => String(person.id) === String(v.valideurId),
+                  );
+                  const validatorName = validator
+                    ? validator.matricule ||
+                      [validator.prenom, validator.nom].filter(Boolean).join(" ") ||
+                      `Compte #${validator.id}`
+                    : v.valideurId
+                      ? `Compte #${v.valideurId}`
+                      : `À attribuer · ${v.roleRequis || "rôle non précisé"}`;
                   return (
                     <tr key={v.id} className={String(v.contratId) === targetContractId ? "notification-target" : ""}>
                       <td>
@@ -1853,11 +1860,7 @@ export function ManagerValidationsPage() {
                       </td>
                       <td>
                         {v.etape || `${v.roleRequis || "Validation"} — niveau ${v.niveau ?? "—"}`}
-                        <small>
-                          {v.valideurId
-                            ? `Matricule ${users.find(person => String(person.id) === String(v.valideurId))?.matricule || "—"}`
-                            : "Valideur à attribuer"}
-                        </small>
+                        <small>{validatorName}</small>
                       </td>
                       <td>
                         <span
@@ -1872,7 +1875,7 @@ export function ManagerValidationsPage() {
                       </td>
                       <td>{v.commentaire || "—"}</td>
                       <td>{date(v.dateValidation || v.dateSoumission)}</td>
-                      <td>{v.decision === "EN_ATTENTE" && v.valideurId == null && user?.role === v.roleRequis ? <div className="mgr-row-actions"><button title="Approuver" disabled={busyDecision === v.id} onClick={() => decide(v, "APPROUVE")}><i className="fa-solid fa-check"/></button><button title="Demander une modification" disabled={busyDecision === v.id} onClick={() => decide(v, "MODIFICATION_DEMANDEE")}><i className="fa-solid fa-pen"/></button><button title="Rejeter" className="danger" disabled={busyDecision === v.id} onClick={() => decide(v, "REJETE")}><i className="fa-solid fa-xmark"/></button></div> : "—"}</td>
+                      <td>{v.decision === "EN_ATTENTE" && v.valideurId == null && user?.role === v.roleRequis ? <div className="mgr-row-actions"><button title="Approuver" disabled={busyDecision === v.id} onClick={() => decide(v, "APPROUVE")}><InlineIcon className="fa-solid fa-check"/></button><button title="Demander une modification" disabled={busyDecision === v.id} onClick={() => decide(v, "MODIFICATION_DEMANDEE")}><InlineIcon className="fa-solid fa-pen"/></button><button title="Rejeter" className="danger" disabled={busyDecision === v.id} onClick={() => decide(v, "REJETE")}><InlineIcon className="fa-solid fa-xmark"/></button></div> : "—"}</td>
                     </tr>
                   );
                 })}
@@ -1952,21 +1955,21 @@ export function ManagerAmendmentsPage() {
           </p>
         </div>
         <Button variant="secondary" onClick={load}>
-          <i className="fa-solid fa-rotate" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" /> Actualiser
         </Button>
         <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
           <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
-          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+          <InlineIcon className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
         </label>
         <Button variant="primary" onClick={bulkResubmit} disabled={bulkResubmitting}>
-          <i className="fa-solid fa-arrows-rotate" /> Resoumettre tout
+          <InlineIcon className="fa-solid fa-arrows-rotate" /> Resoumettre tout
         </Button>
       </div>
       <section className="mgr-panel">
         <label className="mgr-field">
           <span>Recherche par numéro, description ou référence</span>
           <div className="mgr-search">
-            <i className="fa-solid fa-magnifying-glass" />
+            <InlineIcon className="fa-solid fa-magnifying-glass" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -2133,14 +2136,14 @@ export function ManagerDocumentsPage() {
           <p>Recherchez les pièces déposées dans vos dossiers contractuels.</p>
         </div>
         <Button variant="secondary" onClick={load}>
-          <i className="fa-solid fa-rotate" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" /> Actualiser
         </Button>
         <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
           <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
-          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+          <InlineIcon className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
         </label>
         <Button variant="danger" onClick={bulkDeleteSelected} disabled={bulkDeleting}>
-          <i className="fa-solid fa-trash" /> Supprimer la sélection
+          <InlineIcon className="fa-solid fa-trash" /> Supprimer la sélection
         </Button>
       </div>
       <section className="mgr-panel">
@@ -2148,7 +2151,7 @@ export function ManagerDocumentsPage() {
           <label className="mgr-field wide">
             <span>Recherche</span>
             <div className="mgr-search">
-              <i className="fa-solid fa-magnifying-glass" />
+              <InlineIcon className="fa-solid fa-magnifying-glass" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -2214,7 +2217,7 @@ export function ManagerDocumentsPage() {
                       <td>{date(d.dateImport)}</td>
                       <td>
                         <Button variant="secondary" onClick={() => download(d)}>
-                          <i className="fa-solid fa-download" /> Télécharger
+                          <InlineIcon className="fa-solid fa-download" /> Télécharger
                         </Button>
                       </td>
                     </tr>
@@ -2331,14 +2334,14 @@ export function ManagerNotificationsPage() {
           </p>
         </div>
         <Button variant="secondary" onClick={load}>
-          <i className="fa-solid fa-rotate" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" /> Actualiser
         </Button>
         <label className="mgr-btn secondary" style={{ cursor: "pointer" }}>
           <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} style={{ display: "none" }} />
-          <i className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
+          <InlineIcon className={`fa-solid ${autoRefresh ? "fa-bell" : "fa-bell-slash"}`} /> Auto-rafraîchissement
         </label>
         <Button variant="primary" onClick={bulkMarkRead} disabled={bulkMarking}>
-          <i className="fa-solid fa-check-double" /> Tout marquer comme lu
+          <InlineIcon className="fa-solid fa-check-double" /> Tout marquer comme lu
         </Button>
       </div>
       <div className="mgr-kpis">
@@ -2363,7 +2366,7 @@ export function ManagerNotificationsPage() {
           <label className="mgr-field wide">
             <span>Recherche</span>
             <div className="mgr-search">
-              <i className="fa-solid fa-magnifying-glass" />
+              <InlineIcon className="fa-solid fa-magnifying-glass" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -2396,7 +2399,7 @@ export function ManagerNotificationsPage() {
               <span
                 className={`mgr-notif-icon ${String(n.type).toLowerCase()}`}
               >
-                <i
+                <InlineIcon
                   className={`fa-solid ${String(n.type).toUpperCase().includes("VALID") ? "fa-clipboard-check" : String(n.type).toUpperCase().includes("ECHEANCE") ? "fa-calendar-days" : "fa-bell"}`}
                 />
               </span>
@@ -2418,18 +2421,18 @@ export function ManagerNotificationsPage() {
                     className="mgr-contract-link"
                   >
                     Ouvrir le contrat{" "}
-                    <i className="fa-solid fa-arrow-up-right-from-square" />
+                    <InlineIcon className="fa-solid fa-arrow-up-right-from-square" />
                   </Link>
                 )}
               </div>
               <div className="mgr-notif-actions">
                 {!n.lu && (
                   <button title="Marquer comme lue" onClick={() => mark(n)}>
-                    <i className="fa-solid fa-check" />
+                    <InlineIcon className="fa-solid fa-check" />
                   </button>
                 )}
                 <button title="Supprimer" onClick={() => remove(n)}>
-                  <i className="fa-regular fa-trash-can" />
+                  <InlineIcon className="fa-regular fa-trash-can" />
                 </button>
               </div>
             </article>
@@ -2546,13 +2549,13 @@ export function ManagerProfilePage() {
           </label>
           <div className="mgr-form-actions">
             <Button type="submit" disabled={saving}>
-              <i className="fa-solid fa-floppy-disk" />
+              <InlineIcon className="fa-solid fa-floppy-disk" />
               {saving ? "Enregistrement…" : "Enregistrer le profil"}
             </Button>
           </div>
         </form>
         <p className="mgr-profile-note">
-          <i className="fa-solid fa-shield-halved" /> Le mot de passe n’est pas
+          <InlineIcon className="fa-solid fa-shield-halved" /> Le mot de passe n’est pas
           modifiable depuis cette page. 
         </p>
       </section>

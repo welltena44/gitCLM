@@ -1,3 +1,4 @@
+import InlineIcon from "../composants/InlineIcon.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService.js";
@@ -118,7 +119,7 @@ export default function Login() {
           <div className="auth-card-light">
             <div className="auth-topbar-light">
               <span className="status-pill">
-                <i className="fa-solid fa-shield-halved" aria-hidden="true" />
+                <InlineIcon className="fa-solid fa-shield-halved" aria-hidden="true" />
                 Accès sécurisé
               </span>
             </div>
@@ -127,10 +128,10 @@ export default function Login() {
               <div>
                 <span className="auth-eyebrow">ESPACE CLM</span>
                 <h2>
-                  <i className="fa-solid fa-right-to-bracket" aria-hidden="true" />
+                  <InlineIcon className="fa-solid fa-right-to-bracket" aria-hidden="true" />
                   Connexion
                 </h2>
-                <p>Accédez à votre espace SPAT · Contract Lifecycle Management</p>
+               
               </div>
             </header>
 
@@ -139,7 +140,7 @@ export default function Login() {
                 <span>Matricule</span>
 
                 <div className="auth-input-box">
-                  <i className="fa-solid fa-id-card" aria-hidden="true" />
+                  <InlineIcon className="fa-solid fa-id-card" aria-hidden="true" />
 
                   <input
                     type="text"
@@ -160,7 +161,7 @@ export default function Login() {
                 <span>Mot de passe</span>
 
                 <div className="auth-input-box">
-                  <i className="fa-solid fa-lock" aria-hidden="true" />
+                  <InlineIcon className="fa-solid fa-lock" aria-hidden="true" />
 
                   <input
                     type="password"
@@ -177,7 +178,7 @@ export default function Login() {
 
               {error && (
                 <div className="error-msg" role="alert">
-                  <i
+                  <InlineIcon
                     className="fa-solid fa-triangle-exclamation"
                     aria-hidden="true"
                   />{" "}
@@ -190,7 +191,7 @@ export default function Login() {
                 className="auth-submit-button"
                 disabled={loading}
               >
-                <i
+                <InlineIcon
                   className={
                     loading
                       ? "fa-solid fa-spinner fa-spin"

@@ -1,6 +1,8 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 import Pagination from "../../composants/Pagination.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
@@ -27,6 +29,7 @@ const errorMessage = (error, fallback) =>
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { confirm, toast } = useFeedback();
   const [notifications, setNotifications] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -41,21 +44,24 @@ export default function NotificationsPage() {
     setLoading(true);
     setError("");
     try {
-      const [notificationResponse, requestResponse, userResponse] =
-        await Promise.all([
-          api.get("/notifications"),
-          api.get("/admin/password-reset-requests/history"),
-          api.get("/utilisateurs"),
-        ]);
+      const notificationResponse = await api.get(`/notifications/user/${user.id}`);
       setNotifications(Array.isArray(notificationResponse.data) ? notificationResponse.data : []);
-      setRequests(Array.isArray(requestResponse.data) ? requestResponse.data : []);
-      setUsers(Array.isArray(userResponse.data) ? userResponse.data : []);
     } catch (requestError) {
       setError(errorMessage(requestError, "Impossible de charger l’historique des notifications."));
     } finally {
       setLoading(false);
     }
-  }, []);
+    const [requestResult, userResult] = await Promise.allSettled([
+      api.get("/admin/password-reset-requests/history"),
+      api.get("/utilisateurs"),
+    ]);
+    if (requestResult.status === "fulfilled") {
+      setRequests(Array.isArray(requestResult.value.data) ? requestResult.value.data : []);
+    }
+    if (userResult.status === "fulfilled") {
+      setUsers(Array.isArray(userResult.value.data) ? userResult.value.data : []);
+    }
+  }, [user?.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -174,11 +180,11 @@ export default function NotificationsPage() {
       <div className="admin-data-toolbar">
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
-          <h2><i className="fa-solid fa-bell page-title-icon" aria-hidden="true" /> Historique des notifications</h2>
+          <h2><InlineIcon className="fa-solid fa-bell page-title-icon" aria-hidden="true" /> Historique des notifications</h2>
           <p>Notifications métier et demandes de réinitialisation. Les demandes en attente peuvent être traitées depuis cette page.</p>
         </div>
         <button type="button" onClick={load} disabled={loading}>
-          <i className="fa-solid fa-rotate" aria-hidden="true" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" aria-hidden="true" /> Actualiser
         </button>
       </div>
 
@@ -229,14 +235,14 @@ export default function NotificationsPage() {
                           <td>
                             {entry.category === "Notification métier" ? (
                               <div className="admin-notification-actions">
-                                {(entry.contractId || entry.ruleId) && <button type="button" title="Ouvrir l’élément lié" aria-label="Ouvrir l’élément lié" onClick={() => openRelatedItem(entry)}><i className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></button>}
-                                {!entry.isRead && <button type="button" title="Marquer comme lue" aria-label="Marquer comme lue" disabled={busy} onClick={() => markAsRead(entry)}><i className="fa-solid fa-check" aria-hidden="true" /></button>}
-                                <button type="button" title="Supprimer la notification" aria-label="Supprimer la notification" disabled={busy} onClick={() => removeNotification(entry)}><i className="fa-solid fa-trash" aria-hidden="true" /></button>
+                                {(entry.contractId || entry.ruleId) && <button type="button" title="Ouvrir l’élément lié" aria-label="Ouvrir l’élément lié" onClick={() => openRelatedItem(entry)}><InlineIcon className="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" /></button>}
+                                {!entry.isRead && <button type="button" title="Marquer comme lue" aria-label="Marquer comme lue" disabled={busy} onClick={() => markAsRead(entry)}><InlineIcon className="fa-solid fa-check" aria-hidden="true" /></button>}
+                                <button type="button" title="Supprimer la notification" aria-label="Supprimer la notification" disabled={busy} onClick={() => removeNotification(entry)}><InlineIcon className="fa-solid fa-trash" aria-hidden="true" /></button>
                               </div>
                             ) : entry.statusCode === "EN_ATTENTE" ? (
                               <div className="admin-notification-actions">
-                                <button type="button" title="Approuver la demande" aria-label="Approuver la demande" disabled={busy} onClick={() => processResetRequest(entry, "approve")}><i className="fa-solid fa-check" aria-hidden="true" /></button>
-                                <button type="button" title="Rejeter la demande" aria-label="Rejeter la demande" disabled={busy} onClick={() => processResetRequest(entry, "reject")}><i className="fa-solid fa-xmark" aria-hidden="true" /></button>
+                                <button type="button" title="Approuver la demande" aria-label="Approuver la demande" disabled={busy} onClick={() => processResetRequest(entry, "approve")}><InlineIcon className="fa-solid fa-check" aria-hidden="true" /></button>
+                                <button type="button" title="Rejeter la demande" aria-label="Rejeter la demande" disabled={busy} onClick={() => processResetRequest(entry, "reject")}><InlineIcon className="fa-solid fa-xmark" aria-hidden="true" /></button>
                               </div>
                             ) : <span className="admin-empty">Aucune action</span>}
                           </td>

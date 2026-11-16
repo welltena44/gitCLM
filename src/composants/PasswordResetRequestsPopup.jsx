@@ -1,3 +1,4 @@
+import InlineIcon from "./InlineIcon.jsx";
 import { useCallback, useEffect, useState } from "react";
 import api from "../services/api.js";
 import { useFeedback } from "./FeedbackContext.jsx";
@@ -107,7 +108,7 @@ export default function PasswordResetRequestsPopup({
         }}
       >
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <i
+          <InlineIcon
             className="fa-solid fa-key"
             style={{ color: "#168bd2", fontSize: 24 }}
           />

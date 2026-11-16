@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import api from "../../services/api.js";
 import "./JournauxPage.css";
@@ -230,14 +231,14 @@ export default function JournauxPage() {
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i className="fa-solid fa-clipboard-list page-title-icon" aria-hidden="true" />
+            <InlineIcon className="fa-solid fa-clipboard-list page-title-icon" aria-hidden="true" />
             Journaux d’audit
           </h2>
           <p>Recherche multicritère et export des actions enregistrées sur la plateforme.</p>
         </div>
         <div className="admin-page-actions">
           <button type="button" onClick={load} disabled={loading}>
-            <i className="fa-solid fa-rotate" aria-hidden="true" /> Actualiser
+            <InlineIcon className="fa-solid fa-rotate" aria-hidden="true" /> Actualiser
           </button>
         </div>
       </div>

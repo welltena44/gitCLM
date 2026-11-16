@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as svc from "../../services/contractService.js";
@@ -22,6 +23,11 @@ const statusLabel = (s) =>
   })[s] ||
   s ||
   "Non défini";
+const isTerminated = (status) =>
+  String(status || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase() === "RESILIE";
 export default function ManagerDeadlinesPage() {
   const [contracts, setContracts] = useState([]),
     [q, setQ] = useState(""),
@@ -61,6 +67,7 @@ export default function ManagerDeadlinesPage() {
       return { ...c, _days: days, _notice: notice, _category: category };
     })
     .filter((c) => {
+      if (isTerminated(c.statut)) return false;
       const text =
         `${c.reference || ""} ${c.objet || ""} ${c.service || ""}`.toLowerCase();
       const allowed =
@@ -97,7 +104,7 @@ export default function ManagerDeadlinesPage() {
               .catch((e) => setError(e?.message || "Erreur de chargement."))
           }
         >
-          <i className="fa-solid fa-rotate" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" /> Actualiser
         </button>
       </div>
       <div className="mgr-kpis">
@@ -117,7 +124,7 @@ export default function ManagerDeadlinesPage() {
           <strong>
             {
               contracts.filter((c) => {
-                if (!c.dateFin) return false;
+                if (isTerminated(c.statut) || !c.dateFin) return false;
                 const d = new Date(`${c.dateFin}T23:59:59`) - now;
                 return d >= 0 && d <= 30 * 86400000;
               }).length
@@ -135,7 +142,7 @@ export default function ManagerDeadlinesPage() {
         <div>
           <span>Préavis renseigné</span>
           <strong>
-            {contracts.filter((c) => Number(c.joursPreavis) > 0).length}
+            {contracts.filter((c) => !isTerminated(c.statut) && Number(c.joursPreavis) > 0).length}
           </strong>
           <small>contrats avec délai de préavis</small>
         </div>
@@ -145,7 +152,7 @@ export default function ManagerDeadlinesPage() {
           <label className="mgr-field wide">
             <span>Rechercher</span>
             <div className="mgr-search">
-              <i className="fa-solid fa-magnifying-glass" />
+              <InlineIcon className="fa-solid fa-magnifying-glass" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -174,7 +181,7 @@ export default function ManagerDeadlinesPage() {
         </div>
         {loading ? (
           <div className="mgr-state">
-            <i className="fa-solid fa-spinner fa-spin" /> Chargement des
+            <InlineIcon className="fa-solid fa-spinner fa-spin" /> Chargement des
             échéances…
           </div>
         ) : error ? (
@@ -236,7 +243,7 @@ export default function ManagerDeadlinesPage() {
                         className="mgr-contract-link"
                         to={`/gestionnaire/contrats/${c.id}`}
                       >
-                        Consulter <i className="fa-solid fa-arrow-right" />
+                        Consulter <InlineIcon className="fa-solid fa-arrow-right" />
                       </Link>
                     </td>
                   </tr>
@@ -248,7 +255,7 @@ export default function ManagerDeadlinesPage() {
           </Pagination>
         )}
         <p className="mgr-profile-note">
-          <i className="fa-solid fa-circle-info" /> Ces échéances sont calculées
+          <InlineIcon className="fa-solid fa-circle-info" /> Ces échéances sont calculées
           à partir des dates présentes en base. Pour envoyer automatiquement des
           notifications par e-mail ou générer des alertes planifiées, une tâche
           backend planifiée et des paramètres métier validés sont nécessaires.

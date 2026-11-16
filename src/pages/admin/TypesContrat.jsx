@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useState, useEffect, useCallback } from "react";
 import api from "../../services/api.js";
 import { getApiErrorMessage } from "../../services/apiError.js";
@@ -94,7 +95,7 @@ export default function TypesContrat() {
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2>
-            <i className="fa-solid fa-file-contract page-title-icon" aria-hidden="true" />
+            <InlineIcon className="fa-solid fa-file-contract page-title-icon" aria-hidden="true" />
             Gestion des types de contrats
           </h2>
           <p>Administrez les catégories et descriptions des contrats de l'entreprise.</p>
@@ -114,7 +115,7 @@ export default function TypesContrat() {
               gap: "8px",
             }}
           >
-            <i className="fa-solid fa-plus"></i> Créer un type
+            <InlineIcon className="fa-solid fa-plus"></InlineIcon> Créer un type
           </button>
         </div>
       </div>
@@ -196,7 +197,7 @@ export default function TypesContrat() {
                       }}
                       title="Modifier"
                     >
-                      <i className="fa-solid fa-pen-to-square"></i>
+                      <InlineIcon className="fa-solid fa-pen-to-square"></InlineIcon>
                     </button>
                     <button
                       onClick={() => handleDelete(t.id)}
@@ -209,7 +210,7 @@ export default function TypesContrat() {
                       }}
                       title="Supprimer"
                     >
-                      <i className="fa-solid fa-trash"></i>
+                      <InlineIcon className="fa-solid fa-trash"></InlineIcon>
                     </button>
                   </td>
                 </tr>

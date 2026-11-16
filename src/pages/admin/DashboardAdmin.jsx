@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api.js";
@@ -58,11 +59,11 @@ export default function DashboardAdmin() {
       <header className="admin-home-heading">
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
-          <h2><i className="fa-solid fa-gauge-high" aria-hidden="true" /> Tableau de bord ADMIN</h2>
+          <h2><InlineIcon className="fa-solid fa-gauge-high" aria-hidden="true" /> Tableau de bord ADMIN</h2>
           <p>Suivi des comptes, des circuits de validation et des opérations à traiter.</p>
         </div>
         <button type="button" onClick={load} disabled={loading}>
-          <i className="fa-solid fa-rotate" aria-hidden="true" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" aria-hidden="true" /> Actualiser
         </button>
       </header>
 
@@ -78,23 +79,23 @@ export default function DashboardAdmin() {
 
           <section className="admin-home-columns">
             <div className="admin-home-panel">
-              <h3><i className="fa-solid fa-list-check" aria-hidden="true" /> Actions à suivre</h3>
+              <h3><InlineIcon className="fa-solid fa-list-check" aria-hidden="true" /> Actions à suivre</h3>
               <ul className="admin-home-actions">
                 <li><span>{data.resetRequests.length} demande(s) de réinitialisation à traiter</span><Link to="/admin/notifications">Consulter</Link></li>
                 <li><span>{metrics.pendingValidations.length} validation(s) en attente</span><Link to="/admin/validations">Voir les validations</Link></li>
                 <li><span>{metrics.draftContracts} contrat(s) au statut brouillon</span><Link to="/admin/contrats">Consulter les contrats</Link></li>
                 <li><span>{metrics.inactiveUsers} compte(s) désactivé(s)</span><Link to="/admin/users">Gérer les utilisateurs</Link></li>
-                <li><span>{metrics.sansRegles.length} contrat(s) sans règles de validation</span><Link to="/admin/contrats">Configurer les seuils</Link></li>
+                <li><span>{metrics.sansRegles.length} contrat(s) sans règles de validation</span><span className="admin-home-action-links"><Link to="/admin/regles">Configurer les seuils</Link><Link to="/admin/contrats?sansRegles=1">Consulter</Link></span></li>
               </ul>
             </div>
             <div className="admin-home-panel">
-              <h3><i className="fa-solid fa-screwdriver-wrench" aria-hidden="true" /> Administration</h3>
+              <h3><InlineIcon className="fa-solid fa-screwdriver-wrench" aria-hidden="true" /> Administration</h3>
               <div className="admin-home-links">
-                <Link to="/admin/users"><i className="fa-solid fa-users" aria-hidden="true" /> Utilisateurs <small>{data.users.length}</small></Link>
-                <Link to="/admin/types-contrat"><i className="fa-solid fa-folder-tree" aria-hidden="true" /> Types de contrat <small>{data.types.length}</small></Link>
-                <Link to="/admin/regles"><i className="fa-solid fa-scale-balanced" aria-hidden="true" /> Règles de validation</Link>
-                <Link to="/admin/alertes"><i className="fa-solid fa-bell" aria-hidden="true" /> Paramètres des alertes</Link>
-                <Link to="/admin/journaux"><i className="fa-solid fa-clipboard-list" aria-hidden="true" /> Journaux d’audit</Link>
+                <Link to="/admin/users"><InlineIcon className="fa-solid fa-users" aria-hidden="true" /> Utilisateurs <small>{data.users.length}</small></Link>
+                <Link to="/admin/types-contrat"><InlineIcon className="fa-solid fa-folder-tree" aria-hidden="true" /> Types de contrat <small>{data.types.length}</small></Link>
+                <Link to="/admin/regles"><InlineIcon className="fa-solid fa-scale-balanced" aria-hidden="true" /> Règles de validation</Link>
+                <Link to="/admin/alertes"><InlineIcon className="fa-solid fa-bell" aria-hidden="true" /> Paramètres des alertes</Link>
+                <Link to="/admin/journaux"><InlineIcon className="fa-solid fa-clipboard-list" aria-hidden="true" /> Journaux d’audit</Link>
               </div>
             </div>
           </section>

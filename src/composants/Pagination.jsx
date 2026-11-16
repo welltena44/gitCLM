@@ -1,3 +1,4 @@
+import InlineIcon from "./InlineIcon.jsx";
 import { useEffect, useState } from "react";
 import "./Pagination.css";
 
@@ -51,7 +52,7 @@ export default function Pagination({ items, resetKey, children }) {
               disabled={page === 1}
               onClick={() => setPage((current) => current - 1)}
             >
-              <i className="fa-solid fa-chevron-left" aria-hidden="true" />
+              <InlineIcon className="fa-solid fa-chevron-left" aria-hidden="true" />
             </button>
             <span>
               Page {page} / {pageCount}
@@ -63,7 +64,7 @@ export default function Pagination({ items, resetKey, children }) {
               disabled={page >= pageCount}
               onClick={() => setPage((current) => current + 1)}
             >
-              <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+              <InlineIcon className="fa-solid fa-chevron-right" aria-hidden="true" />
             </button>
           </div>
         </nav>

@@ -1,3 +1,4 @@
+import InlineIcon from "../composants/InlineIcon.jsx";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Pagination from "../composants/Pagination.jsx";
@@ -142,7 +143,7 @@ export default function EngagementDashboard({
             {isAdmin ? "PILOTAGE GLOBAL" : "SURVEILLANCE CONTRACTUELLE"}
           </span>
           <h2>
-            <i
+            <InlineIcon
               className={`fa-solid ${isAdmin ? "fa-chart-line" : "fa-scale-balanced"} page-title-icon`}
               aria-hidden="true"
             />
@@ -161,7 +162,7 @@ export default function EngagementDashboard({
           onClick={onRefresh}
           aria-label="Actualiser le tableau de bord"
         >
-          <i className="fa-solid fa-rotate" /> Actualiser
+          <InlineIcon className="fa-solid fa-rotate" /> Actualiser
         </button>
       </header>
       {error && (
@@ -292,7 +293,7 @@ export default function EngagementDashboard({
             </p>
           </div>
           <Link to={portfolioPath}>
-            Voir le portefeuille <i className="fa-solid fa-arrow-right" />
+            Voir le portefeuille <InlineIcon className="fa-solid fa-arrow-right" />
           </Link>
         </div>
         <Pagination items={upcoming} resetKey={deadlineDays}>
@@ -352,7 +353,7 @@ export default function EngagementDashboard({
             </p>
           </div>
           <Link to={reviewPath}>
-            Ouvrir les validations <i className="fa-solid fa-arrow-right" />
+            Ouvrir les validations <InlineIcon className="fa-solid fa-arrow-right" />
           </Link>
         </div>
         <Pagination items={legalReviewContracts}>

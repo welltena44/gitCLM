@@ -1,3 +1,4 @@
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -43,7 +44,7 @@ export default function Dashboard() {
     <div className="role-dashboard legal-dashboard">
       <section className="role-welcome">
         <div className="role-welcome-icon">
-          <i className="fa-solid fa-scale-balanced" aria-hidden="true" />
+          <InlineIcon className="fa-solid fa-scale-balanced" aria-hidden="true" />
         </div>
         <div>
           <span>ESPACE JURIDIQUE / ACHATS</span>
@@ -51,7 +52,7 @@ export default function Dashboard() {
           <p>Suivez les validations qui attendent votre examen.</p>
         </div>
         <button className="legal-dashboard-refresh" type="button" onClick={load} disabled={loading}>
-          <i className={`fa-solid ${loading ? "fa-spinner fa-spin" : "fa-rotate"}`} aria-hidden="true" />
+          <InlineIcon className={`fa-solid ${loading ? "fa-spinner fa-spin" : "fa-rotate"}`} aria-hidden="true" />
           Actualiser
         </button>
       </section>
@@ -65,7 +66,7 @@ export default function Dashboard() {
             <p>{loading ? "Chargement…" : `${pending.length} dossier(s) à traiter`}</p>
           </div>
           <Link to="/juridique/validations">
-            Ouvrir toutes les validations <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+            Ouvrir toutes les validations <InlineIcon className="fa-solid fa-arrow-right" aria-hidden="true" />
           </Link>
         </header>
         {loading ? (
@@ -81,14 +82,14 @@ export default function Dashboard() {
                   to={`/juridique/validations?contratId=${validation.contratId}`}
                 >
                   <span className="legal-dashboard-item-icon">
-                    <i className="fa-solid fa-file-signature" aria-hidden="true" />
+                    <InlineIcon className="fa-solid fa-file-signature" aria-hidden="true" />
                   </span>
                   <span className="legal-dashboard-item-copy">
                     <strong>{contract?.reference || `Contrat #${validation.contratId}`}</strong>
                     <small>{contract?.objet || "Dossier contractuel"}</small>
                   </span>
                   <span className="legal-dashboard-level">Niveau {validation.niveau}</span>
-                  <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                  <InlineIcon className="fa-solid fa-arrow-right" aria-hidden="true" />
                 </Link>
               );
             })}

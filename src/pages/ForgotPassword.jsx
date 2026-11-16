@@ -1,3 +1,4 @@
+import InlineIcon from "../composants/InlineIcon.jsx";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api.js";
@@ -53,14 +54,14 @@ export default function ForgotPassword() {
             <div className="auth-header-light">
               <span className="auth-eyebrow">ESPACE CLM</span>
               <h2>
-                <i className="fa-solid fa-key" aria-hidden="true" /> Mot de
+                <InlineIcon className="fa-solid fa-key" aria-hidden="true" /> Mot de
                 passe oublié
               </h2>
               <p>Envoyez une demande à l’administrateur de la plateforme.</p>
             </div>
             {message ? (
               <div role="status" className="auth-success-msg">
-                <i className="fa-solid fa-circle-check" aria-hidden="true" />
+                <InlineIcon className="fa-solid fa-circle-check" aria-hidden="true" />
                 {message}
               </div>
             ) : (
@@ -68,7 +69,7 @@ export default function ForgotPassword() {
                 <label className="auth-field">
                   <span>Matricule</span>
                   <div className="auth-input-box">
-                    <i className="fa-solid fa-id-card" aria-hidden="true" />
+                    <InlineIcon className="fa-solid fa-id-card" aria-hidden="true" />
                     <input
                       type="text"
                       value={matricule}
@@ -97,7 +98,7 @@ export default function ForgotPassword() {
             )}
             <p className="auth-return-link">
               <Link to="/login">
-                <i className="fa-solid fa-arrow-left" aria-hidden="true" />{" "}
+                <InlineIcon className="fa-solid fa-arrow-left" aria-hidden="true" />{" "}
                 Retour à la connexion
               </Link>
             </p>

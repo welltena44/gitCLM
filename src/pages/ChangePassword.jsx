@@ -1,3 +1,4 @@
+import InlineIcon from "../composants/InlineIcon.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -73,7 +74,7 @@ export default function ChangePassword() {
         <section className="password-change-content">
           <div className="password-change-card">
             <div className="password-change-icon">
-              <i className="fa-solid fa-shield-halved" aria-hidden="true" />
+              <InlineIcon className="fa-solid fa-shield-halved" aria-hidden="true" />
             </div>
             <span className="password-change-eyebrow">
               Sécurisation du compte
@@ -87,7 +88,7 @@ export default function ChangePassword() {
               <label>
                 <span>Mot de passe provisoire</span>
                 <div className="password-change-input">
-                  <i className="fa-solid fa-lock" aria-hidden="true" />
+                  <InlineIcon className="fa-solid fa-lock" aria-hidden="true" />
                   <input
                     required
                     type="password"
@@ -101,7 +102,7 @@ export default function ChangePassword() {
               <label>
                 <span>Nouveau mot de passe</span>
                 <div className="password-change-input">
-                  <i className="fa-solid fa-key" aria-hidden="true" />
+                  <InlineIcon className="fa-solid fa-key" aria-hidden="true" />
                   <input
                     required
                     minLength={8}
@@ -118,7 +119,7 @@ export default function ChangePassword() {
                 <div
                   className={`password-change-input ${confirm.length ? (passwordsMatch ? "is-valid" : "is-invalid") : ""}`}
                 >
-                  <i className="fa-solid fa-check-double" aria-hidden="true" />
+                  <InlineIcon className="fa-solid fa-check-double" aria-hidden="true" />
                   <input
                     required
                     minLength={8}
@@ -145,7 +146,7 @@ export default function ChangePassword() {
               </label>
               {error && (
                 <p className="password-change-error" role="alert">
-                  <i
+                  <InlineIcon
                     className="fa-solid fa-circle-exclamation"
                     aria-hidden="true"
                   />
@@ -155,12 +156,12 @@ export default function ChangePassword() {
               <button className="password-change-submit" disabled={saving}>
                 {saving ? (
                   <>
-                    <i className="fa-solid fa-spinner fa-spin" />{" "}
+                    <InlineIcon className="fa-solid fa-spinner fa-spin" />{" "}
                     Enregistrement…
                   </>
                 ) : (
                   <>
-                    <i className="fa-solid fa-check" /> Enregistrer le nouveau
+                    <InlineIcon className="fa-solid fa-check" /> Enregistrer le nouveau
                     mot de passe
                   </>
                 )}
@@ -175,7 +176,7 @@ export default function ChangePassword() {
               </button>
             </form>
             <div className="password-change-note">
-              <i className="fa-solid fa-circle-info" aria-hidden="true" />{" "}
+              <InlineIcon className="fa-solid fa-circle-info" aria-hidden="true" />{" "}
               Choisissez un mot de passe d’au moins 8 caractères.
             </div>
           </div>
