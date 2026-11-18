@@ -380,6 +380,115 @@
   background: #eaf6ff;
 }
 
+.version-comparison {
+  margin-top: 24px;
+}
+
+.version-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.version-compare-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d6e0e8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.version-compare-heading {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #d6e0e8;
+  background: #f2f6f7;
+}
+
+.version-compare-heading span {
+  color: #176b70;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.version-compare-heading h4 {
+  margin: 4px 0 0;
+  color: #172b35;
+  font-size: 16px;
+}
+
+.version-compare-heading small {
+  color: #5b6d75;
+  text-align: right;
+}
+
+.version-compare-fields {
+  margin: 0;
+}
+
+.version-compare-field {
+  min-width: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8edf0;
+}
+
+.version-compare-field:last-child {
+  border-bottom: 0;
+}
+
+.version-compare-field.changed {
+  border-left: 3px solid #bf7a16;
+  background: #fff8e9;
+  padding-left: 13px;
+}
+
+.version-compare-field dt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #334b55;
+  font-size: 13px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.version-change-badge {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #f5e3bf;
+  color: #744507;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.version-compare-field dd {
+  margin: 8px 0 0;
+  color: #243941;
+}
+
+.version-compare-field pre {
+  max-width: 100%;
+  margin: 0;
+  overflow: auto;
+  font: inherit;
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.version-compare-field.changed pre {
+  padding: 8px;
+  border-radius: 4px;
+  background: #fff0d0;
+}
+
 .admin-data-page .notification-target td,
 .admin-data-page .notification-target {
   animation: admin-related-highlight 2.4s ease-out;
@@ -405,5 +514,9 @@
 
   .version-recap-grid {
     min-width: min(420px, 78vw);
+  }
+
+  .version-compare-grid {
+    grid-template-columns: 1fr;
   }
 }

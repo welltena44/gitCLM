@@ -549,6 +549,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
   const [docCategory, setDocCategory] = useState("JUSTIFICATIF");
   const [docs, setDocs] = useState([]),
     [parties, setParties] = useState([]),
+    [partyRoles, setPartyRoles] = useState([]),
     [amendments, setAmendments] = useState([]),
     [validations, setValidations] = useState([]),
     [obligations, setObligations] = useState([]),
@@ -590,6 +591,16 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
       ]);
       setDocs(d || []);
       setParties(p || []);
+      try {
+        const allParties = await api.get("/parties-contrat").then((response) => response.data);
+        setPartyRoles(
+          [...new Set((allParties || []).map((party) => party.type).filter(Boolean))]
+            .filter((role) => !["COCONTRACTANT", "FOURNISSEUR", "CLIENT", "PARTENAIRE", "SOUS-TRAITANT"].includes(role))
+            .sort((a, b) => a.localeCompare(b, "fr")),
+        );
+      } catch {
+        // Les rôles prédéfinis et ceux du contrat courant restent disponibles.
+      }
       setAmendments(a || []);
       setValidations(v || []);
       setObligations(o || []);
@@ -676,10 +687,16 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     e.preventDefault();
     toast("Ajout de la partie en cours…", "info");
     try {
-      await svc.createParty({ ...partyForm, contratId: c.id });
+      const { typePersonnalise, ...party } = partyForm;
+      await svc.createParty({
+        ...party,
+        type: party.type === "AUTRE" ? typePersonnalise.trim() : party.type,
+        contratId: c.id,
+      });
       setPartyForm({
         nom: "",
         type: "COCONTRACTANT",
+        typePersonnalise: "",
         email: "",
         telephone: "",
       });
@@ -807,7 +824,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     catch (e) { toast(errMessage(e), "error"); }
   };
   return (
-    <div className="mgr-page">
+    <div className={`mgr-page mgr-contract-details${c.statut === "BROUILLON" ? " is-draft" : ""}`}>
       <div className="mgr-page-head">
         <div>
           <button
@@ -991,8 +1008,28 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
                 <option>CLIENT</option>
                 <option>PARTENAIRE</option>
                 <option>SOUS-TRAITANT</option>
+                {partyRoles
+                  .filter((role) => role !== "AUTRE")
+                  .map((role) => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                <option value="AUTRE">Autre</option>
               </select>
             </label>
+            {partyForm.type === "AUTRE" && (
+              <label className="mgr-field">
+                <span>Précisez le rôle *</span>
+                <input
+                  required
+                  maxLength="100"
+                  value={partyForm.typePersonnalise || ""}
+                  onChange={(e) =>
+                    setPartyForm({ ...partyForm, typePersonnalise: e.target.value })
+                  }
+                  placeholder="Saisir le rôle"
+                />
+              </label>
+            )}
             <label className="mgr-field">
               <span>Email</span>
               <input
