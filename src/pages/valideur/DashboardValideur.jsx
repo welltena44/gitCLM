@@ -60,7 +60,6 @@ export default function DashboardValideur() {
             <InlineIcon className="fa-solid fa-clipboard-check page-title-icon" />
             Tableau de bord
           </h2>
-          <p>Vue d'ensemble de votre activité de validation.</p>
         </div>
       </header>
       {error && <p role="alert" className="validation-error">{error}</p>}

@@ -71,14 +71,14 @@ export const markNotificationRead = (id) =>
   api.put(`/notifications/${id}/lu`).then(unwrap);
 export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
 
-// --- Méthodes d'Automatisation et Actions Express ---
+export const renewContract = (contratId, dateDebut, dateFin) =>
+  api.post("/contrats/" + contratId + "/renouveler", { dateDebut, dateFin }).then(unwrap);
+
+// Compatibilité avec le raccourci de renouvellement du tableau de bord.
 export const quickRenewContract = async (contratId, newFinDate) => {
-  const contract = await getContract(contratId);
-  return updateContract(contratId, {
-    ...contract,
-    dateFin: newFinDate,
-    statut: "ACTIF"
-  });
+  const today = new Date();
+  const dateDebut = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+  return renewContract(contratId, dateDebut, newFinDate);
 };
 
 // Lecture réelle du PDF côté serveur (POST /api/contrats/extraire-pdf).

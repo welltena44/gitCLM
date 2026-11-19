@@ -174,7 +174,6 @@ export default function Validation() {
         <div>
           <span className="role-welcome-eyebrow">ESPACE VALIDEUR</span>
           <h2>{isHistory ? "Mes validations" : "Contrats à examiner"}</h2>
-          <p>Traitez les validations en attente ou consultez votre historique.</p>
         </div>
         <button onClick={load} disabled={loading}>Actualiser</button>
       </div>

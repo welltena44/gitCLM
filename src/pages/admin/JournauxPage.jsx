@@ -234,7 +234,6 @@ export default function JournauxPage() {
             <InlineIcon className="fa-solid fa-clipboard-list page-title-icon" aria-hidden="true" />
             Journaux d’audit
           </h2>
-          <p>Recherche multicritère et export des actions enregistrées sur la plateforme.</p>
         </div>
         <div className="admin-page-actions">
           <button type="button" onClick={load} disabled={loading}>

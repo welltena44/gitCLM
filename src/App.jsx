@@ -30,6 +30,7 @@ import ChangePassword from "./pages/ChangePassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ContractsReadOnly from "./pages/admin/ContractsReadOnly.jsx";
 import LegalPages from "./pages/juridique/LegalPages.jsx";
+import DashboardJuridique from "./pages/juridique/DashboardJuridique.jsx";
 import AdminNotificationsPage from "./pages/admin/NotificationsPage.jsx";
 
 export default function App() {
@@ -82,7 +83,7 @@ export default function App() {
           </Route>
           <Route element={<ProtectedRoute roles={["JURIDIQUE"]} />}>
             <Route path="/juridique" element={<JuridiqueLayout />}>
-              <Route index element={<LegalPages />} />
+              <Route index element={<DashboardJuridique />} />
               <Route path="contrats" element={<LegalPages />} />
               <Route path="regles" element={<LegalPages />} />
               <Route path="validations" element={<LegalPages />} />

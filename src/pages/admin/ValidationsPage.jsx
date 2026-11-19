@@ -1,21 +1,329 @@
 import InlineIcon from "../../composants/InlineIcon.jsx";
-import { useCallback,useEffect,useMemo,useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../services/api.js";
 import Pagination from "../../composants/Pagination.jsx";
 import { getApiErrorMessage } from "../../services/apiError.js";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
 import "./DashboardAdmin.css";
-const date=v=>v?new Date(v).toLocaleString("fr-FR"):"—";
-const decisions={EN_ATTENTE:"En attente",A_VENIR:"À venir",NON_REQUISE:"Non requise",APPROUVE:"Approuvé",REJETE:"Rejeté",MODIFICATION_DEMANDEE:"Modification demandée"};
-export default function ValidationsPage(){const [params]=useSearchParams(),target=params.get("contratId"),{toast}=useFeedback();const [rows,setRows]=useState([]),[contracts,setContracts]=useState([]),[users,setUsers]=useState([]),[query,setQuery]=useState(""),[decision,setDecision]=useState(""),[level,setLevel]=useState(""),[error,setError]=useState(""),[loading,setLoading]=useState(true),[assigning,setAssigning]=useState(null),[newValidator,setNewValidator]=useState(""),[busy,setBusy]=useState(false);
- const load=useCallback(async()=>{setLoading(true);setError("");try{const [v,c,u]=await Promise.all([api.get("/validations"),api.get("/contrats"),api.get("/utilisateurs")]);setRows(Array.isArray(v.data)?v.data:[]);setContracts(Array.isArray(c.data)?c.data:[]);setUsers(Array.isArray(u.data)?u.data:[]);}catch(e){setError(getApiErrorMessage(e,"Impossible de charger l’historique des validations."));}finally{setLoading(false)}},[]);useEffect(()=>{load()},[load]);
- const user=id=>users.find(u=>String(u.id)===String(id));const personLabel=id=>{const person=user(id);return person?(person.matricule||[person.prenom,person.nom].filter(Boolean).join(" ")||`Compte #${person.id}`):id?`Compte #${id}`:"—"};const contract=id=>contracts.find(c=>String(c.id)===String(id));const levels=[...new Set(rows.map(r=>r.niveau).filter(v=>v!=null))].sort((a,b)=>Number(a)-Number(b));
- const filtered=useMemo(()=>rows.filter(r=>{const c=contracts.find(x=>String(x.id)===String(r.contratId));const q=query.trim().toLocaleLowerCase("fr");const hay=[c?.reference,c?.objet,r.contratId,user(r.demandeurId)?.matricule,user(r.valideurId)?.matricule,decisions[r.decision]||r.decision,r.niveau,r.cycle,r.commentaire].filter(Boolean).join(" ").toLocaleLowerCase("fr");return(!q||hay.includes(q))&&(!decision||r.decision===decision)&&(!level||String(r.niveau)===level)}),[rows,contracts,users,query,decision,level]);
- const reassign=async()=>{if(!assigning||!newValidator)return;setBusy(true);setError("");try{await api.post(`/validations/${assigning.id}/reattribuer`,{valideurId:Number(newValidator)});toast("Validation réattribuée.");setAssigning(null);setNewValidator("");await load()}catch(e){setError(getApiErrorMessage(e,"Impossible de réattribuer cette validation."))}finally{setBusy(false)}};
- const eligible=users.filter(u=>u.actif!==false&&["VALIDEUR","JURIDIQUE"].includes(String(u.role||"").toUpperCase()));
- return <div className="admin-data-page"><div className="admin-data-toolbar"><div><span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span><h2><InlineIcon className="fa-solid fa-clipboard-check page-title-icon"/> Historique des validations</h2><p>Consultation des décisions. La réattribution change uniquement le valideur assigné ; l’administrateur ne prend pas la décision métier.</p></div><div><span>{filtered.length} décision(s) </span><button type="button" onClick={load} disabled={loading}>Actualiser</button></div></div>
- <div className="mgr-filter-grid"><label className="mgr-field wide"><span>Recherche</span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Contrat, matricule, commentaire…"/></label><label className="mgr-field"><span>Décision</span><select value={decision} onChange={e=>setDecision(e.target.value)}><option value="">Toutes</option>{Object.entries(decisions).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label><label className="mgr-field"><span>Niveau</span><select value={level} onChange={e=>setLevel(e.target.value)}><option value="">Tous les niveaux</option>{levels.map(v=><option key={v} value={v}>{v}</option>)}</select></label></div>
- {target&&<p className="admin-info-panel">Les validations du contrat {contract(target)?.reference||`#${target}`} sont incluses dans les résultats.</p>}{error&&<p role="alert" className="admin-error">{error}</p>}{loading?<p className="admin-empty">Chargement…</p>:<Pagination items={filtered} resetKey={`${query}:${decision}:${level}:${target||""}`}>{visible=><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Contrat</th><th>Demandeur</th><th>Valideur assigné</th><th>Niveau / cycle</th><th>Décision</th><th>Soumis le</th><th>Traité le</th><th>Commentaire</th><th>Action</th></tr></thead><tbody>{visible.map(v=>{const c=contract(v.contratId);return <tr key={v.id} className={String(v.contratId)===target?"notification-target":""}><td><strong>{c?.reference||`Contrat #${v.contratId}`}</strong><small>{c?.objet||""}</small></td><td>{personLabel(v.demandeurId)}</td><td>{v.valideurId?personLabel(v.valideurId):`À attribuer · ${v.roleRequis||"rôle non précisé"}`}</td><td>{v.niveau??"—"} / {v.cycle??"—"}</td><td><span className={`admin-decision ${v.decision==="EN_ATTENTE"?"pending":v.decision==="APPROUVE"?"approved":v.decision==="REJETE"?"rejected":"neutral"}`}>{decisions[v.decision]||v.decision||"—"}</span></td><td>{date(v.dateSoumission)}</td><td>{date(v.dateValidation)}</td><td>{v.commentaire||"—"}</td><td>{v.decision==="EN_ATTENTE"&&<button type="button" onClick={()=>{setAssigning(v);setNewValidator(String(v.valideurId||""))}}>Réattribuer</button>}</td></tr>})}{!visible.length&&<tr><td colSpan="9" className="admin-empty">Aucune validation ne correspond aux filtres.</td></tr>}</tbody></table></div>}</Pagination>}
- {assigning&&<div className="admin-modal-backdrop"><section role="dialog" aria-modal="true" className="admin-detail-modal"><header><h3>Réattribuer la validation #{assigning.id}</h3><button type="button" onClick={()=>setAssigning(null)}>✕</button></header><p>Cette opération ne valide ni ne rejette le contrat.</p><label className="mgr-field"><span>Nouveau valideur</span><select value={newValidator} onChange={e=>setNewValidator(e.target.value)}><option value="">Sélectionner un valideur</option>{eligible.map(u=><option key={u.id} value={u.id}>{u.matricule||u.nom||`Compte #${u.id}`} — {u.role}</option>)}</select></label><footer><button type="button" onClick={()=>setAssigning(null)} disabled={busy}>Annuler</button><button type="button" onClick={reassign} disabled={busy||!newValidator}>{busy?"Enregistrement…":"Confirmer la réattribution"}</button></footer></section></div>}
- </div>}
+const date = (v) => (v ? new Date(v).toLocaleString("fr-FR") : "—");
+const decisions = {
+  EN_ATTENTE: "En attente",
+  A_VENIR: "À venir",
+  NON_REQUISE: "Non requise",
+  APPROUVE: "Approuvé",
+  REJETE: "Rejeté",
+  MODIFICATION_DEMANDEE: "Modification demandée",
+};
+export default function ValidationsPage() {
+  const [params] = useSearchParams(),
+    target = params.get("contratId"),
+    { toast } = useFeedback();
+  const [rows, setRows] = useState([]),
+    [contracts, setContracts] = useState([]),
+    [users, setUsers] = useState([]),
+    [query, setQuery] = useState(""),
+    [decision, setDecision] = useState(""),
+    [level, setLevel] = useState(""),
+    [error, setError] = useState(""),
+    [loading, setLoading] = useState(true),
+    [assigning, setAssigning] = useState(null),
+    [newValidator, setNewValidator] = useState(""),
+    [busy, setBusy] = useState(false);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [v, c, u] = await Promise.all([
+        api.get("/validations"),
+        api.get("/contrats"),
+        api.get("/utilisateurs"),
+      ]);
+      setRows(Array.isArray(v.data) ? v.data : []);
+      setContracts(Array.isArray(c.data) ? c.data : []);
+      setUsers(Array.isArray(u.data) ? u.data : []);
+    } catch (e) {
+      setError(
+        getApiErrorMessage(
+          e,
+          "Impossible de charger l’historique des validations.",
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+  const user = (id) => users.find((u) => String(u.id) === String(id));
+  const personLabel = (id) => {
+    const person = user(id);
+    return person
+      ? person.matricule ||
+          [person.prenom, person.nom].filter(Boolean).join(" ") ||
+          `Compte #${person.id}`
+      : id
+        ? `Compte #${id}`
+        : "—";
+  };
+  const contract = (id) => contracts.find((c) => String(c.id) === String(id));
+  const levels = [
+    ...new Set(rows.map((r) => r.niveau).filter((v) => v != null)),
+  ].sort((a, b) => Number(a) - Number(b));
+  const filtered = useMemo(
+    () =>
+      rows.filter((r) => {
+        const c = contracts.find((x) => String(x.id) === String(r.contratId));
+        const q = query.trim().toLocaleLowerCase("fr");
+        const hay = [
+          c?.reference,
+          c?.objet,
+          r.contratId,
+          user(r.demandeurId)?.matricule,
+          user(r.valideurId)?.matricule,
+          decisions[r.decision] || r.decision,
+          r.niveau,
+          r.cycle,
+          r.commentaire,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase("fr");
+        return (
+          (!q || hay.includes(q)) &&
+          (!decision || r.decision === decision) &&
+          (!level || String(r.niveau) === level)
+        );
+      }),
+    [rows, contracts, users, query, decision, level],
+  );
+  const reassign = async () => {
+    if (!assigning || !newValidator) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api.post(`/validations/${assigning.id}/reattribuer`, {
+        valideurId: Number(newValidator),
+      });
+      toast("Validation réattribuée.");
+      setAssigning(null);
+      setNewValidator("");
+      await load();
+    } catch (e) {
+      setError(
+        getApiErrorMessage(e, "Impossible de réattribuer cette validation."),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+  const eligible = users.filter(
+    (u) =>
+      u.actif !== false &&
+      ["VALIDEUR", "JURIDIQUE"].includes(String(u.role || "").toUpperCase()),
+  );
+  return (
+    <div className="admin-data-page">
+      <div className="admin-data-toolbar">
+        <div>
+          <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
+          <h2>
+            <InlineIcon className="fa-solid fa-clipboard-check page-title-icon" />{" "}
+            Historique des validations
+          </h2>
+        </div>
+        <div>
+          <span>{filtered.length} décision(s) </span>
+          <button type="button" onClick={load} disabled={loading}>
+            Actualiser
+          </button>
+        </div>
+      </div>
+      <div className="mgr-filter-grid">
+        <label className="mgr-field wide">
+          <span>Recherche</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Contrat, matricule, commentaire…"
+          />
+        </label>
+        <label className="mgr-field">
+          <span>Décision</span>
+          <select
+            value={decision}
+            onChange={(e) => setDecision(e.target.value)}
+          >
+            <option value="">Toutes</option>
+            {Object.entries(decisions).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="mgr-field">
+          <span>Niveau</span>
+          <select value={level} onChange={(e) => setLevel(e.target.value)}>
+            <option value="">Tous les niveaux</option>
+            {levels.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {target && (
+        <p className="admin-info-panel">
+          Les validations du contrat{" "}
+          {contract(target)?.reference || `#${target}`} sont incluses dans les
+          résultats.
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="admin-error">
+          {error}
+        </p>
+      )}
+      {loading ? (
+        <p className="admin-empty">Chargement…</p>
+      ) : (
+        <Pagination
+          items={filtered}
+          resetKey={`${query}:${decision}:${level}:${target || ""}`}
+        >
+          {(visible) => (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Contrat</th>
+                    <th>Demandeur</th>
+                    <th>Valideur assigné</th>
+                    <th>Niveau / cycle</th>
+                    <th>Décision</th>
+                    <th>Soumis le</th>
+                    <th>Traité le</th>
+                    <th>Commentaire</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((v) => {
+                    const c = contract(v.contratId);
+                    return (
+                      <tr
+                        key={v.id}
+                        className={
+                          String(v.contratId) === target
+                            ? "notification-target"
+                            : ""
+                        }
+                      >
+                        <td>
+                          <strong>
+                            {c?.reference || `Contrat #${v.contratId}`}
+                          </strong>
+                          <small>{c?.objet || ""}</small>
+                        </td>
+                        <td>{personLabel(v.demandeurId)}</td>
+                        <td>
+                          {v.valideurId
+                            ? personLabel(v.valideurId)
+                            : `À attribuer · ${v.roleRequis || "rôle non précisé"}`}
+                        </td>
+                        <td>
+                          {v.niveau ?? "—"} / {v.cycle ?? "—"}
+                        </td>
+                        <td>
+                          <span
+                            className={`admin-decision ${v.decision === "EN_ATTENTE" ? "pending" : v.decision === "APPROUVE" ? "approved" : v.decision === "REJETE" ? "rejected" : "neutral"}`}
+                          >
+                            {decisions[v.decision] || v.decision || "—"}
+                          </span>
+                        </td>
+                        <td>{date(v.dateSoumission)}</td>
+                        <td>{date(v.dateValidation)}</td>
+                        <td>{v.commentaire || "—"}</td>
+                        <td>
+                          {v.decision === "EN_ATTENTE" && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAssigning(v);
+                                setNewValidator(String(v.valideurId || ""));
+                              }}
+                            >
+                              Réattribuer
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!visible.length && (
+                    <tr>
+                      <td colSpan="9" className="admin-empty">
+                        Aucune validation ne correspond aux filtres.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Pagination>
+      )}
+      {assigning && (
+        <div className="admin-modal-backdrop">
+          <section
+            role="dialog"
+            aria-modal="true"
+            className="admin-detail-modal"
+          >
+            <header>
+              <h3>Réattribuer la validation #{assigning.id}</h3>
+              <button type="button" onClick={() => setAssigning(null)}>
+                ✕
+              </button>
+            </header>
+            <p>Cette opération ne valide ni ne rejette le contrat.</p>
+            <label className="mgr-field">
+              <span>Nouveau valideur</span>
+              <select
+                value={newValidator}
+                onChange={(e) => setNewValidator(e.target.value)}
+              >
+                <option value="">Sélectionner un valideur</option>
+                {eligible.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.matricule || u.nom || `Compte #${u.id}`} — {u.role}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <footer>
+              <button
+                type="button"
+                onClick={() => setAssigning(null)}
+                disabled={busy}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={reassign}
+                disabled={busy || !newValidator}
+              >
+                {busy ? "Enregistrement…" : "Confirmer la réattribution"}
+              </button>
+            </footer>
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}

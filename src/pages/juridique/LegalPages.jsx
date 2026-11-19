@@ -14,7 +14,6 @@ import {
 } from "../../services/contractService.js";
 import Pagination from "../../composants/Pagination.jsx";
 import { useFeedback } from "../../composants/FeedbackContext.jsx";
-import EngagementDashboard from "../EngagementDashboard.jsx";
 import "./LegalPages.css";
 
 const formatDate = (value) =>
@@ -475,21 +474,6 @@ function LegalReviewDialog({
   );
 }
 
-function LegalDashboard({ data, loading, error, load }) {
-  return (
-    <EngagementDashboard
-      role="JURIDIQUE"
-      contracts={data.contracts}
-      types={data.types}
-      validations={data.validations}
-      users={data.users}
-      loading={loading}
-      error={error}
-      onRefresh={load}
-    />
-  );
-}
-
 function LegalRules({ data, loading, error, load }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const targetRuleId = searchParams.get("regleId");
@@ -793,8 +777,6 @@ export default function LegalPages() {
       setBusyDecision(null);
     }
   };
-  if (pathname === "/juridique" || pathname === "/juridique/")
-    return <LegalDashboard {...{ data, loading, error, load }} />;
   if (pathname === "/juridique/contrats") {
     // Recherche textuelle dans le portefeuille, puis affichage sous forme de liste.
     const list = data.contracts.filter((c) =>

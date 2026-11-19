@@ -136,7 +136,6 @@ export default function VersionsPage() {
         <div>
           <span className="admin-home-eyebrow">ESPACE ADMINISTRATEUR</span>
           <h2><InlineIcon className="fa-solid fa-clock-rotate-left page-title-icon" /> Historique des versions</h2>
-          <p>Archives conservées et comparaison de deux versions. Le contenu complet est consultable sans troncature.</p>
         </div>
         <span>{filtered.length} version(s)</span>
       </div>

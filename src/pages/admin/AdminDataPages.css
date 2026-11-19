@@ -520,3 +520,18 @@
     grid-template-columns: 1fr;
   }
 }
+.admin-contract-dashboard { margin: 1.25rem 0; }
+.admin-contract-dashboard > h3 { margin: 0 0 .75rem; }
+.admin-contract-charts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; }
+.admin-contract-chart { min-width: 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; }
+.admin-contract-chart h4 { margin: 0 0 1rem; }
+.admin-chart-layout { display: flex; align-items: center; gap: 1rem; }
+.admin-donut { flex: 0 0 112px; width: 112px; height: 112px; display: grid; place-items: center; border-radius: 50%; position: relative; }
+.admin-donut::before { content: ""; position: absolute; inset: 15px; border-radius: 50%; background: #fff; }
+.admin-donut > span { position: relative; display: grid; text-align: center; font-weight: 700; }
+.admin-donut small { font-size: .65rem; font-weight: 400; }
+.admin-chart-layout ul { list-style: none; padding: 0; margin: 0; width: 100%; display: grid; gap: .45rem; }
+.admin-chart-layout li { display: grid; grid-template-columns: 10px minmax(0,1fr) auto; align-items: center; gap: .45rem; font-size: .78rem; }
+.admin-chart-layout li i { width: 9px; height: 9px; border-radius: 50%; }
+.admin-chart-layout li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 1050px) { .admin-contract-charts { grid-template-columns: 1fr; } }

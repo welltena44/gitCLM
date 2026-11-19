@@ -83,7 +83,7 @@ export default function ParametresAlertesPage() {
             <InlineIcon className="fa-solid fa-bell page-title-icon" aria-hidden="true" />
             Paramètres des alertes d’échéance
           </h2>
-          <p>Le délai est calculé avant la date limite de préavis. Les alertes sont adressées au responsable du contrat.</p>
+          
         </div>
       </div>
       {error && (

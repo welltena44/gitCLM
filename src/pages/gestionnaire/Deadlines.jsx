@@ -87,10 +87,6 @@ export default function ManagerDeadlinesPage() {
         <div>
           <span className="mgr-page-eyebrow">ESPACE GESTIONNAIRE</span>
           <h2>Échéances et alertes</h2>
-          <p>
-            Anticipez les fins de contrat et les périodes de préavis avant
-            qu’elles ne deviennent urgentes.
-          </p>
         </div>
         <button
           className="mgr-btn secondary"

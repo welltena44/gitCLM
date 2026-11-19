@@ -1,9 +1,9 @@
-import InlineIcon from "../composants/InlineIcon.jsx";
+import InlineIcon from "../../composants/InlineIcon.jsx";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import Pagination from "../composants/Pagination.jsx";
+import Pagination from "../../composants/Pagination.jsx";
 import "./EngagementDashboard.css";
-import DashboardBarChart from "./DashboardBarChart.jsx";
+import DashboardBarChart from "../DashboardBarChart.jsx";
 
 const ACTIVE_STATUSES = ["ACTIF", "APPROUVE", "VALIDE", "SIGNE"];
 const STATUS_LABELS = {
