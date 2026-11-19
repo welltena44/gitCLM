@@ -72,12 +72,19 @@ export const markNotificationRead = (id) =>
 export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
 
 export const renewContract = (contratId, dateDebut, dateFin) =>
-  api.post("/contrats/" + contratId + "/renouveler", { dateDebut, dateFin }).then(unwrap);
+  api
+    .post("/contrats/" + contratId + "/renouveler", { dateDebut, dateFin })
+    .then(unwrap);
 
 // Compatibilité avec le raccourci de renouvellement du tableau de bord.
 export const quickRenewContract = async (contratId, newFinDate) => {
   const today = new Date();
-  const dateDebut = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+  const dateDebut =
+    today.getFullYear() +
+    "-" +
+    String(today.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(today.getDate()).padStart(2, "0");
   return renewContract(contratId, dateDebut, newFinDate);
 };
 

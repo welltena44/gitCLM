@@ -173,6 +173,19 @@ export function ManagerDocumentsPage() {
       toast(errMessage(e), "error");
     }
   };
+  const openDocument = async (d) => {
+    const tab = window.open("about:blank", "_blank");
+    if (!tab) { toast("Autorisez les fenêtres pop-up pour ouvrir le document.", "warning"); return; }
+    try {
+      const blob = await svc.downloadDocument(d.id);
+      const url = URL.createObjectURL(blob);
+      tab.location.href = url;
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) {
+      tab.close();
+      toast(errMessage(e), "error");
+    }
+  };
   return (
     <div className="mgr-page">
       <div className="mgr-page-head">
@@ -260,6 +273,9 @@ export function ManagerDocumentsPage() {
                       </td>
                       <td>{date(d.dateImport)}</td>
                       <td>
+                        <Button variant="secondary" onClick={() => openDocument(d)} title="Ouvrir dans un nouvel onglet" aria-label={`Ouvrir ${d.nomFichier || "le document"} dans un nouvel onglet`}>
+                          <InlineIcon className="fa-regular fa-eye" />
+                        </Button>{" "}
                         <Button variant="secondary" onClick={() => download(d)}>
                           <InlineIcon className="fa-solid fa-download" /> Télécharger
                         </Button>

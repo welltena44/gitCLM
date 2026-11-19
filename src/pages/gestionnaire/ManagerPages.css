@@ -131,6 +131,26 @@
   font-size: 10px;
   color: #9aa4b4;
 }
+.mgr-document-upload-controls {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mgr-document-name-field {
+  display: grid;
+  gap: 4px;
+  min-width: min(260px, 100%);
+  color: #53677e;
+  font-size: 12px;
+}
+.mgr-document-name-field input {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #d5dce7;
+  border-radius: 8px;
+  color: #13203a;
+}
 .mgr-panel {
   background: #fff;
   border: 1px solid #e5eaf2;
@@ -1050,6 +1070,14 @@
 .mgr-page.role-dashboard .mgr-kpis > div:nth-child(4) {
   --kpi-accent: #c24b45;
   --kpi-tint: #fff3f1;
+}
+.mgr-page.role-dashboard .mgr-kpis > div:nth-child(5) {
+  --kpi-accent: #087c78;
+  --kpi-tint: #edf9f7;
+}
+.mgr-page.role-dashboard .mgr-kpis > div:nth-child(5) strong {
+  font-size: 19px;
+  overflow-wrap: anywhere;
 }
 .mgr-page.role-dashboard .mgr-kpis > div strong {
   color: var(--kpi-accent);

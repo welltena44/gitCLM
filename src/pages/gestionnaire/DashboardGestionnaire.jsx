@@ -78,6 +78,15 @@ export default function DashboardGestionnaire() {
   const unread = notifications.filter(
     (notification) => !notification.lu,
   ).length;
+  const ariaryContracts = contracts.filter((contract) =>
+    ["ACTIF", "APPROUVE", "APPROUVÉ", "VALIDE", "SIGNE", "SIGNÉ"].includes(String(contract.statut || "").trim().toUpperCase()) &&
+    (!contract.devise || ["AR", "ARIARY", "MGA"].includes(String(contract.devise).trim().toUpperCase())),
+  );
+  const ariaryTotal = ariaryContracts.reduce(
+    (total, contract) => total + (Number(contract.montant) || 0),
+    0,
+  );
+  const excludedCurrencies = contracts.length - ariaryContracts.length;
   const attention = contracts
     .filter((contract) => {
       const isDueSoon = due.some((item) => item.id === contract.id);
@@ -138,6 +147,11 @@ export default function DashboardGestionnaire() {
           <span>Notifications non lues</span>
           <strong>{loading ? "—" : unread}</strong>
           <small>à consulter</small>
+        </div>
+        <div>
+          <span>Valeur des contrats actifs en ariary</span>
+          <strong>{loading ? "—" : `${ariaryTotal.toLocaleString("fr-FR")} Ar`}</strong>
+          <small>{ariaryContracts.length} contrat(s) actif(s) comptabilisé(s)</small>
         </div>
       </div>
 

@@ -107,7 +107,6 @@ export function ContractsPage() {
   const [q, setQ] = useState(""),
     [status, setStatus] = useState(""),
     [typeId, setTypeId] = useState(""),
-    [service, setService] = useState(""),
     [start, setStart] = useState(""),
     [end, setEnd] = useState(""),
     [signatureStart, setSignatureStart] = useState(""),
@@ -116,7 +115,7 @@ export function ContractsPage() {
     [sortDirection, setSortDirection] = useState("desc"),
     [page, setPage] = useState(1),
     [pageSize, setPageSize] = useState(10);
-  const [applied, setApplied] = useState({ q: "", status: "", typeId: "", service: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+  const [applied, setApplied] = useState({ q: "", status: "", typeId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
   const [parties, setParties] = useState([]),
     [users, setUsers] = useState([]);
   const { id } = useParams();
@@ -153,10 +152,6 @@ export function ContractsPage() {
     () => contracts.find((c) => String(c.id) === String(id)),
     [contracts, id],
   );
-  const services = useMemo(
-    () => [...new Set(contracts.map((c) => c.service).filter(Boolean))].sort(),
-    [contracts],
-  );
   const filtered = useMemo(() => {
     const term = applied.q.trim().toLowerCase();
     return contracts
@@ -176,7 +171,6 @@ export function ContractsPage() {
           (!term || text.includes(term)) &&
           (!applied.status || c.statut === applied.status) &&
           (!applied.typeId || String(c.typeId) === applied.typeId) &&
-          (!applied.service || c.service === applied.service) &&
           (!applied.start || String(c.dateFin || "") >= applied.start) &&
           (!applied.end || String(c.dateFin || "") <= applied.end) &&
           (!applied.signatureStart || String(c.dateSignature || "") >= applied.signatureStart) &&
@@ -247,18 +241,17 @@ export function ContractsPage() {
     setQ("");
     setStatus("");
     setTypeId("");
-    setService("");
     setStart("");
     setEnd("");
     setSignatureStart("");
     setSignatureEnd("");
     setSort("dateModification");
     setSortDirection("desc");
-    setApplied({ q: "", status: "", typeId: "", service: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
+    setApplied({ q: "", status: "", typeId: "", start: "", end: "", signatureStart: "", signatureEnd: "", sort: "dateModification", sortDirection: "desc" });
     setPage(1);
   };
   const applyFilters = () => {
-    setApplied({ q, status, typeId, service, start, end, signatureStart, signatureEnd, sort, sortDirection });
+    setApplied({ q, status, typeId, start, end, signatureStart, signatureEnd, sort, sortDirection });
     setPage(1);
   };
   const exportCsv = () => {
@@ -393,18 +386,6 @@ export function ContractsPage() {
                 <option key={t.id} value={t.id}>
                   {t.nom || t.libelle || t.designation || `Type ${t.id}`}
                 </option>
-              ))}
-            </select>
-          </label>
-          <label className="mgr-field">
-            <span>Service</span>
-            <select
-              value={service}
-              onChange={(e) => setService(e.target.value)}
-            >
-              <option value="">Tous les services</option>
-              {services.map((s) => (
-                <option key={s}>{s}</option>
               ))}
             </select>
           </label>
@@ -575,6 +556,7 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
   const { toast, confirm } = useFeedback();
   const [tab, setTab] = useState("resume");
   const [docCategory, setDocCategory] = useState("JUSTIFICATIF");
+  const [documentName, setDocumentName] = useState(`Document — ${c.reference || `CLM-${c.id}`}`);
   const [docs, setDocs] = useState([]),
     [parties, setParties] = useState([]),
     [partyRoles, setPartyRoles] = useState([]),
@@ -653,7 +635,11 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     toast("Ajout du document en cours…", "info");
     setBusy(true);
     try {
-      await svc.uploadDocument(c.id, file, user?.id, docCategory);
+      const uploaded = await svc.uploadDocument(c.id, file, user?.id, docCategory);
+      const uploadedDocument = Array.isArray(uploaded) ? uploaded[0] : uploaded;
+      if (uploadedDocument?.id && documentName.trim()) {
+        await svc.renameDocument(uploadedDocument.id, { nomFichier: documentName.trim() });
+      }
       toast("Document ajouté au contrat.");
       await load();
     } catch (ex) {
@@ -676,19 +662,15 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
     }
   };
   const openDocument = async (d) => {
+    const tab = window.open("about:blank", "_blank");
+    if (!tab) { toast("Autorisez les fenêtres pop-up pour ouvrir le document.", "warning"); return; }
     try {
       const blob = await svc.downloadDocument(d.id);
-      const extension = (d.type || d.nomFichier || "").toLowerCase();
-      const imageType = extension.match(/(?:image\/)?(png|jpe?g|gif|webp)|\.(png|jpe?g|gif|webp)$/)?.[1];
-      const mime = extension.includes("pdf") ? "application/pdf"
-        : imageType ? `image/${imageType.replace("jpg", "jpeg")}`
-          : "application/octet-stream";
-      const url = URL.createObjectURL(new Blob([blob], { type: mime }));
-      setPreview((previous) => {
-        if (previous?.url) URL.revokeObjectURL(previous.url);
-        return { url, mime, name: d.nomFichier || "Document" };
-      });
+      const url = URL.createObjectURL(blob);
+      tab.location.href = url;
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (e) {
+      tab.close();
       toast(errMessage(e), "error");
     }
   };
@@ -958,7 +940,14 @@ function ContractDetails({ contract: c, onRefresh, types = [], users = [] }) {
               <h3>Documents contractuels</h3>
               <p>Pièces justificatives et exemplaire signé (limite : 15 Mo).</p>
             </div>
-            <div><select aria-label="Catégorie du document" value={docCategory} onChange={e => setDocCategory(e.target.value)} disabled={busy} style={{ marginRight: 8, padding: 9, borderRadius: 8 }}><option value="JUSTIFICATIF">Pièce justificative</option>{c.statut === "APPROUVE" && <option value="CONTRAT_SIGNE">Contrat signé (PDF)</option>}</select><label className="mgr-btn primary file-upload"><InlineIcon className="fa-solid fa-upload" />{busy ? "Envoi…" : "Ajouter un document"}<input type="file" accept={docCategory === "CONTRAT_SIGNE" ? ".pdf,application/pdf" : undefined} onChange={upload} disabled={busy} /></label></div>
+            <div className="mgr-document-upload-controls">
+              <label className="mgr-document-name-field">
+                <span>Nom du document</span>
+                <input value={documentName} onChange={(e) => setDocumentName(e.target.value)} disabled={busy} />
+              </label>
+              <select aria-label="Catégorie du document" value={docCategory} onChange={e => setDocCategory(e.target.value)} disabled={busy} style={{ marginRight: 8, padding: 9, borderRadius: 8 }}><option value="JUSTIFICATIF">Pièce justificative</option>{c.statut === "APPROUVE" && <option value="CONTRAT_SIGNE">Contrat signé (PDF)</option>}</select>
+              <label className="mgr-btn primary file-upload"><InlineIcon className="fa-solid fa-upload" />{busy ? "Envoi…" : "Ajouter un document"}<input type="file" accept={docCategory === "CONTRAT_SIGNE" ? ".pdf,application/pdf" : undefined} onChange={upload} disabled={busy || !documentName.trim()} /></label>
+            </div>
           </div>
           {docsLoading ? (
             <LoadingOrEmpty loading />
